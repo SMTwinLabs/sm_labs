@@ -1,11 +1,5 @@
 package com.alexlabs.trackmovement;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -54,9 +48,7 @@ public class MainActivity extends ActionBarActivity {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				int index = event.getActionIndex();
 		        int action = event.getActionMasked();
-		        int pointerId = event.getPointerId(index);
 		        
 		        switch(action) {
 		            case MotionEvent.ACTION_DOWN:
@@ -79,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
 		            	
 		            	clock.wind(_content.getHeight(), x, y);
 		                _coordinates.setText("X:" + XCoord + " Y: " + YCoord);
-		                _minutes.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.getAngle());
+		                _minutes.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.generateAngleFromMinute());
 		                _time.setText(((Integer)clock.getMinute()).toString());
 		                
 		                // Remove the current arc. This is done so that a new arc will be generated with the 
@@ -87,9 +79,7 @@ public class MainActivity extends ActionBarActivity {
 		                _content.removeView(_content.findViewById(ARC_ID_KEY));
 		                
 		                // Create the new arc from the new angle that has been selected.
-		                Arc arc = new Arc(getBaseContext(), diameter,
-		                		(float)(clock.getMinute()*(Clock.DEGRESS_IN_CIRCLE/Clock.MAX_MINUTES_ON_CLOCK)),
-		                		_content);
+		                Arc arc = new Arc(getBaseContext(), diameter, (float)clock.generateAngleFromMinute(), (float)_content.getHeight());
 
 		                // Set the arc view's id.
 		                arc.setId(ARC_ID_KEY);
