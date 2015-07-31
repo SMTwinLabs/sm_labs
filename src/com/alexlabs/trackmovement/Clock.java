@@ -6,9 +6,28 @@ public class Clock {
 	public static final int DEGRESS_PER_MINUTE = 6;
 	
 	private double _minute;
+	private double _clockDiameter;
+	private int _parentEdgeLength;
+	float _selectedX;
+	float _selectedY;
 	
 	public Clock() {
 		// Do nothing.
+	}
+	
+	/**
+	 * Create a clock object to calculate the clock's parameters. 
+	 * @param clockDiamter - the clock's diameter.
+	 * @param parentEdgeLength - the length of the paren's edge. It is paramount that the parent is
+	 * quadratic in shape.
+	 * @param selectedX - the X coordinate of the selected point on the screen.
+	 * @param selectedY - the Y coordinate of the selected point on the screen.
+	 */
+	public Clock(double clockDiamter, int parentEdgeLength, float selectedX, float selectedY) {
+		_clockDiameter = clockDiamter;
+		_parentEdgeLength = parentEdgeLength;
+		_selectedX = selectedX;
+		_selectedY = selectedY;
 	}
 	
 	/**
@@ -57,6 +76,20 @@ public class Clock {
 	}
 	
 	public int generateAngleFromMinute() {
-		return (int)_minute*DEGRESS_PER_MINUTE;
-	}	
+		int angle = 0;
+		if(isCoordinateInClockBounds(_selectedX) && isCoordinateInClockBounds(_selectedY)) {
+			if(_minute % 5 != 0) {
+				angle = (int)((_minute % 5) + 1)*5;
+			}
+		} else {
+			angle = (int)_minute*DEGRESS_PER_MINUTE;
+		}
+		
+		return angle;
+	}
+	
+	private boolean isCoordinateInClockBounds(float coordinate) {
+		return coordinate >= _parentEdgeLength/2 - _clockDiameter/2 && 
+				coordinate <= _parentEdgeLength/2 + _clockDiameter/2;		
+	}
 }

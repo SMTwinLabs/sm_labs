@@ -18,8 +18,8 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity {
 
 	private RelativeLayout _content;
-	private TextView _coordinates;
-	private TextView _minutes;
+	private TextView _coordinatesTextView;
+	private TextView _minutesTextView;
 	private TextView _time;
 	private View _dial;
 	
@@ -36,8 +36,8 @@ public class MainActivity extends ActionBarActivity {
         getSupportActionBar().hide();
         
         _content = (RelativeLayout) findViewById(R.id.content);
-        _coordinates = (TextView) findViewById(R.id.coordinates);
-        _minutes = (TextView) findViewById(R.id.minutes);
+        _coordinatesTextView = (TextView) findViewById(R.id.coordinates);
+        _minutesTextView = (TextView) findViewById(R.id.minutes);
         _dial = findViewById(R.id.dialView);
 
         _time = (TextView) findViewById(R.id.minutesView);
@@ -70,8 +70,8 @@ public class MainActivity extends ActionBarActivity {
 		            	}
 		            	
 		            	clock.wind(_content.getHeight(), x, y);
-		                _coordinates.setText("X:" + XCoord + " Y: " + YCoord);
-		                _minutes.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.generateAngleFromMinute());
+		                _coordinatesTextView.setText("X:" + XCoord + " Y: " + YCoord);
+		                _minutesTextView.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.generateAngleFromMinute());
 		                _time.setText(((Integer)clock.getMinute()).toString());
 		                
 		                // Remove the current arc. This is done so that a new arc will be generated with the 
