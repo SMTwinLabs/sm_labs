@@ -1,5 +1,6 @@
 package com.alexlabs.trackmovement;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,16 +26,27 @@ public class MainActivity extends ActionBarActivity {
 	private RelativeLayout _content;
 	private TextView _coordinates;
 	private TextView _minutes;
+	private TextView _time;
+	private View _dial;
 	
 	private final static int ARC_ID_KEY = 0;
 	
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {        
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);        
+       
         super.onCreate(savedInstanceState);
+        
         setContentView(R.layout.activity_main);
+        
+        getSupportActionBar().hide();
+        
         _content = (RelativeLayout) findViewById(R.id.content);
         _coordinates = (TextView) findViewById(R.id.coordinates);
         _minutes = (TextView) findViewById(R.id.minutes);
+        _dial = findViewById(R.id.dialView);
+
+        _time = (TextView) findViewById(R.id.minutesView);
         
         final Clock clock = new Clock();
         
@@ -49,13 +62,14 @@ public class MainActivity extends ActionBarActivity {
 		            case MotionEvent.ACTION_DOWN:
 		                break;
 		            case MotionEvent.ACTION_MOVE:
-		            	float x, y;
+		            	float x, y, diameter;
 		            	String XCoord = null, YCoord = null;
 		            	
 		            	x = event.getX();
 		            	y =  event.getY();
+		            	diameter = (float)_dial.getHeight();
 		            	
-		            	if(x < 0 || x > _content.getHeight() || y < 0 || y > _content.getWidth()) {
+		            	if(x < 0 || x > diameter || y < 0 || y > diameter) {
 		            		XCoord = "Out of bounds";
 		            		YCoord = "Out of bounds";
 		            	} else {
@@ -66,14 +80,16 @@ public class MainActivity extends ActionBarActivity {
 		            	clock.wind(_content.getHeight(), x, y);
 		                _coordinates.setText("X:" + XCoord + " Y: " + YCoord);
 		                _minutes.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.getAngle());
+		                _time.setText(((Integer)clock.getMinute()).toString());
 		                
 		                // Remove the current arc. This is done so that a new arc will be generated with the 
 		                // newly selected angle.
 		                _content.removeView(_content.findViewById(ARC_ID_KEY));
 		                
 		                // Create the new arc from the new angle that has been selected.
-		                Arc arc = new Arc(getBaseContext(), (float)_content.getHeight(),  (float)_content.getWidth(), 
-		                		(float)(clock.getMinute()*(Clock.DEGRESS_IN_CIRCLE/Clock.MAX_MINUTES_ON_CLOCK)));
+		                Arc arc = new Arc(getBaseContext(), diameter,
+		                		(float)(clock.getMinute()*(Clock.DEGRESS_IN_CIRCLE/Clock.MAX_MINUTES_ON_CLOCK)),
+		                		_content);
 
 		                // Set the arc view's id.
 		                arc.setId(ARC_ID_KEY);
@@ -93,6 +109,7 @@ public class MainActivity extends ActionBarActivity {
 		});
         
         Button button = (Button) findViewById(R.id.button);
+        button.setVisibility(View.GONE);
         button.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -100,6 +117,7 @@ public class MainActivity extends ActionBarActivity {
 				Toast.makeText(getBaseContext(), "Button pressed.", Toast.LENGTH_SHORT).show();
 			}
 		});
+        
         
     }
 
@@ -120,57 +138,5 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-    
-    // -------------- ARC TEST --------------
-    
-    public class Arc extends View {
-    	private float _height;
-    	private float _width;
-    	private float _angle;
-    	private Paint _paint;
-		private RectF _oval;
-    	
-		public Arc(Context context) {
-			super(context);
-			_height = 0.0f;
-			_width = 0.0f;
-			_angle = 0.0f;
-			_paint = new Paint();
-			_oval = new RectF();
-		}
-		
-		public Arc(Context context, float height, float width, float angle) {
-			this(context);
-			_height = height;
-			_width = width;
-			_angle = angle;
-		}
-		
-		@Override
-		protected void onDraw(Canvas canvas) {
-			super.onDraw(canvas);
-			// set the radius for the circle
-			float radius = _width/2;
-			_paint.setColor(Color.RED);
-			_paint.setStrokeWidth(5);	
-
-			// the paint object will fill its inside area
-			_paint.setStyle(Paint.Style.FILL);
-			
-			// calculate the center of the arc
-			float center_x, center_y;
-			center_x = _width/2;
-			center_y = _height/2;
-
-			// set coordinates to the specified values
-			_oval.set(center_x - radius, 
-					center_y - radius, 
-					center_x + radius, 
-					center_y + radius);
-
-			// draw the arc
-			canvas.drawArc(_oval, 270, _angle, true, _paint);
-		}		   	
     }
 }
