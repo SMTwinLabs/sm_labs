@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity {
 
         _time = (TextView) findViewById(R.id.minutesView);
         
-        final Clock clock = new Clock();
+        final Clock clock = new Clock(_content, _dial);
         
         _content.setOnTouchListener(new OnTouchListener() {
 			
@@ -51,7 +51,8 @@ public class MainActivity extends ActionBarActivity {
 		        int action = event.getActionMasked();
 		        
 		        switch(action) {
-		            case MotionEvent.ACTION_DOWN:
+		            case MotionEvent.ACTION_DOWN: 
+		                v.performClick();
 		                break;
 		            case MotionEvent.ACTION_MOVE:
 		            	float x, y, diameter;
@@ -68,10 +69,10 @@ public class MainActivity extends ActionBarActivity {
 		            		XCoord = "" + x;	
 		            		YCoord = "" + y;
 		            	}
-		            	
-		            	clock.wind(_content.getHeight(), x, y);
+		            	// FIXME: maybe pass the motion event
+		            	clock.wind(x, y);
 		                _coordinatesTextView.setText("X:" + XCoord + " Y: " + YCoord);
-		                _minutesTextView.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.generateAngleFromMinute());
+		                _minutesTextView.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.getAngle());
 		                _time.setText(((Integer)clock.getMinute()).toString());
 		                
 		                // Remove the current arc. This is done so that a new arc will be generated with the 
@@ -79,7 +80,7 @@ public class MainActivity extends ActionBarActivity {
 		                _content.removeView(_content.findViewById(ARC_ID_KEY));
 		                
 		                // Create the new arc from the new angle that has been selected.
-		                Arc arc = new Arc(getBaseContext(), diameter, (float)clock.generateAngleFromMinute(), (float)_content.getHeight());
+		                Arc arc = new Arc(getBaseContext(), diameter, (float)clock.getAngle(), (float)_content.getHeight());
 
 		                // Set the arc view's id.
 		                arc.setId(ARC_ID_KEY);
@@ -89,26 +90,13 @@ public class MainActivity extends ActionBarActivity {
 		                
 		                break;
 		            case MotionEvent.ACTION_UP:
-		                v.performClick();
 		                break;
 		            case MotionEvent.ACTION_CANCEL:		                
 		                break;
 		        }
 		        return true;
 			}
-		});
-        
-        Button button = (Button) findViewById(R.id.button);
-        button.setVisibility(View.GONE);
-        button.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Toast.makeText(getBaseContext(), "Button pressed.", Toast.LENGTH_SHORT).show();
-			}
-		});
-        
-        
+		});        
     }
 
     @Override
