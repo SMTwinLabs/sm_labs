@@ -1,5 +1,6 @@
 package com.alexlabs.trackmovement;
 
+import android.view.MotionEvent;
 import android.view.View;
 
 public class Clock {
@@ -25,12 +26,11 @@ public class Clock {
 	 * @param selectedX - the X coordinate of the selected point on the screen.
 	 * @param selectedY - the Y coordinate of the selected point on the screen.
 	 */
-	public void wind(double selectedX, double selectedY) {
-		
+	public void wind(MotionEvent motionEvent) {		
 		// Get the angle.
-		int pivotAngle = (int) Math.ceil(calculatePivotAngle(selectedX, selectedY));
+		int pivotAngle = (int) Math.ceil(calculatePivotAngle(motionEvent.getX(), motionEvent.getY()));
 		int selectedMinuteOnDial = (int)Math.ceil(pivotAngle/DEGRESS_PER_MINUTE);
-		if(isSelectedPointInDialBounds(selectedX, selectedY)) {			
+		if(isSelectedPointInDialBounds(motionEvent.getX(), motionEvent.getY())) {			
 			_angle = generateDialAreaBoundedAngle(selectedMinuteOnDial);
 			_minute = (int)Math.ceil(_angle/DEGRESS_PER_MINUTE);
 		} else {

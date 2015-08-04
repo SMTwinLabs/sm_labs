@@ -111,8 +111,7 @@ public class MainActivity extends ActionBarActivity {
 		String XCoord = ((Float)selectedPointX).toString();	
 		String YCoord = ((Float)selectedPointY).toString();
 
-		// FIXME: maybe pass the motion event
-		clock.wind(selectedPointX, selectedPointY);
+		clock.wind(_motionEvent);
 		
 		displayDebugInformation(clock, XCoord, YCoord);
 		
