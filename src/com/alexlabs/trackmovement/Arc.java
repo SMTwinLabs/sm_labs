@@ -7,13 +7,8 @@ import android.graphics.RectF;
 import android.view.View;
 
 public class Arc extends View {
-	// The side length of the clock's dial view. The host is 
-	// the view that contains the clock's user interface.
-	private float _hostEdgeLength;
-	
-	// The side length of the clock's parent view. This view
-	// contains the clock's dial view.
-	private float _parentEdgeLength;
+	private View _dialView;
+	private View _parentView;
 	
 	// The angle corresponding to the selected minute. 
 	private float _angle;
@@ -28,23 +23,19 @@ public class Arc extends View {
 		_oval = new RectF();
 	}
 	
-	public Arc(Context context, float diameter, float angle) {
+	public Arc(Context context, View dialView, View parentView, float angle) {
 		this(context);
-		_hostEdgeLength = diameter;
+		_dialView = dialView;
+		_parentView = parentView;
 		_angle = angle;
-	}
-	
-	public Arc(Context context, float diameter, float angle, float parentHeight) {
-		this(context, diameter, angle);
-		_parentEdgeLength = parentHeight;
 	}
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		// Set the radius for the circle.
-		float radius = _hostEdgeLength/2;
-		float center = _parentEdgeLength/2f;
+		float radius = ((float)_dialView.getHeight())/2f;
+		float center = ((float)_parentView.getHeight())/2f;
 		_paint.setColor(getContext().getResources().getColor(R.color.red));
 		_paint.setStrokeWidth(5);	
 

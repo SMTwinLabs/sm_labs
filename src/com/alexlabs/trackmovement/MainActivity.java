@@ -23,6 +23,8 @@ public class MainActivity extends ActionBarActivity {
 	private TextView _time;
 	private View _dial;
 	
+	private MotionEvent _motionEvent;
+	
 	private final static int ARC_ID_KEY = 0;
 	
     @Override
@@ -49,44 +51,14 @@ public class MainActivity extends ActionBarActivity {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 		        int action = event.getActionMasked();
+		        _motionEvent = event;
 		        
 		        switch(action) {
 		            case MotionEvent.ACTION_DOWN: 
 		                v.performClick();
 		                break;
 		            case MotionEvent.ACTION_MOVE:
-		            	float x, y, diameter;
-		            	String XCoord = null, YCoord = null;
-		            	
-		            	x = event.getX();
-		            	y =  event.getY();
-		            	diameter = (float)_dial.getHeight();
-		            	
-		            	if(x < 0 || x > diameter || y < 0 || y > diameter) {
-		            		XCoord = "Out of bounds";
-		            		YCoord = "Out of bounds";
-		            	} else {
-		            		XCoord = "" + x;	
-		            		YCoord = "" + y;
-		            	}
-		            	// FIXME: maybe pass the motion event
-		            	clock.wind(x, y);
-		                _coordinatesTextView.setText("X:" + XCoord + " Y: " + YCoord);
-		                _minutesTextView.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.getAngle());
-		                _time.setText(((Integer)clock.getMinute()).toString());
-		                
-		                // Remove the current arc. This is done so that a new arc will be generated with the 
-		                // newly selected angle.
-		                _content.removeView(_content.findViewById(ARC_ID_KEY));
-		                
-		                // Create the new arc from the new angle that has been selected.
-		                Arc arc = new Arc(getBaseContext(), diameter, (float)clock.getAngle(), (float)_content.getHeight());
-
-		                // Set the arc view's id.
-		                arc.setId(ARC_ID_KEY);
-		                
-		                // Add the arc to the content view of the clock.
-		                _content.addView(arc, 0);
+		            	onActionMove(clock);
 		                
 		                break;
 		            case MotionEvent.ACTION_UP:
@@ -96,8 +68,56 @@ public class MainActivity extends ActionBarActivity {
 		        }
 		        return true;
 			}
-		});        
+			
+		});
+        
+        _content.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				onActionMove(clock);
+			}
+		});
     }
+
+	private void renderArc(final Clock clock) {
+		// Remove the current arc. This is done so that a new arc will be generated with the 
+		// newly selected angle.
+		_content.removeView(_content.findViewById(ARC_ID_KEY));
+		
+		// Create the new arc from the new angle that has been selected.
+		Arc arc = new Arc(getBaseContext(), _dial, _content, (float)clock.getAngle());
+
+		// Set the arc view's id.
+		arc.setId(ARC_ID_KEY);
+		
+		// Add the arc to the content view of the clock.
+		_content.addView(arc, 0);
+	}
+
+	private void displayDebugInformation(final Clock clock,
+			String XCoord, String YCoord) {
+		_coordinatesTextView.setText("X:" + XCoord + " Y: " + YCoord);
+		_minutesTextView.setText("Minutes:" + clock.getMinute() + "  Degrees: " + (float)clock.getAngle());
+		_time.setText(((Integer)clock.getMinute()).toString());
+	}
+	
+	private void onActionMove(final Clock clock) {
+		if(_motionEvent == null)
+			throw new IllegalArgumentException("Motion event is null.");
+    	
+		float selectedPointX = _motionEvent.getX();
+    	float selectedPointY = _motionEvent.getY();
+		String XCoord = ((Float)selectedPointX).toString();	
+		String YCoord = ((Float)selectedPointY).toString();
+
+		// FIXME: maybe pass the motion event
+		clock.wind(selectedPointX, selectedPointY);
+		
+		displayDebugInformation(clock, XCoord, YCoord);
+		
+		renderArc(clock);
+	}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
