@@ -1,5 +1,6 @@
 package com.alexlabs.trackmovement;
 
+import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -13,10 +14,12 @@ public class Clock {
 	private int _angle;
 	private View _content;
 	private View _dial;
+	private Context _context; 
 	
-	public Clock(View content, View dial) {
+	public Clock(Context context, View content, View dial) {
 		_content = content;
 		_dial = dial;
+		_context = context;
 	}
 	
 	/**
@@ -55,16 +58,15 @@ public class Clock {
 	private double calculatePivotAngle(double selectedX, double selectedY) {
 		// Sides of the triangle.
 		double sideA, sideB, sideC;
-		int parentEdgeLength = _content.getHeight();
 		
-		sideA = parentEdgeLength/2;
-		sideB = Clock.calculateLineLengthBetweenTwoPoints(parentEdgeLength/2, parentEdgeLength/2, selectedX, selectedY);
-		sideC = Clock.calculateLineLengthBetweenTwoPoints(parentEdgeLength/2, 0, selectedX, selectedY);	
+		sideA = _content.getHeight()/2;
+		sideB = Clock.calculateLineLengthBetweenTwoPoints(_content.getWidth()/2, _content.getHeight()/2, selectedX, selectedY);
+		sideC = Clock.calculateLineLengthBetweenTwoPoints(_content.getWidth()/2, 0, selectedX, selectedY);	
 		
 		double angle = Math.acos((Math.pow(sideA, 2) + Math.pow(sideB, 2) - Math.pow(sideC, 2))/(2*sideA*sideB));
 		angle = Math.toDegrees(angle);
 		
-		if(selectedX <= parentEdgeLength/2) {
+		if(selectedX <= _content.getWidth()/2) {
 			angle = DEGRESS_IN_CIRCLE - angle;
 		}
 		
@@ -94,9 +96,10 @@ public class Clock {
 	}
 	
 	private boolean isSelectedPointInDialBounds(double selectedX, double selectedY) {
-		double parentCenterCoordinate = ((double)_content.getHeight())/2;
-		double distanceFromCentre = calculateLineLengthBetweenTwoPoints(parentCenterCoordinate, parentCenterCoordinate, selectedX, selectedY);
-		double clockRadius = ((double)_dial.getHeight())/2;
+		double parentCenterCoordinateY = ((double)_content.getHeight())/2;
+		double parentCenterCoordinateX = ((double)_content.getWidth())/2;
+		double distanceFromCentre = calculateLineLengthBetweenTwoPoints(parentCenterCoordinateX, parentCenterCoordinateY, selectedX, selectedY);
+		double clockRadius = _context.getResources().getDimension(R.dimen.clock_every_fifth_minute_area_diameter)/2f;
 		return clockRadius >= distanceFromCentre;
 	}
 	

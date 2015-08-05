@@ -44,7 +44,7 @@ public class MainActivity extends ActionBarActivity {
 
         _time = (TextView) findViewById(R.id.minutesView);
         
-        final Clock clock = new Clock(_content, _dial);
+        final Clock clock = new Clock(this, _content, _dial);
         
         _content.setOnTouchListener(new OnTouchListener() {
 			
@@ -92,7 +92,7 @@ public class MainActivity extends ActionBarActivity {
 		arc.setId(ARC_ID_KEY);
 		
 		// Add the arc to the content view of the clock.
-		_content.addView(arc, 0);
+		_content.addView(arc, 1);
 	}
 
 	private void displayDebugInformation(final Clock clock,

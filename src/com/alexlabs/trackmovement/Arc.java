@@ -9,6 +9,7 @@ import android.view.View;
 public class Arc extends View {
 	private View _dialView;
 	private View _parentView;
+	private Context _context;
 	
 	// The angle corresponding to the selected minute. 
 	private float _angle;
@@ -19,6 +20,7 @@ public class Arc extends View {
 	
 	public Arc(Context context) {
 		super(context);
+		_context = context;
 		_paint = new Paint();
 		_oval = new RectF();
 	}
@@ -34,8 +36,9 @@ public class Arc extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		// Set the radius for the circle.
-		float radius = ((float)_dialView.getHeight())/2f;
-		float center = ((float)_parentView.getHeight())/2f;
+		float radius = _context.getResources().getDimension(R.dimen.clock_every_fifth_minute_area_diameter)/2f;//_dialView.getHeight()/2f;
+		float centerX = ((float)_parentView.getWidth())/2f;
+		float centerY = ((float)_parentView.getHeight())/2f;
 		_paint.setColor(getContext().getResources().getColor(R.color.red));
 		_paint.setStrokeWidth(5);	
 
@@ -43,10 +46,10 @@ public class Arc extends View {
 		_paint.setStyle(Paint.Style.FILL);
 
 		// Set coordinates to the specified values.
-		_oval.set(center - radius, 
-				center - radius, 
-				center + radius, 
-				center + radius);
+		_oval.set(centerX - radius, 
+				centerY - radius, 
+				centerX + radius, 
+				centerY + radius);
 
 		// draw the arc
 		canvas.drawArc(_oval, 270, _angle, true, _paint);
