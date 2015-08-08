@@ -36,7 +36,7 @@ public class Arc extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		// Set the radius for the circle.
-		float radius = _context.getResources().getDimension(R.dimen.clock_every_fifth_minute_area_diameter)/2f;//_dialView.getHeight()/2f;
+		float radius = _context.getResources().getDimension(R.dimen.clock_dial_diameter)/2f;//_dialView.getHeight()/2f;
 		float centerX = ((float)_parentView.getWidth())/2f;
 		float centerY = ((float)_parentView.getHeight())/2f;
 		_paint.setColor(getContext().getResources().getColor(R.color.red));
