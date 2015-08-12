@@ -13,12 +13,10 @@ public class Clock {
 	private int _minute;
 	private int _angle;
 	private View _content;
-	private View _dial;
 	private Context _context; 
 	
-	public Clock(Context context, View content, View dial) {
+	public Clock(Context context, View content) {
 		_content = content;
-		_dial = dial;
 		_context = context;
 	}
 	
@@ -109,5 +107,13 @@ public class Clock {
 	
 	public int getAngle() {
 		return _angle;
+	}
+	
+	public static int generateAngleFromMinute(int minute) {
+		return minute*DEGRESS_PER_MINUTE;
+	}
+	
+	public int getMinuteInMillis(){
+		return _minute * 1000 * 60;
 	}
 }
