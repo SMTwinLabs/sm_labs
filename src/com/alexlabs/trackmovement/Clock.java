@@ -116,4 +116,12 @@ public class Clock {
 	public int getMinuteInMillis(){
 		return _minute * 1000 * 60;
 	}
+
+	public static int getSeconsFromMillisecnods(long millisUntilFinished) {
+		return (int) millisUntilFinished / 1000 % 60;
+	}
+
+	public static int getMinuteFromMillisecnods(long millisUntilFinished) {
+		return (int) millisUntilFinished / 1000 / 60;
+	}
 }
