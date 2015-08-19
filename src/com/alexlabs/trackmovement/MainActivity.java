@@ -1,13 +1,20 @@
 package com.alexlabs.trackmovement;
 
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ReceiverCallNotAllowedException;
+import android.content.res.Configuration;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,13 +23,22 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
+	
+	private static final String SELECTED_MINUTE_KEY = "selectedMinute";
+	private static final String MILLISECNODS_UNTIL_FINISHED_KEY = "millisecondsUntilFinished";
+	private static final String IS_TIMER_STARTED_KEY = "isTimerStarted";
+	private static final String TIMER_MODE_KEY = "timerMode";
+	
 
 	/////////////////////////////////////////////////
 	/////////// Model
@@ -43,16 +59,18 @@ public class MainActivity extends ActionBarActivity {
 	private CountDownTimer _countDownTimer;
 	private Ringtone _ringtone;
 	private boolean _isTimerStarted;
+	private int _selectedMinute;
 
 	private ScreenReceiver _screenReceiver;
 
 	private enum TimerMode {
-		DEFAULT,
+		BASE,
 		START_STOP,
 		EDIT_TIME
 	}
 
-	private TimerMode _timerMode = TimerMode.DEFAULT;
+	private TimerMode _timerMode;
+	private long _millisUntilFinished;
 
 	/////////////////////////////////////////////////
 	/////////// View
@@ -68,6 +86,7 @@ public class MainActivity extends ActionBarActivity {
 
 		getSupportActionBar().hide();
 
+
 		_content = (RelativeLayout) findViewById(R.id.content);
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
@@ -75,32 +94,31 @@ public class MainActivity extends ActionBarActivity {
 
 		_ringtone = RingtoneManager.getRingtone(getApplicationContext(),
 				RingtoneManager
-						.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+						.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));	
+		
+		initEditTimeButtonGroup();
 
-		// NOTE: The seconds' text field is invisible when the timer is not
-		// running or when the time is being edited. So, when the app is 
-		// started, the aforementioned field is hidden.
-		hideSecondsTextView();
-
-		final Clock clock = new Clock(this, _content);
-
-		initEditTimeButtonGroup(clock);
-
+		if(savedInstanceState != null) {
+			restoreState(savedInstanceState);
+		} else {		
+			setTimerMode(TimerMode.BASE);
+		}
+		
 		_content.setOnTouchListener(new OnTouchListener() {
 
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
+			public boolean onTouch(View view, MotionEvent event) {
 				if (!TimerMode.START_STOP.equals(_timerMode)) {
 					int action = event.getActionMasked();
 					_motionEvent = event;
 
 					switch (action) {
 					case MotionEvent.ACTION_DOWN:
-						v.performClick();
+						view.performClick();
 						break;
 						
 					case MotionEvent.ACTION_MOVE:
-						onActionMove(clock);
+						onActionMove(getBaseContext(), _content);
 						break;
 						
 					case MotionEvent.ACTION_UP:
@@ -118,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				onActionMove(clock);
+				onActionMove(getBaseContext(), _content);
 			}
 		});
 
@@ -128,29 +146,20 @@ public class MainActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				// Make sure that if the timer is being set for the 1st time 
 				// the milliseconds are set.
-				if (TimerMode.DEFAULT == _timerMode) {
-					_millisUntilFinished = clock.getMinuteInMillis();
+				if (TimerMode.BASE == _timerMode) {
+					_millisUntilFinished = TimerUtils.getMillisFromMinutes(_selectedMinute);
 				}
 
 				if (_millisUntilFinished == 0) {
 					Toast.makeText(getBaseContext(), "Please, pick a time.",
 							Toast.LENGTH_SHORT).show();
-					hideSecondsTextView();
+
+					_secondsTextView.setVisibility(View.GONE);
 					return;
 				}
 
-				_timerMode = TimerMode.START_STOP;
-
-				if (_secondsTextView.getVisibility() == View.GONE) {
-					showSecondsTextView();
-				}
-
-				if (_editTimeButton.getVisibility() == View.GONE) {
-					_editTimeButton.setVisibility(View.VISIBLE);
-				}
-
-				ensureCountDownTimerUI();
-
+				toggleCountDownTimerState();
+				setTimerMode(TimerMode.START_STOP);
 			}
 
 		});
@@ -159,36 +168,19 @@ public class MainActivity extends ActionBarActivity {
 		// screen - whether it was on or off.
 		registerScreenReciver();
 	}
-
-	private void ensureCountDownTimerUI() {
-		if (_countDownTimer != null) {
-			if (_isTimerStarted) {
-				stopCountDown();
-			} else {
-				startCountDown();
-			}
-		} else {
-			startCountDown();
-		}
-
-		_startStopStateButton.setText(_isTimerStarted ? "Stop" : "Start");
-	}
-
-	private void initEditTimeButtonGroup(final Clock clock) {
+	
+	private void initEditTimeButtonGroup() {
 		initEditTimeButton();
-		initEditTimeAcceptChangeButton(clock);
+		initEditTimeAcceptChangeButton();
 		initEditTimeCancelChangeButton();
 	}
 
 	private void initEditTimeCancelChangeButton() {
 		_editTimeCancelChangeButton = (Button) findViewById(R.id.edit_time_cancel_change_button);
-		_editTimeCancelChangeButton.setVisibility(View.GONE);
 		_editTimeCancelChangeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				updateCurrentTimeDisplayInfo();
-				updateArcFromCurrentMillis();
 				exitEditTimeMode(_isTimerStarted);
 			}
 		});
@@ -196,58 +188,33 @@ public class MainActivity extends ActionBarActivity {
 
 	private void initEditTimeButton() {
 		_editTimeButton = (Button) findViewById(R.id.edit_time_button);
-		_editTimeButton.setVisibility(View.GONE);
 		_editTimeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				beginEditTimeMode();
+				setTimerMode(TimerMode.EDIT_TIME);
 			}
 		});
 	}
 
-	private void initEditTimeAcceptChangeButton(final Clock clock) {
+	private void initEditTimeAcceptChangeButton() {
 		_editTimeAcceptChangeButton = (Button) findViewById(R.id.edit_time_accept_change_button);
-		_editTimeAcceptChangeButton.setVisibility(View.GONE);
 		_editTimeAcceptChangeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				_millisUntilFinished = clock.getMinuteInMillis();
+				_millisUntilFinished = TimerUtils.getMillisFromMinutes(_selectedMinute);
 				exitEditTimeMode(true);
 			}
 		});
 	}
 
-	private void beginEditTimeMode() {
-		_timerMode = TimerMode.EDIT_TIME;
-
-		hideSecondsTextView();
-
-		_startStopStateButton.setVisibility(View.GONE);
-		_editTimeButton.setVisibility(View.GONE);
-
-		_editTimeAcceptChangeButton.setVisibility(View.VISIBLE);
-		_editTimeCancelChangeButton.setVisibility(View.VISIBLE);
-	}
-
 	private void exitEditTimeMode(boolean shouldRestartCountdown) {
-		_timerMode = TimerMode.START_STOP;
-
 		if (shouldRestartCountdown) {
 			stopCountDown();
 			startCountDown();
-
-			_startStopStateButton.setText("Stop");
 		}
-
-		showSecondsTextView();
-
-		_startStopStateButton.setVisibility(View.VISIBLE);
-		_editTimeButton.setVisibility(View.VISIBLE);
-
-		_editTimeAcceptChangeButton.setVisibility(View.GONE);
-		_editTimeCancelChangeButton.setVisibility(View.GONE);
+		setTimerMode(TimerMode.START_STOP);
 	}
 
 	private void renderArc(float angle) {
@@ -266,43 +233,116 @@ public class MainActivity extends ActionBarActivity {
 		_content.addView(arc, 1);
 	}
 
-	private void displayCurrentTime(final Clock clock) {
-		_minutesTextView.setText(((Integer) clock.getMinute()).toString());
-	}
 
-	private void displayCurrentTime(Integer minutes, Integer seconds) {
-		_minutesTextView.setText(minutes.toString());
-		_secondsTextView.setText(seconds.toString());
-	}
-
-	private void onActionMove(final Clock clock) {
+	private void onActionMove(Context context, View content) {
 		if (_motionEvent == null)
 			throw new IllegalArgumentException("Motion event is null.");
 
-		clock.wind(_motionEvent);
-
-		displayCurrentTime(clock);
-
-		renderArc((float) clock.getAngle());
+		_selectedMinute = TimerUtils.generateMinute(_motionEvent, context, content);
+		updateCurrentTime(TimerUtils.getMillisFromMinutes(_selectedMinute));
+		renderArc((float) TimerUtils.generateAngleFromMinute(_selectedMinute));
 	}
 
-	private void hideSecondsTextView() {
+	private void toggleStartStopButtonState() {
+		if(TimerMode.EDIT_TIME != _timerMode) {
+			_startStopStateButton.setText(_isTimerStarted ? "Stop" : "Start");
+		}
+	}
+
+	private void renderUIEditMode() {
+		////////////////////////// VISIBLE //////////////////////////////
+		_editTimeAcceptChangeButton.setVisibility(View.VISIBLE);
+		_editTimeCancelChangeButton.setVisibility(View.VISIBLE);
+		
+		////////////////////////// INVISIBLE ////////////////////////////
 		_secondsTextView.setVisibility(View.GONE);
+		_editTimeButton.setVisibility(View.GONE);		
+		_startStopStateButton.setVisibility(View.GONE);
 	}
 
-	private void showSecondsTextView() {
+	private void renderUIStartStopMode() {
+		////////////////////////// VISIBLE //////////////////////////////
+		_startStopStateButton.setVisibility(View.VISIBLE);
+		_editTimeButton.setVisibility(View.VISIBLE);
 		_secondsTextView.setVisibility(View.VISIBLE);
+		
+		////////////////////////// INVISIBLE ////////////////////////////
+		_editTimeAcceptChangeButton.setVisibility(View.GONE);
+		_editTimeCancelChangeButton.setVisibility(View.GONE);
+	}
+
+	private void renderUIBaseMode() {
+		////////////////////////// VISIBLE //////////////////////////////
+		_startStopStateButton.setVisibility(View.VISIBLE);
+		
+		////////////////////////// INVISIBLE ////////////////////////////
+		_editTimeButton.setVisibility(View.GONE);			
+		_secondsTextView.setVisibility(View.GONE);
+		_editTimeAcceptChangeButton.setVisibility(View.GONE);
+		_editTimeCancelChangeButton.setVisibility(View.GONE);
 	}
 	
-	public void renderUI(){
-		// implement
+	private AnimatorSet _animator = new AnimatorSet();
+	private void toggleTimerSignalAnimation() {
+
+		View pulsatingCircle = findViewById(R.id.pulsatingCicrle);
+		View pulsatingCircleBackground = findViewById(R.id.pulsatingCicrleBackground);
+		if(_isTimerStarted && _timerMode == TimerMode.START_STOP) {
+			pulsatingCircleBackground.setVisibility(View.VISIBLE);
+			pulsatingCircleBackground.setScaleX(0.85f);
+			pulsatingCircleBackground.setScaleY(0.85f);
+			
+			pulsatingCircle.setVisibility(View.VISIBLE);
+			ObjectAnimator animatorScaleXInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 0.8f, 1.2f);//.setDuration(500); 
+			ObjectAnimator animatorScaleYInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 0.8f, 1.2f);//.setDuration(500); 
+			ObjectAnimator animatorScaleXDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 1.2f, 0.8f);//.setDuration(500); 
+			ObjectAnimator animatorScaleYDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 1.2f, 0.8f);//.setDuration(500);
+			ValueAnimator fadeAnim = ObjectAnimator.ofFloat(pulsatingCircle, "alpha", 1f, 0.7f);
+			_animator.play(fadeAnim).with(animatorScaleXInc);
+			_animator.play(animatorScaleXInc).with(animatorScaleYInc);
+			_animator.play(animatorScaleXDec).with(animatorScaleYDec);
+			_animator.play(animatorScaleXInc).before(animatorScaleXDec);
+			_animator.setInterpolator(new AccelerateDecelerateInterpolator());
+			_animator.setDuration(500);
+			_animator.addListener(new AnimatorListener() {
+				
+				@Override
+				public void onAnimationStart(Animator animation) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onAnimationRepeat(Animator animation) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					animation.start();
+				}
+				
+				@Override
+				public void onAnimationCancel(Animator animation) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			_animator.start();
+		} else {
+			if(_animator != null) {
+				_animator.cancel();
+			}
+			
+			pulsatingCircle.setVisibility(View.INVISIBLE);
+			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
+		}
 	}
 
 	/////////////////////////////////////////////////
 	/////////// Controller
 	/////////////////////////////////////////////////
-
-	private long _millisUntilFinished;
 
 	private void setCountDownTimer(long millis) {
 		_countDownTimer = new CountDownTimer(millis, 500) {
@@ -313,10 +353,11 @@ public class MainActivity extends ActionBarActivity {
 				_millisUntilFinished = millisUntilFinished;				
 				
 				if (TimerMode.START_STOP == _timerMode) {
-					updateCurrentTimeDisplayInfo();
-					if(Clock.getSeconsFromMillisecnods(_millisUntilFinished) == 59
+					updateCurrentTime(_millisUntilFinished);
+					if(TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished) == 59
 							|| !_screenReceiver.getWasScreenOn()) {
-						updateArcFromCurrentMillis();
+						int minute = TimerUtils.getMinuteFromMillisecnods(millisUntilFinished);
+						renderArc(TimerUtils.generateAngleFromMinute(minute + 1));
 					}
 				}
 			}
@@ -331,47 +372,26 @@ public class MainActivity extends ActionBarActivity {
 				}
 
 				// Cancel the current count down.
-				stopCountDown();
-				
-				_startStopStateButton.setText("Start");
-				
-				_millisUntilFinished = 0;
-				
-				hideSecondsTextView();
-				updateArcFromCurrentMillis();
-				_editTimeButton.setVisibility(View.GONE);
-				
-				_timerMode = TimerMode.DEFAULT;
+				resetTimer();
 
 				localWakeLock.release();
 			}
-
 		};
 	}
-
-
-
-	private void updateArcFromCurrentMillis() {
-		// NOTE: when the timer is started for the 1st time, the seconds become
-		// 59 and the minutes are decrease by 1, but the arc remains the same as 
-		//when the timer was set.
-		// It should be noted that the timer was set at minutes + 1. This means
-		// the arc always shows minutes + 1.
-		// To keep that logic, when the screen is turned on (after being turned
-		// off), the arc is rendered with minutes + 1.
-		if(_millisUntilFinished != 0) {
-			int minute = Clock.getMinuteFromMillisecnods(_millisUntilFinished);
-			renderArc(Clock.generateAngleFromMinute(minute + 1));
-		} else {
-			renderArc(0);
-		}
+	
+	private void resetTimer() {
+		stopCountDown();
+		_selectedMinute = 0;
+		_millisUntilFinished = 0;
+		setTimerMode(TimerMode.BASE);
 	}
 	
-	private void updateCurrentTimeDisplayInfo() {
-		int minute = Clock.getMinuteFromMillisecnods(_millisUntilFinished);
-		int sec = Clock.getSeconsFromMillisecnods(_millisUntilFinished);
+	private void updateCurrentTime(long millisUntilFinished) {
+		int minute = TimerUtils.getMinuteFromMillisecnods(millisUntilFinished);
+		int sec = TimerUtils.getSecondsFromMillisecnods(millisUntilFinished);
 
-		displayCurrentTime(minute, sec);
+		_minutesTextView.setText(((Integer)minute).toString());
+		_secondsTextView.setText(((Integer)sec).toString());
 	}
 
 	public void startCountDown() {
@@ -381,21 +401,91 @@ public class MainActivity extends ActionBarActivity {
 
 		_countDownTimer.start();
 		_isTimerStarted = true;
-
 	}
 
 	public void stopCountDown() {
 		if (_countDownTimer != null) {
 			_countDownTimer.cancel();
-			disposeCountDownTimer();
+			_countDownTimer = null;
+			
 			_isTimerStarted = false;
 		}
 	}
 
-	public void disposeCountDownTimer() {
-		_countDownTimer = null;
+	public void registerScreenReciver() {
+		final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+		filter.addAction(Intent.ACTION_SCREEN_OFF);
+		_screenReceiver = new ScreenReceiver();
+		registerReceiver(_screenReceiver, filter);
+	}
+	
+	public void setTimerMode(TimerMode mode) {
+		_timerMode = mode;
+		if(_timerMode == TimerMode.BASE) {
+			renderUIBaseMode();
+			
+			renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
+			updateCurrentTime(TimerUtils.getMillisFromMinutes(_selectedMinute));
+		
+		} else if(_timerMode == TimerMode.START_STOP) {
+			renderUIStartStopMode();
+			
+			_selectedMinute = -1;			
+			int minute = TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished);
+			renderArc(TimerUtils.generateAngleFromMinute(minute + 1));
+			updateCurrentTime(_millisUntilFinished);
+		
+		} else if(_timerMode == TimerMode.EDIT_TIME) {
+			renderUIEditMode();
+
+			int minute;
+			if(_selectedMinute >= 0) {
+				minute = _selectedMinute;
+			} else {				
+				minute = TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished);
+			}
+			
+			renderArc(TimerUtils.generateAngleFromMinute(minute));
+			updateCurrentTime(TimerUtils.getMillisFromMinutes(minute));
+		} else {
+			throw new IllegalArgumentException();
+		}
+		
+		toggleStartStopButtonState();
+		toggleTimerSignalAnimation();
 	}
 
+
+	private void restoreState(Bundle inState) {
+		_selectedMinute = inState.getInt(SELECTED_MINUTE_KEY);
+		_millisUntilFinished = inState.getLong(MILLISECNODS_UNTIL_FINISHED_KEY);
+		_isTimerStarted = inState.getBoolean(IS_TIMER_STARTED_KEY);
+		TimerMode timerMode = (TimerMode) inState.getSerializable(TIMER_MODE_KEY);
+		
+		if(_timerMode != TimerMode.BASE && _isTimerStarted) {
+			startCountDown();
+		}
+		
+		setTimerMode(timerMode);
+	}
+
+	private void toggleCountDownTimerState() {
+		if (_countDownTimer != null) {
+			if (_isTimerStarted) {
+				stopCountDown();
+			} else {
+				startCountDown();
+			}
+		} else {
+			startCountDown();
+		}
+	}
+	
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -415,16 +505,13 @@ public class MainActivity extends ActionBarActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
-	public void registerScreenReciver() {
-		final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-		filter.addAction(Intent.ACTION_SCREEN_OFF);
-		_screenReceiver = new ScreenReceiver();
-		registerReceiver(_screenReceiver, filter);
-	}
 	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
+		outState.putInt(SELECTED_MINUTE_KEY, _selectedMinute);
+		outState.putLong(MILLISECNODS_UNTIL_FINISHED_KEY, _millisUntilFinished);
+		outState.putBoolean(IS_TIMER_STARTED_KEY, _isTimerStarted);
+		outState.putSerializable(TIMER_MODE_KEY, _timerMode);
 		super.onSaveInstanceState(outState);
 	}
 }

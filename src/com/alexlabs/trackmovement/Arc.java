@@ -37,7 +37,7 @@ public class Arc extends View {
 		float radius = _context.getResources().getDimension(R.dimen.clock_dial_diameter)/2f;
 		float centerX = ((float)_content.getWidth())/2f;
 		float centerY = ((float)_content.getHeight())/2f;
-		_paint.setColor(getContext().getResources().getColor(R.color.red));
+		_paint.setColor(getContext().getResources().getColor(R.color.arcColor));
 		_paint.setStrokeWidth(5);	
 
 		// The paint object will fill its inside area.

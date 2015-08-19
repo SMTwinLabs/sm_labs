@@ -4,40 +4,33 @@ import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class Clock {
+public class TimerUtils {
 	public static final int MAX_MINUTES_ON_CLOCK = 60;
 	public static final int DEGRESS_IN_CIRCLE = 360;
 	public static final int DEGRESS_PER_MINUTE = 6;
 	public static final int PROXIMITY_TO_EVERY_FIFTH_MINUTE = 2;
 	
-	private int _minute;
-	private int _angle;
-	private View _content;
-	private Context _context; 
-	
-	public Clock(Context context, View content) {
-		_content = content;
-		_context = context;
-	}
-	
 	/**
-	 * Set the clock's minute from the X and Y coordinates of the selected point on the screen. 
-	 * @param parentEdgeLength - the length of the paren's edge. It is paramount that the parent is
-	 * quadratic in shape.
-	 * @param selectedX - the X coordinate of the selected point on the screen.
-	 * @param selectedY - the Y coordinate of the selected point on the screen.
+	 * Calculate the clock's minute from the X and Y coordinates of the selected point on the screen from
+	 * the motion event. 
+	 * @param motionEvent
+	 * @param context
+	 * @param content
+	 * @return the calculated minute
 	 */
-	public void wind(MotionEvent motionEvent) {		
+	public static int generateMinute(MotionEvent motionEvent, Context context, View content) {		
 		// Get the angle.
-		int pivotAngle = (int) Math.ceil(calculatePivotAngle(motionEvent.getX(), motionEvent.getY()));
+		int pivotAngle = (int) Math.ceil(calculatePivotAngle(motionEvent.getX(), motionEvent.getY(), context, content));
 		int selectedMinuteOnDial = (int)Math.ceil(pivotAngle/DEGRESS_PER_MINUTE);
-		if(isSelectedPointInDialBounds(motionEvent.getX(), motionEvent.getY())) {			
-			_angle = generateDialAreaBoundedAngle(selectedMinuteOnDial);
-			_minute = (int)Math.ceil(_angle/DEGRESS_PER_MINUTE);
+		int minute = 0;
+		if(isSelectedPointInDialBounds(motionEvent.getX(), motionEvent.getY(), context, content)) {			
+			int angle = generateDialAreaBoundedAngle(selectedMinuteOnDial);
+			minute = (int)Math.ceil(angle/DEGRESS_PER_MINUTE);
 		} else {
-			_angle = selectedMinuteOnDial*DEGRESS_PER_MINUTE;
-			_minute = selectedMinuteOnDial;
+			minute = selectedMinuteOnDial;
 		}
+		
+		return minute;
 	}
 	
 	/**
@@ -53,18 +46,18 @@ public class Clock {
 		return sideLenght;
 	}
 	
-	private double calculatePivotAngle(double selectedX, double selectedY) {
+	private static double calculatePivotAngle(double selectedX, double selectedY, Context context, View content) {
 		// Sides of the triangle.
 		double sideA, sideB, sideC;
 		
-		sideA = _content.getHeight()/2;
-		sideB = Clock.calculateLineLengthBetweenTwoPoints(_content.getWidth()/2, _content.getHeight()/2, selectedX, selectedY);
-		sideC = Clock.calculateLineLengthBetweenTwoPoints(_content.getWidth()/2, 0, selectedX, selectedY);	
+		sideA = content.getHeight()/2;
+		sideB = TimerUtils.calculateLineLengthBetweenTwoPoints(content.getWidth()/2, content.getHeight()/2, selectedX, selectedY);
+		sideC = TimerUtils.calculateLineLengthBetweenTwoPoints(content.getWidth()/2, 0, selectedX, selectedY);	
 		
 		double angle = Math.acos((Math.pow(sideA, 2) + Math.pow(sideB, 2) - Math.pow(sideC, 2))/(2*sideA*sideB));
 		angle = Math.toDegrees(angle);
 		
-		if(selectedX <= _content.getWidth()/2) {
+		if(selectedX <= content.getWidth()/2) {
 			angle = DEGRESS_IN_CIRCLE - angle;
 		}
 		
@@ -79,7 +72,7 @@ public class Clock {
 	 * @param minute
 	 * @return
 	 */
-	private int generateDialAreaBoundedAngle(int minute) {
+	private static int generateDialAreaBoundedAngle(int minute) {
 		int angle = 0;
 		if(minute % 5 > PROXIMITY_TO_EVERY_FIFTH_MINUTE) {
 			angle = ((minute / 5) * 5 + 5) * DEGRESS_PER_MINUTE;
@@ -93,35 +86,31 @@ public class Clock {
 		return angle;
 	}
 	
-	private boolean isSelectedPointInDialBounds(double selectedX, double selectedY) {
-		double parentCenterCoordinateY = ((double)_content.getHeight())/2;
-		double parentCenterCoordinateX = ((double)_content.getWidth())/2;
+	private static boolean isSelectedPointInDialBounds(double selectedX, double selectedY, Context context, View content) {
+		double parentCenterCoordinateY = ((double)content.getHeight())/2;
+		double parentCenterCoordinateX = ((double)content.getWidth())/2;
 		double distanceFromCentre = calculateLineLengthBetweenTwoPoints(parentCenterCoordinateX, parentCenterCoordinateY, selectedX, selectedY);
-		double clockRadius = _context.getResources().getDimension(R.dimen.clock_every_fifth_minute_area_diameter)/2f;
+		double clockRadius = context.getResources().getDimension(R.dimen.clock_every_fifth_minute_area_diameter)/2f;
 		return clockRadius >= distanceFromCentre;
-	}
-	
-	public int getMinute() {
-		return _minute;
-	}
-	
-	public int getAngle() {
-		return _angle;
 	}
 	
 	public static int generateAngleFromMinute(int minute) {
 		return minute*DEGRESS_PER_MINUTE;
 	}
 	
-	public int getMinuteInMillis(){
-		return _minute * 1000 * 60;
+	public static long convertMinutToMillis(int minute){
+		return minute * 1000 * 60;
 	}
 
-	public static int getSeconsFromMillisecnods(long millisUntilFinished) {
+	public static int getSecondsFromMillisecnods(long millisUntilFinished) {
 		return (int) millisUntilFinished / 1000 % 60;
 	}
 
 	public static int getMinuteFromMillisecnods(long millisUntilFinished) {
 		return (int) millisUntilFinished / 1000 / 60;
+	}
+
+	public static long getMillisFromMinutes(int selectedMinute) {
+		return selectedMinute * 1000 * 60;
 	}
 }

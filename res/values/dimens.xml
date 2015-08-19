@@ -1,8 +1,13 @@
 <resources>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="clock_selectable_area_width">300dp</dimen>
+    <dimen name="clock_selectable_area_height">300dp</dimen>
+    <dimen name="clock_dial_diameter">300dp</dimen>
+    
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="miuntes_text_view_size">60dp</dimen>
+    <dimen name="miuntes_container_view_size">80dp</dimen>
 </resources>

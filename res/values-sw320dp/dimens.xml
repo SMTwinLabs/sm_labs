@@ -5,6 +5,8 @@
     <dimen name="clock_dial_diameter">300dp</dimen>
     
     <dimen name="miuntes_text_view_size">120dp</dimen>
+    <dimen name="miuntes_container_view_size">150dp</dimen>
     
     <dimen name="clock_every_fifth_minute_area_diameter">234dp</dimen>
 </resources>
+
