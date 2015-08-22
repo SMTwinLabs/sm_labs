@@ -5,9 +5,12 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,6 +18,11 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -32,13 +40,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity {
-	
-	private static final String SELECTED_MINUTE_KEY = "selectedMinute";
-	private static final String MILLISECNODS_UNTIL_FINISHED_KEY = "millisecondsUntilFinished";
-	private static final String IS_TIMER_STARTED_KEY = "isTimerStarted";
-	private static final String TIMER_MODE_KEY = "timerMode";
-	
+public class MainActivity extends ActionBarActivity {	
 
 	/////////////////////////////////////////////////
 	/////////// Model
@@ -56,21 +58,92 @@ public class MainActivity extends ActionBarActivity {
 
 	private MotionEvent _motionEvent;
 
-	private CountDownTimer _countDownTimer;
-	private Ringtone _ringtone;
 	private boolean _isTimerStarted;
+	
 	private int _selectedMinute;
-
+	private int _currentMinute;
+	private int _currentSeconds;
+	
 	private ScreenReceiver _screenReceiver;
+	private int _UIMode;
+	
+	 /** Messenger for communicating with service. */
+    Messenger _countDownService;
 
-	private enum TimerMode {
-		BASE,
-		START_STOP,
-		EDIT_TIME
-	}
 
-	private TimerMode _timerMode;
-	private long _millisUntilFinished;
+    @SuppressLint("HandlerLeak") 
+    class IncomingHandler extends Handler {
+    	@Override
+    	public void handleMessage(Message msg){
+    		switch(msg.what) {
+    			
+    		case CountDownTimerService.TIMER_CURRENT_MILLIS_UNTIL_FINISHED:
+    			_currentMinute = msg.arg1;
+    			_currentSeconds = msg.arg2;
+    			if (CountDownTimerService.MODE_ACTIVE == _UIMode) {
+					updateCurrentTime(_currentMinute, _currentSeconds);
+					if(_currentSeconds == 59 || !_screenReceiver.getWasScreenOn()) {
+						renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
+					}
+				}
+    			break;
+
+    		case CountDownTimerService.MSG_GET_TIMER_INFO:
+    			Bundle info =  msg.getData();
+    			_isTimerStarted = info.getBoolean("isTimerStarted");
+    			_selectedMinute = info.getInt("selectedMinute");
+    			_currentMinute = info.getInt("currnetMinute");
+    			_currentSeconds = info.getInt("currnetSeconds");
+    			renderUIMode(info.getInt("mode"));
+    			break;
+    			
+    		default:
+    			super.handleMessage(msg);
+    		}
+    	}
+    }
+    
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    private final Messenger _clientMessenger = new Messenger(new IncomingHandler());
+    
+    private ServiceConnection _serviceConnetcion = new ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			_countDownService = null;
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			_countDownService = new Messenger(service);
+			
+            // We want to monitor the service for as long as we are
+            // connected to it.
+			Message msg = null;
+            try {
+                msg = Message.obtain(null,
+                                CountDownTimerService.MSG_REGISTER_CLIENT);
+                msg.replyTo = _clientMessenger;
+                _countDownService.send(msg);
+            } catch (RemoteException e) {
+                // In this case the service has crashed before we could even
+                // do anything with it; we can count on soon being
+                // disconnected (and then reconnected if it can be restarted)
+                // so there is no need to do anything here.
+            }
+            
+            try {
+                msg = Message.obtain(null,
+                                CountDownTimerService.MSG_GET_TIMER_INFO);
+                msg.replyTo = _clientMessenger;
+                _countDownService.send(msg);
+            } catch (RemoteException e) {
+                // TODO
+            }            
+		}
+	};
 
 	/////////////////////////////////////////////////
 	/////////// View
@@ -91,24 +164,14 @@ public class MainActivity extends ActionBarActivity {
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
 		_startStopStateButton = (Button) findViewById(R.id.start_stop_state_button);
-
-		_ringtone = RingtoneManager.getRingtone(getApplicationContext(),
-				RingtoneManager
-						.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));	
 		
 		initEditTimeButtonGroup();
-
-		if(savedInstanceState != null) {
-			restoreState(savedInstanceState);
-		} else {		
-			setTimerMode(TimerMode.BASE);
-		}
 		
 		_content.setOnTouchListener(new OnTouchListener() {
 
 			@Override
 			public boolean onTouch(View view, MotionEvent event) {
-				if (!TimerMode.START_STOP.equals(_timerMode)) {
+				if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
 					int action = event.getActionMasked();
 					_motionEvent = event;
 
@@ -146,11 +209,8 @@ public class MainActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				// Make sure that if the timer is being set for the 1st time 
 				// the milliseconds are set.
-				if (TimerMode.BASE == _timerMode) {
-					_millisUntilFinished = TimerUtils.getMillisFromMinutes(_selectedMinute);
-				}
 
-				if (_millisUntilFinished == 0) {
+				if (_selectedMinute == 0) {
 					Toast.makeText(getBaseContext(), "Please, pick a time.",
 							Toast.LENGTH_SHORT).show();
 
@@ -158,8 +218,22 @@ public class MainActivity extends ActionBarActivity {
 					return;
 				}
 
-				toggleCountDownTimerState();
-				setTimerMode(TimerMode.START_STOP);
+				if (_UIMode == CountDownTimerService.MODE_BASE){
+					setTimerState(CountDownTimerService.MSG_START_TIMER);
+					_isTimerStarted = true;
+				
+				} else if (_UIMode == CountDownTimerService.MODE_ACTIVE) {
+					if (_isTimerStarted) {
+						setTimerState(CountDownTimerService.MSG_PAUSE_TIMER);
+						
+					} else {
+						setTimerState(CountDownTimerService.MSG_UNPAUSE_TIMER);					
+					}
+					_isTimerStarted = !_isTimerStarted;
+					
+				}
+				
+				renderUIMode(CountDownTimerService.MODE_ACTIVE);
 			}
 
 		});
@@ -167,6 +241,9 @@ public class MainActivity extends ActionBarActivity {
 		// Register a broadcast receiver that saves the previous state of the
 		// screen - whether it was on or off.
 		registerScreenReciver();
+
+		startService(new Intent(this, CountDownTimerService.class));        
+        doBindToCountDownService();
 	}
 	
 	private void initEditTimeButtonGroup() {
@@ -181,7 +258,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				exitEditTimeMode(_isTimerStarted);
+				renderUIMode(CountDownTimerService.MODE_ACTIVE);
 			}
 		});
 	}
@@ -192,7 +269,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				setTimerMode(TimerMode.EDIT_TIME);
+				renderUIMode(CountDownTimerService.MODE_EDIT_TIME);
 			}
 		});
 	}
@@ -203,18 +280,11 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				_millisUntilFinished = TimerUtils.getMillisFromMinutes(_selectedMinute);
-				exitEditTimeMode(true);
+				setTimerState(CountDownTimerService.MSG_START_TIMER);
+				_isTimerStarted = true;
+				renderUIMode(CountDownTimerService.MODE_ACTIVE);
 			}
 		});
-	}
-
-	private void exitEditTimeMode(boolean shouldRestartCountdown) {
-		if (shouldRestartCountdown) {
-			stopCountDown();
-			startCountDown();
-		}
-		setTimerMode(TimerMode.START_STOP);
 	}
 
 	private void renderArc(float angle) {
@@ -239,12 +309,19 @@ public class MainActivity extends ActionBarActivity {
 			throw new IllegalArgumentException("Motion event is null.");
 
 		_selectedMinute = TimerUtils.generateMinute(_motionEvent, context, content);
-		updateCurrentTime(TimerUtils.getMillisFromMinutes(_selectedMinute));
+		updateCurrentTime(_selectedMinute, 0);
 		renderArc((float) TimerUtils.generateAngleFromMinute(_selectedMinute));
+		
+		try {
+			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void toggleStartStopButtonState() {
-		if(TimerMode.EDIT_TIME != _timerMode) {
+		if(CountDownTimerService.MODE_EDIT_TIME != _UIMode) {
 			_startStopStateButton.setText(_isTimerStarted ? "Stop" : "Start");
 		}
 	}
@@ -282,12 +359,13 @@ public class MainActivity extends ActionBarActivity {
 		_editTimeCancelChangeButton.setVisibility(View.GONE);
 	}
 	
+	// TODO - send to a new class specific to animations
 	private AnimatorSet _animator = new AnimatorSet();
 	private void toggleTimerSignalAnimation() {
 
 		View pulsatingCircle = findViewById(R.id.pulsatingCicrle);
 		View pulsatingCircleBackground = findViewById(R.id.pulsatingCicrleBackground);
-		if(_isTimerStarted && _timerMode == TimerMode.START_STOP) {
+		if(_isTimerStarted && _UIMode == CountDownTimerService.MODE_ACTIVE) {
 			pulsatingCircleBackground.setVisibility(View.VISIBLE);
 			pulsatingCircleBackground.setScaleX(0.85f);
 			pulsatingCircleBackground.setScaleY(0.85f);
@@ -339,78 +417,47 @@ public class MainActivity extends ActionBarActivity {
 			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
 		}
 	}
+	
+	private void updateCurrentTime(int minute, int seconds) {
+
+		_minutesTextView.setText(((Integer)minute).toString());
+		_secondsTextView.setText(((Integer)seconds).toString());
+	}
 
 	/////////////////////////////////////////////////
 	/////////// Controller
 	/////////////////////////////////////////////////
-
-	private void setCountDownTimer(long millis) {
-		_countDownTimer = new CountDownTimer(millis, 500) {
-
-			public void onTick(long millisUntilFinished) {
-				Log.d("ALEX_LABS", "Tick "
-						+ ((Long) (millisUntilFinished / 1000)).toString());
-				_millisUntilFinished = millisUntilFinished;				
-				
-				if (TimerMode.START_STOP == _timerMode) {
-					updateCurrentTime(_millisUntilFinished);
-					if(TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished) == 59
-							|| !_screenReceiver.getWasScreenOn()) {
-						int minute = TimerUtils.getMinuteFromMillisecnods(millisUntilFinished);
-						renderArc(TimerUtils.generateAngleFromMinute(minute + 1));
-					}
-				}
-			}
-
-			public void onFinish() {
-				// Wake the device and sound the ring tone.
-				WakeLocker localWakeLock = new WakeLocker();
-				localWakeLock.acquire(getBaseContext());
-
-				if (_ringtone != null) {
-					_ringtone.play();
-				}
-
-				// Cancel the current count down.
-				resetTimer();
-
-				localWakeLock.release();
-			}
-		};
-	}
 	
-	private void resetTimer() {
-		stopCountDown();
-		_selectedMinute = 0;
-		_millisUntilFinished = 0;
-		setTimerMode(TimerMode.BASE);
-	}
+	void doBindToCountDownService() {
+        // Establish a connection with the service. We use an explicit
+        // class name because there is no reason to be able to let other
+        // applications replace our component.
+        bindService(new Intent(MainActivity.this, CountDownTimerService.class),
+                        _serviceConnetcion, Context.BIND_AUTO_CREATE);
+        Log.d("ALEX_LABS", "binding");
+    }
 	
-	private void updateCurrentTime(long millisUntilFinished) {
-		int minute = TimerUtils.getMinuteFromMillisecnods(millisUntilFinished);
-		int sec = TimerUtils.getSecondsFromMillisecnods(millisUntilFinished);
+	void doUnbindFromCountDownService() {
 
-		_minutesTextView.setText(((Integer)minute).toString());
-		_secondsTextView.setText(((Integer)sec).toString());
-	}
+        Log.d("ALEX_LABS", "unbinding");
+        
+        // If we have received the service, and hence registered with
+        // it, then now is the time to unregister.
+        if (_countDownService != null) {
+               try {
+                    Message msg = Message.obtain(null,
+                                    CountDownTimerService.MSG_UNREGISTER_CLIENT);
+                    msg.replyTo = _clientMessenger;
+                    _countDownService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+        }
 
-	public void startCountDown() {
-		if (_countDownTimer == null) {
-			setCountDownTimer(_millisUntilFinished);
-		}
-
-		_countDownTimer.start();
-		_isTimerStarted = true;
-	}
-
-	public void stopCountDown() {
-		if (_countDownTimer != null) {
-			_countDownTimer.cancel();
-			_countDownTimer = null;
-			
-			_isTimerStarted = false;
-		}
-	}
+        // Detach our existing connection.
+        unbindService(_serviceConnetcion);
+    }
 
 	public void registerScreenReciver() {
 		final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -419,72 +466,61 @@ public class MainActivity extends ActionBarActivity {
 		registerReceiver(_screenReceiver, filter);
 	}
 	
-	public void setTimerMode(TimerMode mode) {
-		_timerMode = mode;
-		if(_timerMode == TimerMode.BASE) {
+	public void renderUIMode(int mode) {
+		_UIMode = mode;
+		if(_UIMode == CountDownTimerService.MODE_BASE) {
 			renderUIBaseMode();
 			
 			renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
-			updateCurrentTime(TimerUtils.getMillisFromMinutes(_selectedMinute));
+			updateCurrentTime(_selectedMinute, 0);
 		
-		} else if(_timerMode == TimerMode.START_STOP) {
+		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {
 			renderUIStartStopMode();
 			
 			_selectedMinute = -1;			
-			int minute = TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished);
-			renderArc(TimerUtils.generateAngleFromMinute(minute + 1));
-			updateCurrentTime(_millisUntilFinished);
+			renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
+			updateCurrentTime(_currentMinute, _currentSeconds);
+			
+			try {
+				_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
+			} catch (RemoteException e) {
+				// TODO: handle exception
+			}
 		
-		} else if(_timerMode == TimerMode.EDIT_TIME) {
+		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
 			renderUIEditMode();
 
 			int minute;
 			if(_selectedMinute >= 0) {
 				minute = _selectedMinute;
 			} else {				
-				minute = TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished);
+				minute = _currentMinute;
 			}
 			
 			renderArc(TimerUtils.generateAngleFromMinute(minute));
-			updateCurrentTime(TimerUtils.getMillisFromMinutes(minute));
+			updateCurrentTime(minute, 0);
 		} else {
 			throw new IllegalArgumentException();
 		}
 		
 		toggleStartStopButtonState();
 		toggleTimerSignalAnimation();
-	}
-
-
-	private void restoreState(Bundle inState) {
-		_selectedMinute = inState.getInt(SELECTED_MINUTE_KEY);
-		_millisUntilFinished = inState.getLong(MILLISECNODS_UNTIL_FINISHED_KEY);
-		_isTimerStarted = inState.getBoolean(IS_TIMER_STARTED_KEY);
-		TimerMode timerMode = (TimerMode) inState.getSerializable(TIMER_MODE_KEY);
 		
-		if(_timerMode != TimerMode.BASE && _isTimerStarted) {
-			startCountDown();
-		}
-		
-		setTimerMode(timerMode);
-	}
-
-	private void toggleCountDownTimerState() {
-		if (_countDownTimer != null) {
-			if (_isTimerStarted) {
-				stopCountDown();
-			} else {
-				startCountDown();
-			}
-		} else {
-			startCountDown();
+		try {
+			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_MODE, mode, 0));
+		} catch (RemoteException e) {
+			// TODO: handle exception
 		}
 	}
 	
-	
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
+	private void setTimerState(int state) {
+//		_isTimerStarted = state == CountDownTimerService.MSG_PAUSE_TIMER ? false : true;
+		
+		try {
+			_countDownService.send(Message.obtain(null, state, 0, 0));
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+		}
 	}
 	
 	@Override
@@ -507,11 +543,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		outState.putInt(SELECTED_MINUTE_KEY, _selectedMinute);
-		outState.putLong(MILLISECNODS_UNTIL_FINISHED_KEY, _millisUntilFinished);
-		outState.putBoolean(IS_TIMER_STARTED_KEY, _isTimerStarted);
-		outState.putSerializable(TIMER_MODE_KEY, _timerMode);
-		super.onSaveInstanceState(outState);
+	protected void onDestroy() {
+		doUnbindFromCountDownService();
+		super.onDestroy();
 	}
 }
