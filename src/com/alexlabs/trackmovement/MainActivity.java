@@ -11,13 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -31,11 +25,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,7 +69,7 @@ public class MainActivity extends ActionBarActivity {
     	public void handleMessage(Message msg){
     		switch(msg.what) {
     			
-    		case CountDownTimerService.TIMER_CURRENT_MILLIS_UNTIL_FINISHED:
+    		case CountDownTimerService.SEND_CURRENT_MILLIS_UNTIL_FINISHED:
     			_currentMinute = msg.arg1;
     			_currentSeconds = msg.arg2;
     			if (CountDownTimerService.MODE_ACTIVE == _UIMode) {
@@ -89,18 +81,23 @@ public class MainActivity extends ActionBarActivity {
     			break;
 
     		case CountDownTimerService.MSG_GET_TIMER_INFO:
-    			Bundle info =  msg.getData();
-    			_isTimerStarted = info.getBoolean("isTimerStarted");
-    			_selectedMinute = info.getInt("selectedMinute");
-    			_currentMinute = info.getInt("currnetMinute");
-    			_currentSeconds = info.getInt("currnetSeconds");
-    			renderUIMode(info.getInt("mode"));
+    			if(msg.getData() != null) {
+	    			extractDataFromBundle(msg.getData());
+    			}
     			break;
     			
     		default:
     			super.handleMessage(msg);
     		}
     	}
+
+		private void extractDataFromBundle(Bundle info) {
+			_isTimerStarted = info.getBoolean(CountDownTimerService.IS_TIMER_STARTED);
+			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
+			_currentMinute = info.getInt(CountDownTimerService.CURRENT_MINUTE);
+			_currentSeconds = info.getInt(CountDownTimerService.CURRENT_SECONDS);
+			renderUIMode(info.getInt(CountDownTimerService.MODE));
+		}
     }
     
     /**
@@ -419,7 +416,6 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	private void updateCurrentTime(int minute, int seconds) {
-
 		_minutesTextView.setText(((Integer)minute).toString());
 		_secondsTextView.setText(((Integer)seconds).toString());
 	}
@@ -513,11 +509,9 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 	
-	private void setTimerState(int state) {
-//		_isTimerStarted = state == CountDownTimerService.MSG_PAUSE_TIMER ? false : true;
-		
+	private void setTimerState(int state) {		
 		try {
-			_countDownService.send(Message.obtain(null, state, 0, 0));
+			_countDownService.send(Message.obtain(null, state));
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 		}

@@ -1,6 +1,8 @@
 package com.alexlabs.trackmovement;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -11,12 +13,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.RemoteException;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 public class CountDownTimerService extends Service{
+	
+	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
 	// common
 	static final int MSG_REGISTER_CLIENT = 0;
@@ -41,14 +44,23 @@ public class CountDownTimerService extends Service{
 	static final int TIMER_STATE_STOPPED = 22;
 	static final int TIMER_STATE_FINISHED = 23;
 	
-	static final int TIMER_CURRENT_MILLIS_UNTIL_FINISHED = 30;
+	static final int SEND_CURRENT_MILLIS_UNTIL_FINISHED = 30;
 	
+	// Bundle constants
+	static final String MODE = "mode";
+	static final String CURRENT_SECONDS = "currentSeconds";
+	static final String CURRENT_MINUTE = "currentMinute";
+	static final String SELECTED_MINUTE = "selectedMinute";
+	static final String IS_TIMER_STARTED = "isTimerStarted";
+	
+	// Timer related
 	private int _timerState = TIMER_STATE_NONE;
 	private int _mode = MODE_BASE;
 	
 	private int _selectedMinute;
 	private long _millisUntilFinished;
 	
+	// Service related
 	private Messenger _remoteClientMessenger;
 	private CountDownTimer _countDownTimer;
 	
@@ -56,10 +68,12 @@ public class CountDownTimerService extends Service{
     * Target we publish for clients to send messages to IncomingHandler.
     */
 	final Messenger _serviceMessenger = new Messenger(new IncomingHandler());
+
+	
 	
 	@SuppressLint("HandlerLeak") 
 	class IncomingHandler extends Handler {
-		
+
 		@Override
 		public void handleMessage(Message msg) {
 			if(android.os.Debug.isDebuggerConnected())
@@ -85,7 +99,7 @@ public class CountDownTimerService extends Service{
 				break;
 				
 			case MSG_START_TIMER:
-				_millisUntilFinished = _selectedMinute*1000*60;
+				_millisUntilFinished = TimerUtils.convertMinuteToMillis(_selectedMinute);
 				Log.d("ALEX_LABS", "" + _millisUntilFinished);
 				startCountDown();	
 				break;
@@ -102,14 +116,8 @@ public class CountDownTimerService extends Service{
 				if(_remoteClientMessenger != null){
 					try {
 						// get everything
-						Bundle data = new Bundle();
-						data.putInt("mode", _mode);
-						data.putBoolean("isTimerStarted", _timerState == TIMER_STATE_STARTED);
-						data.putInt("selectedMinute", _selectedMinute);
-						data.putInt("currnetMinute", TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
-						data.putInt("currnetSeconds", TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));
 						Message infoMsg = Message.obtain(null, MSG_GET_TIMER_INFO);
-						infoMsg.setData(data);
+						infoMsg.setData(getDataInBundle());
 						_remoteClientMessenger.send(infoMsg);
 					} catch (RemoteException e) {
 						// TODO: handle exception
@@ -120,6 +128,16 @@ public class CountDownTimerService extends Service{
 			default:
 				super.handleMessage(msg);
 			}
+		}
+
+		private Bundle getDataInBundle() {
+			Bundle data = new Bundle();
+			data.putInt(MODE, _mode);
+			data.putBoolean(IS_TIMER_STARTED, _timerState == TIMER_STATE_STARTED);
+			data.putInt(SELECTED_MINUTE, _selectedMinute);
+			data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
+			data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));
+			return data;
 		}
 	}	
 	
@@ -132,6 +150,8 @@ public class CountDownTimerService extends Service{
 
 		_countDownTimer.start();
 		_timerState = TIMER_STATE_STARTED;
+		
+		sendNotification("Timer has been started.");
 	}
 	
 	public void stopCountDown() {
@@ -140,7 +160,34 @@ public class CountDownTimerService extends Service{
 			_countDownTimer = null;
 
 			_timerState = TIMER_STATE_STOPPED;	
+			sendNotification("Timer has been stopped.");
 		}
+	}
+	
+	private void sendNotification(String text) {
+		// Create the Notification.Builder.
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext())
+			.setSmallIcon(R.drawable.ic_launcher)
+			.setContentText(text)
+			.setContentTitle("One-touch kitchen timer");
+		
+		// Create intent.
+		// NOTE: to avoid opening a new instance of the MainActivity every time the notification
+		// is clicked, set android:launchMode="singleTop" to the activity in the manifest.
+		Intent notificationIntent = new Intent(this, MainActivity.class);
+		
+		// Create pending intent to take us to the app after the notification is clicked.
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		notificationBuilder.setContentIntent(pendingIntent);
+		
+		// Set the text in the notification bar too.
+		notificationBuilder.setTicker(text);
+		
+		// Build the notification.
+		Notification notification = notificationBuilder.build();		
+		
+		// Start the notification in the foreground.
+		startForeground(ONGOING_NOTIFICATION_ID, notification);
 	}
 
 	private void initCountDownTimer() {
@@ -152,7 +199,7 @@ public class CountDownTimerService extends Service{
 				Log.d("ALEX_LABS", "" + _millisUntilFinished);
 				if(_remoteClientMessenger != null)  {
 					try {
-						_remoteClientMessenger.send(Message.obtain(null, TIMER_CURRENT_MILLIS_UNTIL_FINISHED,
+						_remoteClientMessenger.send(Message.obtain(null, SEND_CURRENT_MILLIS_UNTIL_FINISHED,
 								TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished),
 								TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished)));
 					} catch (RemoteException e) {
@@ -171,7 +218,7 @@ public class CountDownTimerService extends Service{
 				WakeLocker localWakeLock = new WakeLocker();
 				localWakeLock.acquire(getBaseContext());
 
-				Ringtone ringtone  = RingtoneManager.getRingtone(getApplicationContext(),
+				Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(),
 							RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));	
 				
 				if(ringtone != null)
@@ -185,6 +232,8 @@ public class CountDownTimerService extends Service{
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 				}
+				
+				sendNotification("Timer has finished.");
 
 				localWakeLock.release();
 			}

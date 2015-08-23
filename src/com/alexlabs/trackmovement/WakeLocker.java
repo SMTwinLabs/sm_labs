@@ -8,7 +8,7 @@ public class WakeLocker {
 	private static final String APP_TAG = "com.alexlabs.trackmovement.Main";
 
 	public WakeLocker() {
-
+		// empty
 	}
 
 	public void acquire(Context ctx) {

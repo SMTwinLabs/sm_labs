@@ -98,7 +98,7 @@ public class TimerUtils {
 		return minute*DEGRESS_PER_MINUTE;
 	}
 	
-	public static long convertMinutToMillis(int minute){
+	public static long convertMinuteToMillis(int minute){
 		return minute * 1000 * 60;
 	}
 
