@@ -28,9 +28,9 @@ public class CountDownTimerService extends Service{
 	static final int MSG_START_TIMER = 3;
 	static final int MSG_PAUSE_TIMER = 4;
 	static final int MSG_UNPAUSE_TIMER = 5;
-	static final int MSG_SET_SELECTED_MINUTE = 6;
-	
+	static final int MSG_SET_SELECTED_MINUTE = 6;	
 	static final int MSG_GET_TIMER_INFO = 7;
+	static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
 	
 	
 	// modes
@@ -121,6 +121,20 @@ public class CountDownTimerService extends Service{
 						_remoteClientMessenger.send(infoMsg);
 					} catch (RemoteException e) {
 						// TODO: handle exception
+					}
+				}
+				break;
+			
+			case MSG_CHECK_MODE_ON_SCREEN_TOGGLE:
+				// NOTE: the application is not destroyed when the screen is turned off. Therefore,
+				// it is safe to send a message to update the UI of the app.
+				if(_mode == MODE_EDIT_TIME) {
+					_mode = MODE_ACTIVE;
+					
+					try {
+						_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
 					}
 				}
 				break;

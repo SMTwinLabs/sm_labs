@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -138,7 +139,7 @@ public class MainActivity extends ActionBarActivity {
                 _countDownService.send(msg);
             } catch (RemoteException e) {
                 // TODO
-            }            
+            }
 		}
 	};
 
@@ -291,7 +292,8 @@ public class MainActivity extends ActionBarActivity {
 		_content.removeView(_content.findViewById(ARC_ID_KEY));
 
 		// Create the new arc from the new angle that has been selected.
-		Arc arc = new Arc(getBaseContext(), _content, angle);
+		Arc arc = new Arc(getBaseContext(), _content, angle, 
+				(_UIMode == CountDownTimerService.MODE_ACTIVE ? R.color.timer_active_color : R.color.timer_select_time_color));
 
 		// Set the arc view's id.
 		arc.setId(ARC_ID_KEY);
@@ -423,18 +425,18 @@ public class MainActivity extends ActionBarActivity {
 	/////////////////////////////////////////////////
 	/////////// Controller
 	/////////////////////////////////////////////////
-	
+
 	void doBindToCountDownService() {
+        Log.d("ALEX_LABS", "binding");
+
         // Establish a connection with the service. We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
         bindService(new Intent(MainActivity.this, CountDownTimerService.class),
                         _serviceConnetcion, Context.BIND_AUTO_CREATE);
-        Log.d("ALEX_LABS", "binding");
     }
 	
 	void doUnbindFromCountDownService() {
-
         Log.d("ALEX_LABS", "unbinding");
         
         // If we have received the service, and hence registered with
@@ -502,6 +504,10 @@ public class MainActivity extends ActionBarActivity {
 		toggleStartStopButtonState();
 		toggleTimerSignalAnimation();
 		
+		setUIMode(mode);
+	}
+
+	private void setUIMode(int mode) {
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_MODE, mode, 0));
 		} catch (RemoteException e) {
@@ -538,7 +544,12 @@ public class MainActivity extends ActionBarActivity {
 	
 	@Override
 	protected void onDestroy() {
+		if(isFinishing()  && _UIMode == CountDownTimerService.MODE_EDIT_TIME) {
+			setUIMode(CountDownTimerService.MODE_ACTIVE);
+		}
+		
 		doUnbindFromCountDownService();
+		
 		super.onDestroy();
 	}
 }

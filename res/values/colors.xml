@@ -2,7 +2,9 @@
 <resources>
     <color name="minutesColor">#09b5c3</color>
     <!-- #74d600 -->
-    <color name="arcColor">#8ae429</color>
+    <color name="timer_active_color">#8ae429</color>
+    <color name="timer_select_time_color">#FF0000</color>
+    
 	 <color name="white">#FFFFFF</color>
 	 <color name="yellow">#FFFF00</color>
 	 <color name="fuchsia">#FF00FF</color>
