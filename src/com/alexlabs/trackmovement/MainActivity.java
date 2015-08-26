@@ -1,10 +1,5 @@
 package com.alexlabs.trackmovement;
 
-import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,7 +22,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -75,7 +69,7 @@ public class MainActivity extends ActionBarActivity {
     			_currentSeconds = msg.arg2;
     			if (CountDownTimerService.MODE_ACTIVE == _UIMode) {
 					updateCurrentTime(_currentMinute, _currentSeconds);
-					if(_currentSeconds == 59 || !_screenReceiver.getWasScreenOn()) {
+					if(_currentSeconds == 59) {
 						renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
 					}
 				}
@@ -227,8 +221,8 @@ public class MainActivity extends ActionBarActivity {
 					} else {
 						setTimerState(CountDownTimerService.MSG_UNPAUSE_TIMER);					
 					}
-					_isTimerStarted = !_isTimerStarted;
 					
+					_isTimerStarted = !_isTimerStarted;
 				}
 				
 				renderUIMode(CountDownTimerService.MODE_ACTIVE);
@@ -358,65 +352,6 @@ public class MainActivity extends ActionBarActivity {
 		_editTimeCancelChangeButton.setVisibility(View.GONE);
 	}
 	
-	// TODO - send to a new class specific to animations
-	private AnimatorSet _animator = new AnimatorSet();
-	private void toggleTimerSignalAnimation() {
-
-		View pulsatingCircle = findViewById(R.id.pulsatingCicrle);
-		View pulsatingCircleBackground = findViewById(R.id.pulsatingCicrleBackground);
-		if(_isTimerStarted && _UIMode == CountDownTimerService.MODE_ACTIVE) {
-			pulsatingCircleBackground.setVisibility(View.VISIBLE);
-			pulsatingCircleBackground.setScaleX(0.85f);
-			pulsatingCircleBackground.setScaleY(0.85f);
-			
-			pulsatingCircle.setVisibility(View.VISIBLE);
-			ObjectAnimator animatorScaleXInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 0.8f, 1.2f);//.setDuration(500); 
-			ObjectAnimator animatorScaleYInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 0.8f, 1.2f);//.setDuration(500); 
-			ObjectAnimator animatorScaleXDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 1.2f, 0.8f);//.setDuration(500); 
-			ObjectAnimator animatorScaleYDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 1.2f, 0.8f);//.setDuration(500);
-			ValueAnimator fadeAnim = ObjectAnimator.ofFloat(pulsatingCircle, "alpha", 1f, 0.7f);
-			_animator.play(fadeAnim).with(animatorScaleXInc);
-			_animator.play(animatorScaleXInc).with(animatorScaleYInc);
-			_animator.play(animatorScaleXDec).with(animatorScaleYDec);
-			_animator.play(animatorScaleXInc).before(animatorScaleXDec);
-			_animator.setInterpolator(new AccelerateDecelerateInterpolator());
-			_animator.setDuration(500);
-			_animator.addListener(new AnimatorListener() {
-				
-				@Override
-				public void onAnimationStart(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onAnimationRepeat(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					animation.start();
-				}
-				
-				@Override
-				public void onAnimationCancel(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
-			});
-			_animator.start();
-		} else {
-			if(_animator != null) {
-				_animator.cancel();
-			}
-			
-			pulsatingCircle.setVisibility(View.INVISIBLE);
-			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
-		}
-	}
-	
 	private void updateCurrentTime(int minute, int seconds) {
 		_minutesTextView.setText(((Integer)minute).toString());
 		_secondsTextView.setText(((Integer)seconds).toString());
@@ -502,7 +437,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 		
 		toggleStartStopButtonState();
-		toggleTimerSignalAnimation();
+		AnimationUtils.toggleTimerSignalAnimation(this, _UIMode, _isTimerStarted);
 		
 		setUIMode(mode);
 	}
