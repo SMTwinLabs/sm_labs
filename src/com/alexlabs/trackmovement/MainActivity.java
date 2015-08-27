@@ -16,6 +16,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -508,9 +509,28 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	@Override
-	protected void onDestroy() {
+	protected void onUserLeaveHint()
+	{
+	    super.onUserLeaveHint();
+		// If the timer is running and the user has exited the application themself,
+		// show toast that the timer is active.
+		if(_isTimerStarted){
+			UIUtils.showToast(this, R.string.timer_still_running);
+		}
+	}
+	
+	@Override
+	protected void onDestroy() {	
+		
+		// NOTE: when exiting the application, the UI mode is set to active.
 		if(isFinishing()  && _UIMode == CountDownTimerService.MODE_EDIT_TIME) {
 			setUIMode(CountDownTimerService.MODE_ACTIVE);
+		}
+
+		// If the timer is running and the user has exited the application themself,
+		// show toast that the timer is active.
+		if(isFinishing() && _isTimerStarted){
+			UIUtils.showToast(this, R.string.timer_still_running);
 		}
 		
 		doUnbindFromCountDownService();

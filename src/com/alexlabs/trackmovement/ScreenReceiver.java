@@ -11,15 +11,18 @@ import android.util.Log;
 
 public class ScreenReceiver extends BroadcastReceiver {
 
+    final String SYSTEM_DIALOG_REASON_KEY = "reason";
+    
 	private static boolean _isScreenOn = true;
 
 	@Override
 	public void onReceive(final Context context, final Intent intent) {	
 		if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-			// do whatever you need to do here
+			// screen is turned on
 			_isScreenOn = false;
-		} else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-			// and do whatever you need to do here
+		
+		} else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {			
+			// screen is turned off
 			_isScreenOn = true;
 		}
 

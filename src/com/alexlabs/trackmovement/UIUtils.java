@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class UIUtils {
 
@@ -15,5 +16,9 @@ public class UIUtils {
 			return true;
 		
 		return false;
+	}
+	
+	public static void showToast(Context context, int textResId) {
+		Toast.makeText(context, context.getString(textResId), Toast.LENGTH_SHORT).show();
 	}
 }
