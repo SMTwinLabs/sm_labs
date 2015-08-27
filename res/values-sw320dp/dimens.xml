@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="clock_selectable_area_width">320dp</dimen>
-    <dimen name="clock_selectable_area_height">440dp</dimen>
     <dimen name="clock_dial_diameter">300dp</dimen>
     
     <dimen name="miuntes_text_view_size">120dp</dimen>
