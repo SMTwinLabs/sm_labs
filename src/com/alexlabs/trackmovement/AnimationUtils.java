@@ -6,14 +6,19 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.Context;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 
 public class AnimationUtils {
 
-	public static void toggleTimerSignalAnimation(Activity activity, int _UIMode, boolean _isTimerStarted) {
 	
-		AnimatorSet animator = new AnimatorSet();
+	static AnimatorSet animator = new AnimatorSet();
+	public static void toggleTimerSignalAnimation(Activity activity, int _UIMode, boolean _isTimerStarted) {
 	
 		View pulsatingCircle = activity.findViewById(R.id.pulsatingCicrle);
 		View pulsatingCircleBackground = activity.findViewById(R.id.pulsatingCicrleBackground);
@@ -40,16 +45,10 @@ public class AnimationUtils {
 			animator.addListener(new AnimatorListener() {
 				
 				@Override
-				public void onAnimationStart(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
+				public void onAnimationStart(Animator animation) {}
 				
 				@Override
-				public void onAnimationRepeat(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
+				public void onAnimationRepeat(Animator animation) {}
 				
 				@Override
 				public void onAnimationEnd(Animator animation) {
@@ -57,10 +56,7 @@ public class AnimationUtils {
 				}
 				
 				@Override
-				public void onAnimationCancel(Animator animation) {
-					// TODO Auto-generated method stub
-					
-				}
+				public void onAnimationCancel(Animator animation) {}
 			});
 			animator.start();
 		} else {
@@ -72,5 +68,35 @@ public class AnimationUtils {
 			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
 		}
 	}
-
+	
+	public static void slideButtonBar(final View buttonBarLayout, Activity activity, final Runnable r){
+		int start;
+		int end;
+		
+		if(UIUtils.isLandscape(activity)) {
+			start = R.anim.anim_slide_left;
+			end = R.anim.anim_slide_right;
+		} else {
+			start = R.anim.anim_slide_down;
+			end = R.anim.anim_slide_up;
+		}
+		
+		Animation slideDown = android.view.animation.AnimationUtils.loadAnimation(activity, start);
+		final Animation slideUp = android.view.animation.AnimationUtils.loadAnimation(activity, end);
+		slideDown.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				r.run();
+				buttonBarLayout.startAnimation(slideUp);
+			}
+		});
+		buttonBarLayout.startAnimation(slideDown);
+	}
 }

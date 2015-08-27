@@ -99,36 +99,35 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 		android:layout_gravity="center_horizontal"
-		android:gravity="center_horizontal"
-		android:orientation="horizontal">
+		android:gravity="center"
+		android:orientation="horizontal"
+		android:background="@color/minutesColor">
+        
 	   	<Button android:id="@+id/start_stop_state_button"
-	        android:layout_width="80dp"
-	        android:layout_height="80dp"
-	        android:background="@drawable/circle_minutes"
-	        android:layout_marginRight="10dp"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@null"
 	        android:text="Start"/>
 	    
 	    <Button android:id="@+id/edit_time_button"
-	        android:layout_width="80dp"
-	        android:layout_height="80dp"
-	        android:background="@drawable/circle_minutes"
-	        android:layout_marginRight="10dp"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="10dp"
+	        android:background="@null"
 	        android:text="Edit"/>
 	    
-	    <Button android:id="@+id/edit_time_accept_change_button"
-	        android:layout_width="80dp"
-	        android:layout_height="80dp"
-	        android:background="@drawable/circle_minutes"
-	        android:layout_marginRight="10dp"
-	        android:text="Accept"/>
-	    
 	    <Button android:id="@+id/edit_time_cancel_change_button"
-	        android:layout_width="80dp"
-	        android:layout_height="80dp"
-	        android:background="@drawable/circle_minutes"
-	        android:layout_marginRight="10dp"
-	        android:text="Cancel"/>
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:background="@null"
+	        android:text="Cancel"/>    
 	    
+	    <Button android:id="@+id/edit_time_accept_change_button"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="10dp"
+	        android:background="@null"
+	        android:text="Accept"/>
     
     </LinearLayout>
 

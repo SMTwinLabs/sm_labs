@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
+import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -52,7 +53,7 @@ public class MainActivity extends ActionBarActivity {
 	private int _currentSeconds;
 	
 	private ScreenReceiver _screenReceiver;
-	private int _UIMode;
+	private int _UIMode = CountDownTimerService.MODE_BASE;
 	
 	 /** Messenger for communicating with service. */
     Messenger _countDownService;
@@ -151,13 +152,15 @@ public class MainActivity extends ActionBarActivity {
 
 		getSupportActionBar().hide();
 
-
 		_content = (RelativeLayout) findViewById(R.id.content);
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
 		_startStopStateButton = (Button) findViewById(R.id.start_stop_state_button);
 		
 		initEditTimeButtonGroup();
+		
+		View buttonBar = findViewById(R.id.buttonArea);
+		buttonBar.setY(0);
 		
 		_content.setOnTouchListener(new OnTouchListener() {
 
@@ -325,16 +328,16 @@ public class MainActivity extends ActionBarActivity {
 		_editTimeCancelChangeButton.setVisibility(View.VISIBLE);
 		
 		////////////////////////// INVISIBLE ////////////////////////////
-		_secondsTextView.setVisibility(View.GONE);
 		_editTimeButton.setVisibility(View.GONE);		
 		_startStopStateButton.setVisibility(View.GONE);
 	}
 
 	private void renderUIStartStopMode() {
+		toggleStartStopButtonState();
+		
 		////////////////////////// VISIBLE //////////////////////////////
 		_startStopStateButton.setVisibility(View.VISIBLE);
 		_editTimeButton.setVisibility(View.VISIBLE);
-		_secondsTextView.setVisibility(View.VISIBLE);
 		
 		////////////////////////// INVISIBLE ////////////////////////////
 		_editTimeAcceptChangeButton.setVisibility(View.GONE);
@@ -346,8 +349,7 @@ public class MainActivity extends ActionBarActivity {
 		_startStopStateButton.setVisibility(View.VISIBLE);
 		
 		////////////////////////// INVISIBLE ////////////////////////////
-		_editTimeButton.setVisibility(View.GONE);			
-		_secondsTextView.setVisibility(View.GONE);
+		_editTimeButton.setVisibility(View.GONE);
 		_editTimeAcceptChangeButton.setVisibility(View.GONE);
 		_editTimeCancelChangeButton.setVisibility(View.GONE);
 	}
@@ -399,21 +401,20 @@ public class MainActivity extends ActionBarActivity {
 		registerReceiver(_screenReceiver, filter);
 	}
 	
-	public void renderUIMode(int mode) {
-		_UIMode = mode;
-		if(_UIMode == CountDownTimerService.MODE_BASE) {
-			renderUIBaseMode();
-			
+	public void renderUIMode(int newMode) {
+		int priviousMode = _UIMode;
+		_UIMode = newMode;
+		if(_UIMode == CountDownTimerService.MODE_BASE) {			
 			renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
 			updateCurrentTime(_selectedMinute, 0);
-		
-		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {
-			renderUIStartStopMode();
-			
+
+			_secondsTextView.setVisibility(View.GONE);
+		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {			
 			_selectedMinute = -1;			
 			renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
 			updateCurrentTime(_currentMinute, _currentSeconds);
-			
+
+			_secondsTextView.setVisibility(View.VISIBLE);
 			try {
 				_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
 			} catch (RemoteException e) {
@@ -421,8 +422,6 @@ public class MainActivity extends ActionBarActivity {
 			}
 		
 		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
-			renderUIEditMode();
-
 			int minute;
 			if(_selectedMinute >= 0) {
 				minute = _selectedMinute;
@@ -431,17 +430,48 @@ public class MainActivity extends ActionBarActivity {
 			}
 			
 			renderArc(TimerUtils.generateAngleFromMinute(minute));
-			updateCurrentTime(minute, 0);
+			updateCurrentTime(minute, 0);			
+
+			_secondsTextView.setVisibility(View.GONE);
 		} else {
 			throw new IllegalArgumentException();
 		}
 		
-		toggleStartStopButtonState();
 		AnimationUtils.toggleTimerSignalAnimation(this, _UIMode, _isTimerStarted);
 		
-		setUIMode(mode);
+		// If the mode changed - animate the button bar transition.
+		if(_UIMode != priviousMode) {
+			renderButtonBar();
+		} else {
+			updateButtonBar();
+		}		
+		
+		setUIMode(newMode);
 	}
 
+	private void renderButtonBar() {
+		Runnable r = new Runnable() {			
+			@Override
+			public void run() {
+				updateButtonBar();
+			}			
+		};
+		
+		AnimationUtils.slideButtonBar(findViewById(R.id.buttonArea), this, r);
+	}
+
+	private void updateButtonBar() {
+		if(_UIMode == CountDownTimerService.MODE_BASE) {
+			renderUIBaseMode();
+		
+		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {
+			renderUIStartStopMode();
+		
+		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
+			renderUIEditMode();
+		};
+	}
+	
 	private void setUIMode(int mode) {
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_MODE, mode, 0));
