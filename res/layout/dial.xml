@@ -37,16 +37,16 @@
             	/>
 	         
             <View android:id="@+id/pulsatingCicrleBackground"
-	            android:layout_width="@dimen/miuntes_text_view_size"
-	            android:layout_height="@dimen/miuntes_text_view_size"
+	            android:layout_width="102dp"
+	            android:layout_height="102dp"
 	            android:background="@drawable/circle_minutes_red"
 	            android:layout_gravity="center"
             	/>
             
-            <View android:id="@+id/pulsatingCicrle"
-	            android:layout_width="@dimen/miuntes_text_view_size"
-	            android:layout_height="@dimen/miuntes_text_view_size"
-	            android:background="@drawable/circle_minutes_red"
+            <ImageView android:id="@+id/pulsatingCicrle"
+	            android:layout_width="142dp"
+	            android:layout_height="142dp"
+	            android:src="@drawable/pulsation"
 	            android:layout_gravity="center"
             	/>
             

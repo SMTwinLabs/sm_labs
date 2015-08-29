@@ -406,97 +406,100 @@ public class MainActivity extends ActionBarActivity {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
 		if(_UIMode == CountDownTimerService.MODE_BASE) {			
-			renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
-			updateCurrentTime(_selectedMinute, 0);
-
-			_secondsTextView.setVisibility(View.GONE);
-			
-			if(_selectedMinute == 0){
-				Animation anim = AnimationUtils.slideHide(_buttonBar, this);
-				anim.setAnimationListener(new AnimationListener() {
-					
-					@Override
-					public void onAnimationStart(Animation animation) {}
-					
-					@Override
-					public void onAnimationRepeat(Animation animation) {}
-					
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						_buttonBar.setVisibility(View.INVISIBLE);
-					}
-				});
-				_buttonBar.setAnimation(anim);
-				
-				_minutesTextView.setVisibility(View.GONE);
-				
-				_currentModeTextView.setVisibility(View.VISIBLE);
-				_currentModeTextView.setText(R.string.set_time);
-			} else {
-				if(_buttonBar.getVisibility() == View.INVISIBLE) {
-					_buttonBar.setVisibility(View.VISIBLE);
-					_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
-				}
-				
-				_minutesTextView.setVisibility(View.VISIBLE);
-				
-				_currentModeTextView.setVisibility(View.GONE);
-			}
+			renderUIBaseMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {			
-			_selectedMinute = -1;			
-			renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
-			updateCurrentTime(_currentMinute, _currentSeconds);
-
-			_secondsTextView.setVisibility(View.VISIBLE);			
-			_currentModeTextView.setVisibility(View.GONE);
-			
-			try {
-				_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
-			} catch (RemoteException e) {
-				// TODO: handle exception
-			}
+			renderUIActivrMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
-			int minute;
-			if(_selectedMinute >= 0) {
-				minute = _selectedMinute;
-			} else {				
-				minute = _currentMinute;
-			}
+			renderUIEditMode();
 			
-			renderArc(TimerUtils.generateAngleFromMinute(minute));
-			updateCurrentTime(minute, 0);			
-
-			_secondsTextView.setVisibility(View.GONE);			
-			_currentModeTextView.setVisibility(View.GONE);
 		} else {
 			throw new IllegalArgumentException();
 		}
 		
-		AnimationUtils.toggleTimerSignalAnimation(this, _UIMode, _isTimerStarted);
+		// TODO: fix anmitaion problems
+		AnimationUtils.toggleTimerSignalAnimation(this, _UIMode, _isTimerStarted, 0, 0);
 		
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {
-			renderButtonBarAnimation();		
+			AnimationUtils.slideButtonBar(_buttonBar, this);	
 			setUIMode(newMode);
 		} else {
 			updateButtonBar();
 		}		
 	}
 
-	private void renderButtonBarAnimation() {
-		Runnable r = new Runnable() {			
-			@Override
-			public void run() {
-				updateButtonBar();
-			}			
-		};
+	private void renderUIEditMode() {
+		int minute;
+		if(_selectedMinute >= 0) {
+			minute = _selectedMinute;
+		} else {				
+			minute = _currentMinute;
+		}
 		
-		AnimationUtils.slideButtonBar(_buttonBar, this, r);
+		renderArc(TimerUtils.generateAngleFromMinute(minute));
+		updateCurrentTime(minute, 0);			
+
+		_secondsTextView.setVisibility(View.GONE);
+		_currentModeTextView.setVisibility(View.GONE);
 	}
 
-	private void updateButtonBar() {
+	private void renderUIActivrMode() {
+		_selectedMinute = -1;			
+		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
+		updateCurrentTime(_currentMinute, _currentSeconds);
+
+		_secondsTextView.setVisibility(View.VISIBLE);			
+		_currentModeTextView.setVisibility(View.GONE);
+		
+		try {
+			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
+		} catch (RemoteException e) {
+			// TODO: handle exception
+		}
+	}
+
+	private void renderUIBaseMode() {
+		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
+		updateCurrentTime(_selectedMinute, 0);
+
+		_secondsTextView.setVisibility(View.GONE);
+		
+		if(_selectedMinute == 0){
+			Animation anim = AnimationUtils.slideHide(_buttonBar, this);
+			anim.setAnimationListener(new AnimationListener() {
+				
+				@Override
+				public void onAnimationStart(Animation animation) {}
+				
+				@Override
+				public void onAnimationRepeat(Animation animation) {}
+				
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					_buttonBar.setVisibility(View.INVISIBLE);
+				}
+			});
+			_buttonBar.setAnimation(anim);
+			
+			_minutesTextView.setVisibility(View.GONE);
+			
+			_currentModeTextView.setVisibility(View.VISIBLE);
+			_currentModeTextView.setText(R.string.set_time);
+		} else {
+			if(_buttonBar.getVisibility() == View.INVISIBLE) {
+				_buttonBar.setVisibility(View.VISIBLE);
+				//_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
+			}
+			
+			_minutesTextView.setVisibility(View.VISIBLE);
+			
+			_currentModeTextView.setVisibility(View.GONE);
+		}
+	}
+
+	void updateButtonBar() {
 		if(_UIMode == CountDownTimerService.MODE_BASE) {
 			renderButtonBarBaseMode();
 		

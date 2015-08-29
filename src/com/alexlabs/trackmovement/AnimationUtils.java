@@ -1,75 +1,51 @@
 package com.alexlabs.trackmovement;
 
 import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.content.Context;
-import android.view.Display;
+import android.graphics.drawable.AnimationDrawable;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.widget.ImageView;
 
 public class AnimationUtils {
 
 	
-	static AnimatorSet animator = new AnimatorSet();
-	public static void toggleTimerSignalAnimation(Activity activity, int _UIMode, boolean _isTimerStarted) {
-	
-		View pulsatingCircle = activity.findViewById(R.id.pulsatingCicrle);
+	static AnimatorSet _animator = new AnimatorSet();
+	public static void toggleTimerSignalAnimation(Activity activity, int UIMode, boolean isTimerStarted, float scale, float spread) {		
+		ImageView pulsatingCircle = (ImageView) activity.findViewById(R.id.pulsatingCicrle);
+		
 		View pulsatingCircleBackground = activity.findViewById(R.id.pulsatingCicrleBackground);
-		if(_isTimerStarted && _UIMode == CountDownTimerService.MODE_ACTIVE) {
-			pulsatingCircleBackground.setVisibility(View.VISIBLE);
-			pulsatingCircleBackground.setScaleX(0.85f);
-			pulsatingCircleBackground.setScaleY(0.85f);
-			
+		
+		AnimationDrawable pulsationAnimation = (AnimationDrawable) pulsatingCircle.getDrawable();
+		
+		if(isTimerStarted){
 			pulsatingCircle.setVisibility(View.VISIBLE);
+			pulsatingCircle.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 			
-			ObjectAnimator animatorScaleXInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 0.8f, 1.2f);//.setDuration(500); 
-			ObjectAnimator animatorScaleYInc = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 0.8f, 1.2f);//.setDuration(500); 
-			ObjectAnimator animatorScaleXDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleX", 1.2f, 0.8f);//.setDuration(500); 
-			ObjectAnimator animatorScaleYDec = ObjectAnimator.ofFloat(pulsatingCircle, "ScaleY", 1.2f, 0.8f);//.setDuration(500);
+			pulsatingCircleBackground.setVisibility(View.VISIBLE);
+			pulsatingCircleBackground.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 			
-			ValueAnimator fadeAnim = ObjectAnimator.ofFloat(pulsatingCircle, "alpha", 1f, 0.7f);
-			
-			animator.play(fadeAnim).with(animatorScaleXInc);
-			animator.play(animatorScaleXInc).with(animatorScaleYInc);
-			animator.play(animatorScaleXDec).with(animatorScaleYDec);
-			animator.play(animatorScaleXInc).before(animatorScaleXDec);
-			animator.setInterpolator(new AccelerateDecelerateInterpolator());
-			animator.setDuration(500);
-			animator.addListener(new AnimatorListener() {
-				
-				@Override
-				public void onAnimationStart(Animator animation) {}
-				
-				@Override
-				public void onAnimationRepeat(Animator animation) {}
-				
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					animation.start();
-				}
-				
-				@Override
-				public void onAnimationCancel(Animator animation) {}
-			});
-			animator.start();
-		} else {
-			if(animator != null) {
-				animator.cancel();
-			}
+			pulsationAnimation.start();
+			pulsationAnimation.setAlpha(180);
+
+		} else {			
+			pulsationAnimation.stop();
 			
 			pulsatingCircle.setVisibility(View.INVISIBLE);
+			pulsatingCircle.setLayerType(View.LAYER_TYPE_NONE, null);
+			
 			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
+			pulsatingCircleBackground.setLayerType(View.LAYER_TYPE_NONE, null);
 		}
 	}
 	
-	public static void slideButtonBar(final View buttonBarLayout, final Activity activity, final Runnable r){		
+	public static void slideButtonBar(final View buttonBarLayout, final Activity activity){
 		Animation slideHide = slideHide(buttonBarLayout, activity);
 		slideHide.setAnimationListener(new AnimationListener() {
 			
@@ -81,7 +57,7 @@ public class AnimationUtils {
 			
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				r.run();
+				((MainActivity)activity).updateButtonBar();
 				buttonBarLayout.startAnimation(slideShow(buttonBarLayout, activity));
 			}
 		});
