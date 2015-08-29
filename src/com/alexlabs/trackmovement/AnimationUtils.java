@@ -69,21 +69,9 @@ public class AnimationUtils {
 		}
 	}
 	
-	public static void slideButtonBar(final View buttonBarLayout, Activity activity, final Runnable r){
-		int start;
-		int end;
-		
-		if(UIUtils.isLandscape(activity)) {
-			start = R.anim.anim_slide_left;
-			end = R.anim.anim_slide_right;
-		} else {
-			start = R.anim.anim_slide_down;
-			end = R.anim.anim_slide_up;
-		}
-		
-		Animation slideDown = android.view.animation.AnimationUtils.loadAnimation(activity, start);
-		final Animation slideUp = android.view.animation.AnimationUtils.loadAnimation(activity, end);
-		slideDown.setAnimationListener(new AnimationListener() {
+	public static void slideButtonBar(final View buttonBarLayout, final Activity activity, final Runnable r){		
+		Animation slideHide = slideHide(buttonBarLayout, activity);
+		slideHide.setAnimationListener(new AnimationListener() {
 			
 			@Override
 			public void onAnimationStart(Animation animation) {}
@@ -94,9 +82,31 @@ public class AnimationUtils {
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				r.run();
-				buttonBarLayout.startAnimation(slideUp);
+				buttonBarLayout.startAnimation(slideShow(buttonBarLayout, activity));
 			}
 		});
-		buttonBarLayout.startAnimation(slideDown);
+		buttonBarLayout.startAnimation(slideHide);
+	}
+	
+	public static Animation slideShow(final View buttonBarLayout, Activity activity){
+		int anim;
+		if(UIUtils.isLandscape(activity)) {
+			anim = R.anim.anim_slide_right;
+		} else {
+			anim = R.anim.anim_slide_up;
+		}
+		
+		return android.view.animation.AnimationUtils.loadAnimation(activity, anim);
+	}
+	
+	public static Animation slideHide(final View buttonBarLayout, Activity activity){
+		int anim;
+		if(UIUtils.isLandscape(activity)) {
+			anim = R.anim.anim_slide_left;
+		} else {
+			anim = R.anim.anim_slide_down;
+		}
+		
+		return android.view.animation.AnimationUtils.loadAnimation(activity, anim);
 	}
 }

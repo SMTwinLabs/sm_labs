@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
-import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,18 +14,18 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {	
 
@@ -40,6 +38,9 @@ public class MainActivity extends ActionBarActivity {
 	private RelativeLayout _content;
 	private TextView _minutesTextView;
 	private TextView _secondsTextView;
+	private TextView _currentModeTextView;
+	
+	private View _buttonBar;
 	private Button _startStopStateButton;
 	private Button _editTimeButton;
 	private Button _editTimeAcceptChangeButton;
@@ -157,11 +158,10 @@ public class MainActivity extends ActionBarActivity {
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
 		_startStopStateButton = (Button) findViewById(R.id.start_stop_state_button);
+		_buttonBar = findViewById(R.id.buttonArea);
+		_currentModeTextView = (TextView) findViewById(R.id.modeView);
 		
 		initEditTimeButtonGroup();
-		
-		View buttonBar = findViewById(R.id.buttonArea);
-		buttonBar.setY(0);
 		
 		_content.setOnTouchListener(new OnTouchListener() {
 
@@ -207,8 +207,7 @@ public class MainActivity extends ActionBarActivity {
 				// the milliseconds are set.
 
 				if (_selectedMinute == 0) {
-					Toast.makeText(getBaseContext(), "Please, pick a time.",
-							Toast.LENGTH_SHORT).show();
+					UIUtils.showToast(getBaseContext(), R.string.pick_time_prompt);
 
 					_secondsTextView.setVisibility(View.GONE);
 					return;
@@ -306,8 +305,6 @@ public class MainActivity extends ActionBarActivity {
 			throw new IllegalArgumentException("Motion event is null.");
 
 		_selectedMinute = TimerUtils.generateMinute(_motionEvent, context, content);
-		updateCurrentTime(_selectedMinute, 0);
-		renderArc((float) TimerUtils.generateAngleFromMinute(_selectedMinute));
 		
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
@@ -315,6 +312,8 @@ public class MainActivity extends ActionBarActivity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		renderUIMode(_UIMode);
 	}
 
 	private void toggleStartStopButtonState() {
@@ -323,7 +322,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	private void renderUIEditMode() {
+	private void renderButtonBarEditMode() {
 		////////////////////////// VISIBLE //////////////////////////////
 		_editTimeAcceptChangeButton.setVisibility(View.VISIBLE);
 		_editTimeCancelChangeButton.setVisibility(View.VISIBLE);
@@ -333,7 +332,7 @@ public class MainActivity extends ActionBarActivity {
 		_startStopStateButton.setVisibility(View.GONE);
 	}
 
-	private void renderUIStartStopMode() {
+	private void renderButtonBarActiveMode() {
 		toggleStartStopButtonState();
 		
 		////////////////////////// VISIBLE //////////////////////////////
@@ -345,7 +344,8 @@ public class MainActivity extends ActionBarActivity {
 		_editTimeCancelChangeButton.setVisibility(View.GONE);
 	}
 
-	private void renderUIBaseMode() {
+	private void renderButtonBarBaseMode() {		
+		toggleStartStopButtonState();
 		////////////////////////// VISIBLE //////////////////////////////
 		_startStopStateButton.setVisibility(View.VISIBLE);
 		
@@ -410,12 +410,47 @@ public class MainActivity extends ActionBarActivity {
 			updateCurrentTime(_selectedMinute, 0);
 
 			_secondsTextView.setVisibility(View.GONE);
+			
+			if(_selectedMinute == 0){
+				Animation anim = AnimationUtils.slideHide(_buttonBar, this);
+				anim.setAnimationListener(new AnimationListener() {
+					
+					@Override
+					public void onAnimationStart(Animation animation) {}
+					
+					@Override
+					public void onAnimationRepeat(Animation animation) {}
+					
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						_buttonBar.setVisibility(View.INVISIBLE);
+					}
+				});
+				_buttonBar.setAnimation(anim);
+				
+				_minutesTextView.setVisibility(View.GONE);
+				
+				_currentModeTextView.setVisibility(View.VISIBLE);
+				_currentModeTextView.setText(R.string.set_time);
+			} else {
+				if(_buttonBar.getVisibility() == View.INVISIBLE) {
+					_buttonBar.setVisibility(View.VISIBLE);
+					_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
+				}
+				
+				_minutesTextView.setVisibility(View.VISIBLE);
+				
+				_currentModeTextView.setVisibility(View.GONE);
+			}
+		
 		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {			
 			_selectedMinute = -1;			
 			renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
 			updateCurrentTime(_currentMinute, _currentSeconds);
 
-			_secondsTextView.setVisibility(View.VISIBLE);
+			_secondsTextView.setVisibility(View.VISIBLE);			
+			_currentModeTextView.setVisibility(View.GONE);
+			
 			try {
 				_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
 			} catch (RemoteException e) {
@@ -433,7 +468,8 @@ public class MainActivity extends ActionBarActivity {
 			renderArc(TimerUtils.generateAngleFromMinute(minute));
 			updateCurrentTime(minute, 0);			
 
-			_secondsTextView.setVisibility(View.GONE);
+			_secondsTextView.setVisibility(View.GONE);			
+			_currentModeTextView.setVisibility(View.GONE);
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -442,15 +478,14 @@ public class MainActivity extends ActionBarActivity {
 		
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {
-			renderButtonBar();
+			renderButtonBarAnimation();		
+			setUIMode(newMode);
 		} else {
 			updateButtonBar();
 		}		
-		
-		setUIMode(newMode);
 	}
 
-	private void renderButtonBar() {
+	private void renderButtonBarAnimation() {
 		Runnable r = new Runnable() {			
 			@Override
 			public void run() {
@@ -458,18 +493,18 @@ public class MainActivity extends ActionBarActivity {
 			}			
 		};
 		
-		AnimationUtils.slideButtonBar(findViewById(R.id.buttonArea), this, r);
+		AnimationUtils.slideButtonBar(_buttonBar, this, r);
 	}
 
 	private void updateButtonBar() {
 		if(_UIMode == CountDownTimerService.MODE_BASE) {
-			renderUIBaseMode();
+			renderButtonBarBaseMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {
-			renderUIStartStopMode();
+			renderButtonBarActiveMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
-			renderUIEditMode();
+			renderButtonBarEditMode();
 		};
 	}
 	
