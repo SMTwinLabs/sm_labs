@@ -435,7 +435,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 		
 		// TODO: fix anmitaion problems
-		AnimationUtils.toggleTimerSignalAnimation(this, _UIMode, _isTimerStarted, 0, 0);
+		AnimationUtils.toggleTimerSignalAnimation(this, _isTimerStarted);
 		
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {
@@ -447,6 +447,19 @@ public class MainActivity extends ActionBarActivity {
 
 	private void renderUIEditMode() {
 		int minute;
+		
+		_secondsTextView.setVisibility(View.GONE);
+		if(_selectedMinute < 0){
+			_minutesTextView.setVisibility(View.GONE);
+			
+			_currentModeTextView.setText(R.string.edit_time);
+			_currentModeTextView.setVisibility(View.VISIBLE);
+		} else {			
+			_minutesTextView.setVisibility(View.VISIBLE);
+			
+			_currentModeTextView.setVisibility(View.GONE);
+		}
+		
 		if(_selectedMinute >= 0) {
 			minute = _selectedMinute;
 		} else {				
@@ -456,8 +469,6 @@ public class MainActivity extends ActionBarActivity {
 		renderArc(TimerUtils.generateAngleFromMinute(minute));
 		updateCurrentTime(minute, 0);			
 
-		_secondsTextView.setVisibility(View.GONE);
-		_currentModeTextView.setVisibility(View.GONE);
 	}
 
 	private void renderUIActiveMode() {
@@ -465,6 +476,7 @@ public class MainActivity extends ActionBarActivity {
 		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
 		updateCurrentTime(_currentMinute, _currentSeconds);
 
+		_minutesTextView.setVisibility(View.VISIBLE);
 		_secondsTextView.setVisibility(View.VISIBLE);			
 		_currentModeTextView.setVisibility(View.GONE);
 		
