@@ -129,14 +129,7 @@ public class MainActivity extends ActionBarActivity {
                 // so there is no need to do anything here.
             }
             
-            try {
-                msg = Message.obtain(null,
-                                CountDownTimerService.MSG_GET_TIMER_INFO);
-                msg.replyTo = _clientMessenger;
-                _countDownService.send(msg);
-            } catch (RemoteException e) {
-                // TODO
-            }
+            requestTimerInfoFromCountDownTimerService();
 		}
 	};
 
@@ -215,7 +208,6 @@ public class MainActivity extends ActionBarActivity {
 
 				if (_UIMode == CountDownTimerService.MODE_BASE){
 					setTimerState(CountDownTimerService.MSG_START_TIMER);
-					_isTimerStarted = true;
 				
 				} else if (_UIMode == CountDownTimerService.MODE_ACTIVE) {
 					if (_isTimerStarted) {
@@ -223,12 +215,10 @@ public class MainActivity extends ActionBarActivity {
 						
 					} else {
 						setTimerState(CountDownTimerService.MSG_UNPAUSE_TIMER);					
-					}
-					
-					_isTimerStarted = !_isTimerStarted;
+					}					
 				}
 				
-				renderUIMode(CountDownTimerService.MODE_ACTIVE);
+				updateUIMode(CountDownTimerService.MODE_ACTIVE);
 			}
 
 		});
@@ -253,7 +243,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				renderUIMode(CountDownTimerService.MODE_ACTIVE);
+				updateUIMode(CountDownTimerService.MODE_ACTIVE);
 			}
 		});
 	}
@@ -264,7 +254,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				renderUIMode(CountDownTimerService.MODE_EDIT_TIME);
+				updateUIMode(CountDownTimerService.MODE_EDIT_TIME);
 			}
 		});
 	}
@@ -275,13 +265,35 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				setTimerState(CountDownTimerService.MSG_START_TIMER);
-				_isTimerStarted = true;
-				renderUIMode(CountDownTimerService.MODE_ACTIVE);
+				if(_selectedMinute > 0) {
+					// apply the new time
+					setTimerState(CountDownTimerService.MSG_START_TIMER);
+					updateUIMode(CountDownTimerService.MODE_ACTIVE);
+				} else if(_selectedMinute < 0){
+					// simply return to active mode without doing any work.
+					updateUIMode(CountDownTimerService.MODE_ACTIVE);
+				} else if(_selectedMinute == 0){
+					// when the timer is 0, the timer will finish immediately, setting everything to 
+					// BASE mode.
+					setTimerState(CountDownTimerService.MSG_START_TIMER);
+				}
 			}
+			
 		});
 	}
-
+	
+	private void requestTimerInfoFromCountDownTimerService() {
+		Message msg = Message.obtain(null,
+                    CountDownTimerService.MSG_GET_TIMER_INFO);
+        msg.replyTo = _clientMessenger;
+        try {
+			_countDownService.send(msg);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private void renderArc(float angle) {
 
 		// Remove the current arc. This is done so that a new arc will be
@@ -402,6 +414,10 @@ public class MainActivity extends ActionBarActivity {
 		registerReceiver(_screenReceiver, filter);
 	}
 	
+	/**
+	 * This method only renders the UI. To set the mode use {@link#updateUIMode}
+	 * @param newMode
+	 */
 	public void renderUIMode(int newMode) {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
@@ -409,7 +425,7 @@ public class MainActivity extends ActionBarActivity {
 			renderUIBaseMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_ACTIVE) {			
-			renderUIActivrMode();
+			renderUIActiveMode();
 		
 		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
 			renderUIEditMode();
@@ -423,8 +439,7 @@ public class MainActivity extends ActionBarActivity {
 		
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {
-			AnimationUtils.slideButtonBar(_buttonBar, this);	
-			setUIMode(newMode);
+			AnimationUtils.slideButtonBar(_buttonBar, this);
 		} else {
 			updateButtonBar();
 		}		
@@ -445,7 +460,7 @@ public class MainActivity extends ActionBarActivity {
 		_currentModeTextView.setVisibility(View.GONE);
 	}
 
-	private void renderUIActivrMode() {
+	private void renderUIActiveMode() {
 		_selectedMinute = -1;			
 		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
 		updateCurrentTime(_currentMinute, _currentSeconds);
@@ -490,7 +505,7 @@ public class MainActivity extends ActionBarActivity {
 		} else {
 			if(_buttonBar.getVisibility() == View.INVISIBLE) {
 				_buttonBar.setVisibility(View.VISIBLE);
-				//_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
+				_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
 			}
 			
 			_minutesTextView.setVisibility(View.VISIBLE);
@@ -511,12 +526,19 @@ public class MainActivity extends ActionBarActivity {
 		};
 	}
 	
-	private void setUIMode(int mode) {
+	/**
+	 * Send a message to the timer service to change to UI Mode to the provided <b>mode</b>. The updating also 
+	 * sends a message to request the timer info from the service hence updating the UI.
+	 * @param mode
+	 */
+	private void updateUIMode(int mode) {
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_MODE, mode, 0));
 		} catch (RemoteException e) {
 			// TODO: handle exception
 		}
+		
+		requestTimerInfoFromCountDownTimerService();
 	}
 	
 	private void setTimerState(int state) {		
@@ -562,7 +584,7 @@ public class MainActivity extends ActionBarActivity {
 		
 		// NOTE: when exiting the application, the UI mode is set to active.
 		if(isFinishing()  && _UIMode == CountDownTimerService.MODE_EDIT_TIME) {
-			setUIMode(CountDownTimerService.MODE_ACTIVE);
+			updateUIMode(CountDownTimerService.MODE_ACTIVE);
 		}
 
 		// If the timer is running and the user has exited the application themself,

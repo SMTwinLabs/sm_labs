@@ -148,9 +148,13 @@ public class CountDownTimerService extends Service{
 			Bundle data = new Bundle();
 			data.putInt(MODE, _mode);
 			data.putBoolean(IS_TIMER_STARTED, _timerState == TIMER_STATE_STARTED);
+			
+			// FIXME: remove
+			Log.d(">>>>>>>Alex Labs: ", "getDataInBundle" + _timerState);
+			
 			data.putInt(SELECTED_MINUTE, _selectedMinute);
 			data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
-			data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));
+			data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));			
 			return data;
 		}
 	}	
@@ -158,12 +162,15 @@ public class CountDownTimerService extends Service{
 	public void startCountDown() {
 		if (_countDownTimer != null) {
 			stopCountDown();
-		} 
+		}
 		
+		_timerState = TIMER_STATE_STARTED;
 		initCountDownTimer();
 
 		_countDownTimer.start();
-		_timerState = TIMER_STATE_STARTED;
+		
+		// FIXME: remove
+		Log.d(">>>>>>>Alex Labs: ", "startCountDown" + _timerState);
 		
 		sendNotification("Timer has been started.");
 	}
@@ -227,6 +234,9 @@ public class CountDownTimerService extends Service{
 			public void onFinish() {
 				// TODO _timerState = TIMER_STATE_FINISHED;
 				_timerState = TIMER_STATE_NONE;
+				// FIXME: remove
+				Log.d(">>>>>>>Alex Labs: ", "onFinish" + _timerState);
+				
 				_mode = MODE_BASE;
 				// Wake the device and sound the ring tone.
 				WakeLocker localWakeLock = new WakeLocker();
