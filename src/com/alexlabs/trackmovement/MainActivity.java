@@ -33,7 +33,8 @@ public class MainActivity extends ActionBarActivity {
 	/////////// Model
 	/////////////////////////////////////////////////
 
-	private final static int ARC_ID_KEY = 0;
+	private final static int ARC_ACTIVE_ID_KEY = 0;
+	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 
 	private RelativeLayout _content;
 	private TextView _minutesTextView;
@@ -70,12 +71,15 @@ public class MainActivity extends ActionBarActivity {
     		case CountDownTimerService.SEND_CURRENT_MILLIS_UNTIL_FINISHED:
     			_currentMinute = msg.arg1;
     			_currentSeconds = msg.arg2;
-    			if (CountDownTimerService.MODE_ACTIVE == _UIMode) {
+    			
+    			if(_UIMode == CountDownTimerService.MODE_ACTIVE){
 					updateCurrentTime(_currentMinute, _currentSeconds);
-					if(_currentSeconds == 59) {
-						renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
-					}
+    			}
+    			
+    			if (_isTimerStarted && _currentSeconds == 59) {
+						renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 				}
+    			
     			break;
 
     		case CountDownTimerService.MSG_GET_TIMER_INFO:
@@ -94,7 +98,7 @@ public class MainActivity extends ActionBarActivity {
 			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
 			_currentMinute = info.getInt(CountDownTimerService.CURRENT_MINUTE);
 			_currentSeconds = info.getInt(CountDownTimerService.CURRENT_SECONDS);
-			renderUIMode(info.getInt(CountDownTimerService.MODE));
+			renderAll(info.getInt(CountDownTimerService.MODE));
 		}
     }
     
@@ -294,24 +298,22 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 	
-	private void renderArc(float angle) {
+	private void renderArc(float angle, int arcId, int index, int color, int alpha) {
 
 		// Remove the current arc. This is done so that a new arc will be
 		// generated with the newly selected angle.
-		_content.removeView(_content.findViewById(ARC_ID_KEY));
+		_content.removeView(_content.findViewById(arcId));
 
 		// Create the new arc from the new angle that has been selected.
-		Arc arc = new Arc(getBaseContext(), _content, angle, 
-				(_UIMode == CountDownTimerService.MODE_ACTIVE ? R.color.timer_active_color : R.color.timer_select_time_color));
+		Arc arc = new Arc(getBaseContext(), _content, angle, color, alpha);
 
 		// Set the arc view's id.
-		arc.setId(ARC_ID_KEY);
+		arc.setId(arcId);
 
 		// Add the arc to the content view of the clock.
-		_content.addView(arc, 1);
+		_content.addView(arc, index);
 	}
-
-
+	
 	private void onActionMove(Context context, View content) {
 		if (_motionEvent == null)
 			throw new IllegalArgumentException("Motion event is null.");
@@ -325,7 +327,7 @@ public class MainActivity extends ActionBarActivity {
 			e.printStackTrace();
 		}
 		
-		renderUIMode(_UIMode);
+		renderAll(_UIMode);
 	}
 
 	private void toggleStartStopButtonState() {
@@ -418,7 +420,7 @@ public class MainActivity extends ActionBarActivity {
 	 * This method only renders the UI. To set the mode use {@link#updateUIMode}
 	 * @param newMode
 	 */
-	public void renderUIMode(int newMode) {
+	public void renderAll(int newMode) {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
 		if(_UIMode == CountDownTimerService.MODE_BASE) {			
@@ -446,34 +448,34 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void renderUIEditMode() {
-		int minute;
+		int minute;		
 		
-		_secondsTextView.setVisibility(View.GONE);
-		if(_selectedMinute < 0){
-			_minutesTextView.setVisibility(View.GONE);
-			
-			_currentModeTextView.setText(R.string.edit_time);
-			_currentModeTextView.setVisibility(View.VISIBLE);
-		} else {			
-			_minutesTextView.setVisibility(View.VISIBLE);
-			
-			_currentModeTextView.setVisibility(View.GONE);
-		}
+		_minutesTextView.setVisibility(View.VISIBLE);
+		_secondsTextView.setVisibility(View.GONE);		
+		_currentModeTextView.setVisibility(View.GONE);
 		
 		if(_selectedMinute >= 0) {
 			minute = _selectedMinute;
 		} else {				
 			minute = _currentMinute;
 		}
+
+		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
+		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 2, R.color.timer_select_time_color, 150);
 		
-		renderArc(TimerUtils.generateAngleFromMinute(minute));
 		updateCurrentTime(minute, 0);			
 
 	}
 
 	private void renderUIActiveMode() {
-		_selectedMinute = -1;			
-		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1));
+		_selectedMinute = -1;
+		
+		// If the user is coming from edit mode - remove the edit mode arc.
+		if(findViewById(ARC_EDIT_TIME_ID_KEY) != null) {
+			_content.removeView(_content.findViewById(ARC_EDIT_TIME_ID_KEY));
+		}
+		
+		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 		updateCurrentTime(_currentMinute, _currentSeconds);
 
 		_minutesTextView.setVisibility(View.VISIBLE);
@@ -488,7 +490,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void renderUIBaseMode() {
-		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute));			
+		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
 
 		_secondsTextView.setVisibility(View.GONE);

@@ -9,6 +9,7 @@ import android.view.View;
 public class Arc extends View {
 	private View _content;
 	private Context _context;
+	private int _alpha;
 	
 	int _colorResId;
 	
@@ -26,11 +27,12 @@ public class Arc extends View {
 		_oval = new RectF();
 	}
 	
-	public Arc(Context context, View parentView, float angle, int colorResId) {
+	public Arc(Context context, View parentView, float angle, int colorResId, int alpha) {
 		this(context);
 		_content = parentView;
 		_angle = angle;
 		_colorResId = colorResId;
+		_alpha = alpha;
 	}
 	
 	@Override
@@ -45,13 +47,14 @@ public class Arc extends View {
 
 		// The paint object will fill its inside area.
 		_paint.setStyle(Paint.Style.FILL);
-
+		// Set the opacity of the arc's paint
+		_paint.setAlpha(_alpha);
+		
 		// Set coordinates to the specified values.
 		_oval.set(centerX - radius, 
 				centerY - radius, 
 				centerX + radius, 
 				centerY + radius);
-
 		// draw the arc
 		canvas.drawArc(_oval, 270, _angle, true, _paint);
 	}
