@@ -76,8 +76,8 @@ public class MainActivity extends ActionBarActivity {
 					updateCurrentTime(_currentMinute, _currentSeconds);
     			}
     			
-    			if (_isTimerStarted && _currentSeconds == 59) {
-						renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
+    			if (_isTimerStarted && _currentSeconds % 10 == 0) {
+					renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 				}
     			
     			break;
@@ -460,7 +460,7 @@ public class MainActivity extends ActionBarActivity {
 			minute = _currentMinute;
 		}
 
-		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
+		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 2, R.color.timer_select_time_color, 150);
 		
 		updateCurrentTime(minute, 0);			
@@ -475,7 +475,7 @@ public class MainActivity extends ActionBarActivity {
 			_content.removeView(_content.findViewById(ARC_EDIT_TIME_ID_KEY));
 		}
 		
-		renderArc(TimerUtils.generateAngleFromMinute(_currentMinute + 1), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
+		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 		updateCurrentTime(_currentMinute, _currentSeconds);
 
 		_minutesTextView.setVisibility(View.VISIBLE);

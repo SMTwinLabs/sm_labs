@@ -8,6 +8,7 @@ public class TimerUtils {
 	public static final int MAX_MINUTES_ON_CLOCK = 60;
 	public static final int DEGRESS_IN_CIRCLE = 360;
 	public static final int DEGRESS_PER_MINUTE = 6;
+	public static final float DEGRESS_PER_SECOND = 0.1f;
 	public static final int PROXIMITY_TO_EVERY_FIFTH_MINUTE = 2;
 	
 	/**
@@ -94,8 +95,16 @@ public class TimerUtils {
 		return clockRadius >= distanceFromCentre;
 	}
 	
+	public static float generateAngleFromTime(int minute, int seconds){
+		return generateAngleFromMinute(minute) + generateAngleFromSeconds(seconds);
+	}
+	
 	public static int generateAngleFromMinute(int minute) {
 		return minute*DEGRESS_PER_MINUTE;
+	}
+	
+	public static float generateAngleFromSeconds(int seconds) {
+		return seconds*DEGRESS_PER_SECOND;
 	}
 	
 	public static long convertMinuteToMillis(int minute){
