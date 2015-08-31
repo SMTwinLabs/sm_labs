@@ -172,7 +172,7 @@ public class CountDownTimerService extends Service{
 		// FIXME: remove
 		Log.d(">>>>>>>Alex Labs: ", "startCountDown" + _timerState);
 		
-		sendNotification("Timer has been started.");
+		sendNotification(getApplicationContext().getString(R.string.timer_started));
 	}
 	
 	public void stopCountDown() {
@@ -181,7 +181,7 @@ public class CountDownTimerService extends Service{
 			_countDownTimer = null;
 
 			_timerState = TIMER_STATE_STOPPED;	
-			sendNotification("Timer has been stopped.");
+			sendNotification(getApplicationContext().getString(R.string.timer_paused));
 		}
 	}
 	
@@ -190,7 +190,7 @@ public class CountDownTimerService extends Service{
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext())
 			.setSmallIcon(R.drawable.ic_launcher)
 			.setContentText(text)
-			.setContentTitle("One-touch kitchen timer");
+			.setContentTitle(getApplicationContext().getString(R.string.app_name));
 		
 		// Create intent.
 		// NOTE: to avoid opening a new instance of the MainActivity every time the notification
@@ -257,7 +257,7 @@ public class CountDownTimerService extends Service{
 					// TODO Auto-generated catch block
 				}
 				
-				sendNotification("Timer has finished.");
+				sendNotification(getApplicationContext().getString(R.string.timer_finished));
 
 				localWakeLock.release();
 			}

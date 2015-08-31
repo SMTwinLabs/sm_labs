@@ -23,33 +23,9 @@
 		android:layout_gravity="center_horizontal"
 		android:gravity="center"
 		android:orientation="horizontal"
-		android:background="@color/minutesColor">       
-        
-	   	<Button android:id="@+id/start_stop_state_button"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:background="@null"
-	        android:text="Start"/>
-	    
-	    <Button android:id="@+id/edit_time_button"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_marginLeft="10dp"
-	        android:background="@null"
-	        android:text="Edit"/>
-	    
-	    <Button android:id="@+id/edit_time_cancel_change_button"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:background="@null"
-	        android:text="Cancel"/>    
-	    
-	    <Button android:id="@+id/edit_time_accept_change_button"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_marginLeft="10dp"
-	        android:background="@null"
-	        android:text="Accept"/>
+		android:background="@color/minutesColor">  
+		
+        <include layout="@layout/button_bar"/>
     
     </LinearLayout>
 

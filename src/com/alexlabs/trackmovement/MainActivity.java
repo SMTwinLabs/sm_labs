@@ -24,6 +24,7 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -42,10 +43,10 @@ public class MainActivity extends ActionBarActivity {
 	private TextView _currentModeTextView;
 	
 	private View _buttonBar;
-	private Button _startStopStateButton;
-	private Button _editTimeButton;
-	private Button _editTimeAcceptChangeButton;
-	private Button _editTimeCancelChangeButton;
+	private ImageButton _startStopStateButton;
+	private ImageButton _editTimeButton;
+	private ImageButton _editTimeAcceptChangeButton;
+	private ImageButton _editTimeCancelChangeButton;
 
 	private MotionEvent _motionEvent;
 
@@ -154,7 +155,7 @@ public class MainActivity extends ActionBarActivity {
 		_content = (RelativeLayout) findViewById(R.id.content);
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
-		_startStopStateButton = (Button) findViewById(R.id.start_stop_state_button);
+		_startStopStateButton = (ImageButton) findViewById(R.id.start_stop_state_button);
 		_buttonBar = findViewById(R.id.buttonArea);
 		_currentModeTextView = (TextView) findViewById(R.id.modeView);
 		
@@ -242,7 +243,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void initEditTimeCancelChangeButton() {
-		_editTimeCancelChangeButton = (Button) findViewById(R.id.edit_time_cancel_change_button);
+		_editTimeCancelChangeButton = (ImageButton) findViewById(R.id.edit_time_cancel_change_button);
 		_editTimeCancelChangeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -253,7 +254,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void initEditTimeButton() {
-		_editTimeButton = (Button) findViewById(R.id.edit_time_button);
+		_editTimeButton = (ImageButton) findViewById(R.id.edit_time_button);
 		_editTimeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -264,7 +265,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void initEditTimeAcceptChangeButton() {
-		_editTimeAcceptChangeButton = (Button) findViewById(R.id.edit_time_accept_change_button);
+		_editTimeAcceptChangeButton = (ImageButton) findViewById(R.id.edit_time_accept_change_button);
 		_editTimeAcceptChangeButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -332,7 +333,7 @@ public class MainActivity extends ActionBarActivity {
 
 	private void toggleStartStopButtonState() {
 		if(CountDownTimerService.MODE_EDIT_TIME != _UIMode) {
-			_startStopStateButton.setText(_isTimerStarted ? "Stop" : "Start");
+			_startStopStateButton.setImageResource(_isTimerStarted ? R.drawable.ic_pause_circle_outline_white_48dp : R.drawable.ic_play_circle_outline_white_48dp);
 		}
 	}
 
