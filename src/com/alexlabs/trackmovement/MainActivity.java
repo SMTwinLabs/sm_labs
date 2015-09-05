@@ -491,7 +491,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void renderUIBaseMode() {
-		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);		
+		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_select_time_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
 
 		_secondsTextView.setVisibility(View.GONE);
