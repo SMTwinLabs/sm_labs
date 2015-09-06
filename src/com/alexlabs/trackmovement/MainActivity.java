@@ -1,5 +1,7 @@
 package com.alexlabs.trackmovement;
 
+import java.util.Locale;
+
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,7 +25,6 @@ import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,6 +42,7 @@ public class MainActivity extends ActionBarActivity {
 	private TextView _minutesTextView;
 	private TextView _secondsTextView;
 	private TextView _currentModeTextView;
+	private TextView _messageTextView;
 	
 	private View _buttonBar;
 	private ImageButton _startStopStateButton;
@@ -158,6 +160,7 @@ public class MainActivity extends ActionBarActivity {
 		_startStopStateButton = (ImageButton) findViewById(R.id.start_stop_state_button);
 		_buttonBar = findViewById(R.id.buttonArea);
 		_currentModeTextView = (TextView) findViewById(R.id.modeView);
+		_messageTextView = (TextView) findViewById(R.id.message_text_view);
 		
 		initEditTimeButtonGroup();
 		
@@ -165,7 +168,7 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public boolean onTouch(View view, MotionEvent event) {
-				if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
+//				if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
 					int action = event.getActionMasked();
 					_motionEvent = event;
 
@@ -175,7 +178,9 @@ public class MainActivity extends ActionBarActivity {
 						break;
 						
 					case MotionEvent.ACTION_MOVE:
-						onActionMove(getBaseContext(), _content);
+						if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
+							onActionMove(getBaseContext(), _content);
+						}
 						break;
 						
 					case MotionEvent.ACTION_UP:
@@ -184,7 +189,8 @@ public class MainActivity extends ActionBarActivity {
 					case MotionEvent.ACTION_CANCEL:
 						break;
 					}
-				}
+//				}
+				
 				return true;
 			}
 		});
@@ -193,7 +199,11 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				onActionMove(getBaseContext(), _content);
+				if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
+					onActionMove(getBaseContext(), _content);
+				} else {
+					UIUtils.showSetNewTimeToast(MainActivity.this);				
+				}
 			}
 		});
 
@@ -287,18 +297,6 @@ public class MainActivity extends ActionBarActivity {
 		});
 	}
 	
-	private void requestTimerInfoFromCountDownTimerService() {
-		Message msg = Message.obtain(null,
-                    CountDownTimerService.MSG_GET_TIMER_INFO);
-        msg.replyTo = _clientMessenger;
-        try {
-			_countDownService.send(msg);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	private void renderArc(float angle, int arcId, int index, int color, int alpha) {
 
 		// Remove the current arc. This is done so that a new arc will be
@@ -371,8 +369,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	private void updateCurrentTime(int minute, int seconds) {
-		_minutesTextView.setText(((Integer)minute).toString());
-		_secondsTextView.setText(((Integer)seconds).toString());
+		_minutesTextView.setText(String.format("%02d", minute));
+		_secondsTextView.setText(String.format(":%02d", seconds));
 	}
 
 	/////////////////////////////////////////////////
@@ -437,7 +435,6 @@ public class MainActivity extends ActionBarActivity {
 			throw new IllegalArgumentException();
 		}
 		
-		// TODO: fix anmitaion problems
 		AnimationUtils.toggleTimerSignalAnimation(this, _isTimerStarted);
 		
 		// If the mode changed - animate the button bar transition.
@@ -449,7 +446,9 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void renderUIEditMode() {
-		int minute;		
+		int minute;
+		
+		setMessageViewText(R.string.set_new_time);
 		
 		_minutesTextView.setVisibility(View.VISIBLE);
 		_secondsTextView.setVisibility(View.GONE);		
@@ -468,7 +467,17 @@ public class MainActivity extends ActionBarActivity {
 
 	}
 
+	/**
+	 * Message is converted to upper case.
+	 * @param messageResId
+	 */
+	private void setMessageViewText(int messageResId) {
+		_messageTextView.setText(new String(getString(messageResId)).toUpperCase(Locale.ENGLISH));
+	}
+
 	private void renderUIActiveMode() {
+		setMessageViewText(_isTimerStarted ? R.string.timer_state_active : R.string.timer_state_paused);
+		
 		_selectedMinute = -1;
 		
 		// If the user is coming from edit mode - remove the edit mode arc.
@@ -516,7 +525,7 @@ public class MainActivity extends ActionBarActivity {
 			_minutesTextView.setVisibility(View.GONE);
 			
 			_currentModeTextView.setVisibility(View.VISIBLE);
-			_currentModeTextView.setText(R.string.set_time);
+			_currentModeTextView.setText(R.string.set);
 		} else {
 			if(_buttonBar.getVisibility() == View.INVISIBLE) {
 				_buttonBar.setVisibility(View.VISIBLE);
@@ -527,6 +536,8 @@ public class MainActivity extends ActionBarActivity {
 			
 			_currentModeTextView.setVisibility(View.GONE);
 		}
+		
+		setMessageViewText(R.string.set_time);
 	}
 
 	void updateButtonBar() {
@@ -561,6 +572,18 @@ public class MainActivity extends ActionBarActivity {
 			_countDownService.send(Message.obtain(null, state));
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
+		}
+	}
+	
+	private void requestTimerInfoFromCountDownTimerService() {
+		Message msg = Message.obtain(null,
+                    CountDownTimerService.MSG_GET_TIMER_INFO);
+        msg.replyTo = _clientMessenger;
+        try {
+			_countDownService.send(msg);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

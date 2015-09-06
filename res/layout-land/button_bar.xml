@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
 		android:id="@+id/buttonArea"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
 		android:background="@color/minutesColor">  
     
     <ImageButton android:id="@+id/settings_button"
@@ -11,14 +11,15 @@
 	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_settings_white_36dp"
-	        android:layout_centerVertical="true"/>
+	        android:layout_centerHorizontal="true"
+	        android:layout_alignParentTop="true"/>
     
     <ImageButton android:id="@+id/start_stop_state_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_margin="10dp"
 	        android:background="@null"
-	        android:layout_centerInParent="true"
+	        android:layout_centerVertical="true"
 	        android:src="@drawable/ic_play_circle_outline_white_48dp"/>
 	    
     <ImageButton android:id="@+id/edit_time_button"
@@ -27,12 +28,12 @@
 	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_timer_white_48dp"
-	        android:layout_toRightOf="@id/start_stop_state_button"/>
+	        android:layout_below="@id/start_stop_state_button"/>
     
      <RelativeLayout
-       	android:layout_width="match_parent"
-       	android:layout_height="wrap_content"
-       	android:gravity="center"
+       	android:layout_width="wrap_content"
+       	android:layout_height="match_parent"
+       	android:gravity="center_vertical"
        	android:layout_centerHorizontal="true"
 		>  
     
@@ -49,7 +50,7 @@
 	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_done_white_48dp"
-	       android:layout_toRightOf="@id/edit_time_cancel_change_button"/>
+	       android:layout_below="@id/edit_time_cancel_change_button"/>
     </RelativeLayout>
 
 </RelativeLayout>
