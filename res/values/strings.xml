@@ -7,11 +7,12 @@
 	<string name="timer_still_running">Timer is still running.</string>
 	<string name="pick_time_prompt">Please, pick a time</string>
 	<string name="set">SET</string>
-	<string name="timer_started">Timer has been started</string>
-	<string name="timer_paused">Timer has been paused</string>
-	<string name="timer_finished">Timer has been finished</string>
+	<string name="timer_started">Timer has been started.</string>
+	<string name="timer_paused">Timer has been paused.</string>
+	<string name="timer_finished">Timer has finished.</string>
 	<string name="set_time">Set time</string>
 	<string name="set_new_time">Set new time</string>
 	<string name="timer_state_active">Timer active</string>
 	<string name="timer_state_paused">Timer paused</string>
+	<string name="OK">OK</string>
 </resources>

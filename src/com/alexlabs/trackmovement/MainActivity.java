@@ -2,6 +2,8 @@ package com.alexlabs.trackmovement;
 
 import java.util.Locale;
 
+import com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog;
+
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,6 +16,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -22,8 +26,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
@@ -37,30 +39,40 @@ public class MainActivity extends ActionBarActivity {
 
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
+	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
 
+	// dial view
 	private RelativeLayout _content;
 	private TextView _minutesTextView;
 	private TextView _secondsTextView;
 	private TextView _currentModeTextView;
 	private TextView _messageTextView;
 	
+	// button bar
 	private View _buttonBar;
 	private ImageButton _startStopStateButton;
 	private ImageButton _editTimeButton;
 	private ImageButton _editTimeAcceptChangeButton;
 	private ImageButton _editTimeCancelChangeButton;
+	private ImageButton _settingsButton;
 
+	// events
 	private MotionEvent _motionEvent;
 
+	// flags
 	private boolean _isTimerStarted;
+	private boolean _isWaitingForConfirmation;
 	
+	// time
 	private int _selectedMinute;
 	private int _currentMinute;
 	private int _currentSeconds;
-	
-	private ScreenReceiver _screenReceiver;
 	private int _UIMode = CountDownTimerService.MODE_BASE;
 	
+	// broadcast receivers
+	private ScreenReceiver _screenReceiver;
+	
+	// interprocess communication
 	 /** Messenger for communicating with service. */
     Messenger _countDownService;
 
@@ -80,7 +92,7 @@ public class MainActivity extends ActionBarActivity {
     			}
     			
     			if (_isTimerStarted && _currentSeconds % 10 == 0) {
-					renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
+					renderAll(_UIMode);
 				}
     			
     			break;
@@ -97,7 +109,12 @@ public class MainActivity extends ActionBarActivity {
     	}
 
 		private void extractDataFromBundle(Bundle info) {
-			_isTimerStarted = info.getBoolean(CountDownTimerService.IS_TIMER_STARTED);
+			// timer state related
+			int timerState = info.getInt(CountDownTimerService.TIMER_STATE);
+			_isTimerStarted = timerState == CountDownTimerService.TIMER_STATE_STARTED;
+			_isWaitingForConfirmation = timerState == CountDownTimerService.TIMER_STATE_FINISHED;
+			
+			// time related
 			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
 			_currentMinute = info.getInt(CountDownTimerService.CURRENT_MINUTE);
 			_currentSeconds = info.getInt(CountDownTimerService.CURRENT_SECONDS);
@@ -157,10 +174,27 @@ public class MainActivity extends ActionBarActivity {
 		_content = (RelativeLayout) findViewById(R.id.content);
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
-		_startStopStateButton = (ImageButton) findViewById(R.id.start_stop_state_button);
-		_buttonBar = findViewById(R.id.buttonArea);
 		_currentModeTextView = (TextView) findViewById(R.id.modeView);
 		_messageTextView = (TextView) findViewById(R.id.message_text_view);
+		
+		_buttonBar = findViewById(R.id.buttonArea);
+		_startStopStateButton = (ImageButton) findViewById(R.id.start_stop_state_button);
+		_settingsButton = (ImageButton) findViewById(R.id.settings_button);
+		
+		// FIXME remove after testing
+		_settingsButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				try {
+					_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, 0, 0));
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				
+				setTimerState(CountDownTimerService.MSG_START_TIMER);
+			}
+		});
 		
 		initEditTimeButtonGroup();
 		
@@ -442,8 +476,22 @@ public class MainActivity extends ActionBarActivity {
 			AnimationUtils.slideButtonBar(_buttonBar, this);
 		} else {
 			updateButtonBar();
-		}		
+		}
+		
+		if(_isWaitingForConfirmation){
+			FragmentManager manager = getSupportFragmentManager();
+			DialogFragment d = retrieveUnlockDatabasePopupDialog(manager);
+			if(d == null){
+				d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
+				d.setCancelable(false);
+				d.show(manager, ConfirmScheduledAramDialog.TAG);
+			}
+		}
 	}
+	 private DialogFragment retrieveUnlockDatabasePopupDialog(FragmentManager manager){
+		 DialogFragment d = (DialogFragment) manager.findFragmentByTag(ConfirmScheduledAramDialog.TAG);
+		 return d;
+	 }
 
 	private void renderUIEditMode() {
 		int minute;
@@ -460,11 +508,14 @@ public class MainActivity extends ActionBarActivity {
 			minute = _currentMinute;
 		}
 
-		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
-		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 2, R.color.timer_select_time_color, 150);
+		// NOTE: at the lowest level, a pure red arc is created. Above it is a green arc that shows the current time. Lastly,
+		// at the top, an arc that is opaque is displayed that shows selected time over the green arc.
 		
-		updateCurrentTime(minute, 0);			
-
+		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_SUPPORT_EDIT_TIME_ID_KEY, 1, R.color.red, 255);
+		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 2, R.color.timer_active_color, 255);
+		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 3, R.color.timer_select_time_color, 120);
+		
+		updateCurrentTime(minute, 0);
 	}
 
 	/**
@@ -478,12 +529,9 @@ public class MainActivity extends ActionBarActivity {
 	private void renderUIActiveMode() {
 		setMessageViewText(_isTimerStarted ? R.string.timer_state_active : R.string.timer_state_paused);
 		
-		_selectedMinute = -1;
+		_selectedMinute = -1;		
 		
-		// If the user is coming from edit mode - remove the edit mode arc.
-		if(findViewById(ARC_EDIT_TIME_ID_KEY) != null) {
-			_content.removeView(_content.findViewById(ARC_EDIT_TIME_ID_KEY));
-		}
+		removeEditModeArcs();
 		
 		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 1, R.color.timer_active_color, 255);
 		updateCurrentTime(_currentMinute, _currentSeconds);
@@ -499,39 +547,36 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
+	/**
+	 * If the user is coming from edit mode - remove any arcs specific to the edit mode.
+	 */
+	private void removeEditModeArcs() {
+		if(findViewById(ARC_EDIT_TIME_ID_KEY) != null) {
+			_content.removeView(_content.findViewById(ARC_EDIT_TIME_ID_KEY));
+		}
+		
+		if(findViewById(ARC_SUPPORT_EDIT_TIME_ID_KEY) != null){
+			_content.removeView(_content.findViewById(ARC_SUPPORT_EDIT_TIME_ID_KEY));
+		}
+	}
+
 	private void renderUIBaseMode() {
+		// If the timer finishes while the current mode is EDIT_MODE, remove all edit mode
+		// specific arcs.
+		removeEditModeArcs();
+		
 		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_select_time_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
 
 		_secondsTextView.setVisibility(View.GONE);
+		_buttonBar.setVisibility(View.VISIBLE);
 		
-		if(_selectedMinute == 0){
-			Animation anim = AnimationUtils.slideHide(_buttonBar, this);
-			anim.setAnimationListener(new AnimationListener() {
-				
-				@Override
-				public void onAnimationStart(Animation animation) {}
-				
-				@Override
-				public void onAnimationRepeat(Animation animation) {}
-				
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					_buttonBar.setVisibility(View.INVISIBLE);
-				}
-			});
-			_buttonBar.setAnimation(anim);
-			
+		if(_selectedMinute == 0){			
 			_minutesTextView.setVisibility(View.GONE);
 			
 			_currentModeTextView.setVisibility(View.VISIBLE);
 			_currentModeTextView.setText(R.string.set);
 		} else {
-			if(_buttonBar.getVisibility() == View.INVISIBLE) {
-				_buttonBar.setVisibility(View.VISIBLE);
-				_buttonBar.setAnimation(AnimationUtils.slideShow(_buttonBar, this));
-			}
-			
 			_minutesTextView.setVisibility(View.VISIBLE);
 			
 			_currentModeTextView.setVisibility(View.GONE);
@@ -585,6 +630,10 @@ public class MainActivity extends ActionBarActivity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public Messenger getCountDownTimerService(){
+		return _countDownService;
 	}
 	
 	@Override

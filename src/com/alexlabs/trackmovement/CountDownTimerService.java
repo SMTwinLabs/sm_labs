@@ -1,10 +1,15 @@
 package com.alexlabs.trackmovement;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -22,15 +27,16 @@ public class CountDownTimerService extends Service{
 	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
 	// common
-	static final int MSG_REGISTER_CLIENT = 0;
-	static final int MSG_UNREGISTER_CLIENT = 1;
-	static final int MSG_SET_MODE = 2;
-	static final int MSG_START_TIMER = 3;
-	static final int MSG_PAUSE_TIMER = 4;
-	static final int MSG_UNPAUSE_TIMER = 5;
-	static final int MSG_SET_SELECTED_MINUTE = 6;	
-	static final int MSG_GET_TIMER_INFO = 7;
-	static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
+	public static final int MSG_REGISTER_CLIENT = 0;
+	public static final int MSG_UNREGISTER_CLIENT = 1;
+	public static final int MSG_SET_MODE = 2;
+	public static final int MSG_START_TIMER = 3;
+	public static final int MSG_PAUSE_TIMER = 4;
+	public static final int MSG_UNPAUSE_TIMER = 5;
+	public static final int MSG_SET_SELECTED_MINUTE = 6;	
+	public static final int MSG_GET_TIMER_INFO = 7;
+	public static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
+	public static final int MSG_DONE_USING_TIMER = 9;
 	
 	
 	// modes
@@ -51,7 +57,7 @@ public class CountDownTimerService extends Service{
 	static final String CURRENT_SECONDS = "currentSeconds";
 	static final String CURRENT_MINUTE = "currentMinute";
 	static final String SELECTED_MINUTE = "selectedMinute";
-	static final String IS_TIMER_STARTED = "isTimerStarted";
+	static final String TIMER_STATE = "isTimerStarted";
 	
 	// Timer related
 	private int _timerState = TIMER_STATE_NONE;
@@ -59,6 +65,8 @@ public class CountDownTimerService extends Service{
 	
 	private int _selectedMinute;
 	private long _millisUntilFinished;
+	private ScheduledExecutorService _scheduler;// = Executors.newScheduledThreadPool(1);
+
 	
 	// Service related
 	private Messenger _remoteClientMessenger;
@@ -112,6 +120,20 @@ public class CountDownTimerService extends Service{
 				startCountDown();
 				break;
 				
+			case MSG_DONE_USING_TIMER:
+				_timerState = TIMER_STATE_NONE;
+				if(_scheduler != null && !_scheduler.isShutdown()) {
+					_scheduler.shutdown();
+				}
+				
+				try {
+					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+				}
+				
+				break;
+				
 			case MSG_GET_TIMER_INFO:
 				if(_remoteClientMessenger != null){
 					try {
@@ -147,11 +169,7 @@ public class CountDownTimerService extends Service{
 		private Bundle getDataInBundle() {
 			Bundle data = new Bundle();
 			data.putInt(MODE, _mode);
-			data.putBoolean(IS_TIMER_STARTED, _timerState == TIMER_STATE_STARTED);
-			
-			// FIXME: remove
-			Log.d(">>>>>>>Alex Labs: ", "getDataInBundle" + _timerState);
-			
+			data.putInt(TIMER_STATE, _timerState);			
 			data.putInt(SELECTED_MINUTE, _selectedMinute);
 			data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
 			data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));			
@@ -161,18 +179,17 @@ public class CountDownTimerService extends Service{
 	
 	public void startCountDown() {
 		if (_countDownTimer != null) {
-			stopCountDown();
+			_countDownTimer.cancel();
+			_countDownTimer = null;
 		}
 		
 		_timerState = TIMER_STATE_STARTED;
-		initCountDownTimer();
-
-		_countDownTimer.start();
 		
-		// FIXME: remove
-		Log.d(">>>>>>>Alex Labs: ", "startCountDown" + _timerState);
+		initCountDownTimer();
 		
 		sendNotification(getApplicationContext().getString(R.string.timer_started));
+		
+		_countDownTimer.start();
 	}
 	
 	public void stopCountDown() {
@@ -181,6 +198,7 @@ public class CountDownTimerService extends Service{
 			_countDownTimer = null;
 
 			_timerState = TIMER_STATE_STOPPED;	
+			
 			sendNotification(getApplicationContext().getString(R.string.timer_paused));
 		}
 	}
@@ -232,36 +250,47 @@ public class CountDownTimerService extends Service{
 			
 			@Override
 			public void onFinish() {
-				// TODO _timerState = TIMER_STATE_FINISHED;
-				_timerState = TIMER_STATE_NONE;
-				// FIXME: remove
-				Log.d(">>>>>>>Alex Labs: ", "onFinish" + _timerState);
+				_timerState = TIMER_STATE_FINISHED;
 				
 				_mode = MODE_BASE;
-				// Wake the device and sound the ring tone.
-				WakeLocker localWakeLock = new WakeLocker();
-				localWakeLock.acquire(getBaseContext());
-
-				Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(),
-							RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));	
 				
-				if(ringtone != null)
-					ringtone.play();
-
-				// Cancel the current count down.
 				_millisUntilFinished = _selectedMinute = 0;
+				
+				// Wake the device and sound the ring tone.
+				beginRepeatingAlarm();
+				
+				sendNotification(getApplicationContext().getString(R.string.timer_finished));
 				
 				try {
 					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 				}
-				
-				sendNotification(getApplicationContext().getString(R.string.timer_finished));
-
-				localWakeLock.release();
 			}
 		};
+	}
+	
+	private void beginRepeatingAlarm() {
+		if(_scheduler == null || _scheduler.isShutdown())
+			_scheduler = Executors.newScheduledThreadPool(1);
+		
+		_scheduler.scheduleWithFixedDelay(new Runnable() {
+			
+			@Override
+			public void run() {
+				WakeLocker localWakeLock = new WakeLocker();
+				localWakeLock.acquire(getBaseContext());
+				
+				Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(),
+						RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+			
+				if(ringtone != null)
+					ringtone.play();
+				
+				localWakeLock.release();
+				//TODO: shut down scheduler when the user does not want a repeating alarm.
+			}
+		}, 0, 10, TimeUnit.SECONDS);
 	}
 	
 	@Override
