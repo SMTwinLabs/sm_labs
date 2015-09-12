@@ -2,7 +2,10 @@ package com.alexlabs.trackmovement;
 
 import java.io.IOException;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -16,7 +19,7 @@ public class AlarmBell {
     private static final float IN_CALL_VOLUME = 0.125f;
     
     private static MediaPlayer s_MediaPlayer;
-
+	private static RingerModeBroadcastRecever _ringerModeBroadcastReceiver;
     
     public static MediaPlayer getMediaPlayer(){
     	if(s_MediaPlayer == null){
@@ -30,25 +33,73 @@ public class AlarmBell {
     	s_MediaPlayer = null;
     }
 
+    /**
+     *  Stops both the media player and vibration
+     * @param context
+     */
     public static void stop(Context context) {
         if (getMediaPlayer().isPlaying()) {
             // Stop audio playing
-            if (s_MediaPlayer != null) {
-            	getMediaPlayer().stop();
-                AudioManager audioManager = (AudioManager)
-                        context.getSystemService(Context.AUDIO_SERVICE);
-                audioManager.abandonAudioFocus(null);
-                getMediaPlayer().release();
-	            dispose();
-            }
+            stopMediaPlayer(context);
+    	    unregisterRingerModeBroadcastReciver(context);
         }
 
-        ((Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE)).cancel();
+        stopVibration(context);
+	    
     }
 
+	private static void stopVibration(Context context) {
+		((Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE)).cancel();
+	}
+
+    /**
+     * Stop the media player from producing any sound and dispose the media player.
+     * @param context
+     */
+	private static void stopMediaPlayer(Context context) {
+		if (getMediaPlayer() != null) {
+			getMediaPlayer().stop();
+		    AudioManager audioManager = (AudioManager)
+		            context.getSystemService(Context.AUDIO_SERVICE);
+		    audioManager.abandonAudioFocus(null);
+		    getMediaPlayer().release();
+		    dispose();
+		}
+	}
+
+	/**
+	 * Start both the media player and vibration. If the user is taking a phone call,
+	 * the strength of the audio is greatly diminished.
+	 * @param context
+	 * @param inTelephoneCall
+	 */
     public static void start(final Context context, boolean inTelephoneCall) {
         // Make sure we are stop before starting
         stop(context);
+    	
+        // NOTE: because we are using a single instance of the media player, we need
+        // to reset the media player, so that it goes in its uninitialized state. After
+        // initialize the player again.
+        startMediaPlayer(context, inTelephoneCall);        
+        registerRingerModeBroadcastReciver(context);
+        
+        startVibration(context);
+    }
+
+	private static void startVibration(final Context context) {
+		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(new long[] {500, 500}, 0);
+	}
+
+    /**
+     * Start the media player.If the user is taking a phone call,
+	 * the strength of the audio is greatly diminished.
+     * @param context
+     * @param inTelephoneCall
+     */
+	private static void startMediaPlayer(final Context context,
+			boolean inTelephoneCall) {
+		getMediaPlayer().reset();        
         
         getMediaPlayer().setOnErrorListener(new OnErrorListener() {
             @Override
@@ -74,7 +125,7 @@ public class AlarmBell {
             try {
                 // Must reset the media player to clear the error state.
             	getMediaPlayer().reset();
-            	getMediaPlayer().setDataSource(context, provideFallBackAlarmNoise());
+            	getMediaPlayer().setDataSource(context, provideFallbackAlarmNoise());
                 startAlarm(context, s_MediaPlayer);
             } catch (Exception ex2) {
             	
@@ -84,13 +135,10 @@ public class AlarmBell {
 	            dispose();
 	            // TODO - consider adding string vibration
             }
-        }       
-        
-        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(new long[] {500, 500}, 0);
-    }
+        }
+	}
 
-	private static Uri provideFallBackAlarmNoise() {
+	private static Uri provideFallbackAlarmNoise() {
 		Uri fallBackAlarmNoiseUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         // Fall back on the default alarm if the database does not have an
         // alarm stored.
@@ -122,4 +170,36 @@ public class AlarmBell {
             assetFileDescriptor.close();
         }
     }
+    
+
+	
+	public static class RingerModeBroadcastRecever extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(AudioManager.RINGER_MODE_CHANGED_ACTION.equals(intent.getAction())){
+				AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+				
+				// The audio output is on.
+				if(AudioManager.RINGER_MODE_NORMAL == audioManager.getRingerMode()){
+					AlarmBell.startMediaPlayer(context, false);
+					
+				// The audio output is off.
+				} else {
+					AlarmBell.stopMediaPlayer(context);
+				}
+			}
+		}
+		
+	}
+	
+	private static void registerRingerModeBroadcastReciver(Context context) {
+		final IntentFilter filter = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
+		_ringerModeBroadcastReceiver = new RingerModeBroadcastRecever();
+		context.registerReceiver(_ringerModeBroadcastReceiver, filter);
+	}
+	
+	private static void unregisterRingerModeBroadcastReciver(Context context) {
+		context.unregisterReceiver(_ringerModeBroadcastReceiver);
+	}
 }

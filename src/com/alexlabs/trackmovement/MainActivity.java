@@ -202,28 +202,26 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public boolean onTouch(View view, MotionEvent event) {
-//				if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
-					int action = event.getActionMasked();
-					_motionEvent = event;
+				int action = event.getActionMasked();
+				_motionEvent = event;
 
-					switch (action) {
-					case MotionEvent.ACTION_DOWN:
-						view.performClick();
-						break;
-						
-					case MotionEvent.ACTION_MOVE:
-						if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
-							onActionMove(getBaseContext(), _content);
-						}
-						break;
-						
-					case MotionEvent.ACTION_UP:
-						break;
-						
-					case MotionEvent.ACTION_CANCEL:
-						break;
+				switch (action) {
+				case MotionEvent.ACTION_DOWN:
+					view.performClick();
+					break;
+					
+				case MotionEvent.ACTION_MOVE:
+					if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
+						onActionMove(getBaseContext(), _content);
 					}
-//				}
+					break;
+					
+				case MotionEvent.ACTION_UP:
+					break;
+					
+				case MotionEvent.ACTION_CANCEL:
+					break;
+				}
 				
 				return true;
 			}
@@ -479,19 +477,19 @@ public class MainActivity extends ActionBarActivity {
 		}
 		
 		if(_isWaitingForConfirmation){
-			FragmentManager manager = getSupportFragmentManager();
-			DialogFragment d = retrieveUnlockDatabasePopupDialog(manager);
-			if(d == null){
-				d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
+			final FragmentManager manager = getSupportFragmentManager();
+			if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
+				DialogFragment d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
 				d.setCancelable(false);
 				d.show(manager, ConfirmScheduledAramDialog.TAG);
 			}
 		}
 	}
-	 private DialogFragment retrieveUnlockDatabasePopupDialog(FragmentManager manager){
-		 DialogFragment d = (DialogFragment) manager.findFragmentByTag(ConfirmScheduledAramDialog.TAG);
-		 return d;
-	 }
+	
+	private DialogFragment retrieveConfirmSchedulingAlarmDialog(FragmentManager manager){
+		DialogFragment d = (DialogFragment) manager.findFragmentByTag(ConfirmScheduledAramDialog.TAG);
+		return d;
+	}
 
 	private void renderUIEditMode() {
 		int minute;

@@ -2,16 +2,14 @@ package com.alexlabs.trackmovement;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -19,12 +17,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 public class CountDownTimerService extends Service{
 	
-	private static final boolean SHOULD_WAIT_FOR_DEBUGGER = true; // FIXME - set false for production
+	private static final boolean SHOULD_WAIT_FOR_DEBUGGER = false; // FIXME - set false for production
 	
 	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
@@ -81,6 +78,9 @@ public class CountDownTimerService extends Service{
 
 	// For debugging
 	static {
+		// NOTE: the code below starts the app in debug mode every time, causing the
+		// application the start very slowly, and animations become glitchy. 
+		// Set SHOULD_WAIT_FOR_DEBUGGER = false to avoid this behavior.
 		if(SHOULD_WAIT_FOR_DEBUGGER) {
 			android.os.Debug.waitForDebugger();
 		}	
@@ -198,7 +198,7 @@ public class CountDownTimerService extends Service{
 		
 		initCountDownTimer();
 		
-		sendNotification(getApplicationContext().getString(R.string.timer_started));
+		UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_started));
 		
 		_countDownTimer.start();
 	}
@@ -210,36 +210,10 @@ public class CountDownTimerService extends Service{
 
 			_timerState = TIMER_STATE_STOPPED;	
 			
-			sendNotification(getApplicationContext().getString(R.string.timer_paused));
+			UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_paused));
 		}
 	}
 	
-	private void sendNotification(String text) {
-		// Create the Notification.Builder.
-		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext())
-			.setSmallIcon(R.drawable.ic_launcher)
-			.setContentText(text)
-			.setContentTitle(getApplicationContext().getString(R.string.app_name));
-		
-		// Create intent.
-		// NOTE: to avoid opening a new instance of the MainActivity every time the notification
-		// is clicked, set android:launchMode="singleTop" to the activity in the manifest.
-		Intent notificationIntent = new Intent(this, MainActivity.class);
-		
-		// Create pending intent to take us to the app after the notification is clicked.
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		notificationBuilder.setContentIntent(pendingIntent);
-		
-		// Set the text in the notification bar too.
-		notificationBuilder.setTicker(text);
-		
-		// Build the notification.
-		Notification notification = notificationBuilder.build();		
-		
-		// Start the notification in the foreground.
-		startForeground(ONGOING_NOTIFICATION_ID, notification);
-	}
-
 	private void initCountDownTimer() {
 		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
 			
@@ -270,7 +244,7 @@ public class CountDownTimerService extends Service{
 				// Wake the device and sound the ring tone.
 				beginRepeatingAlarm();
 				
-				sendNotification(getApplicationContext().getString(R.string.timer_finished));
+				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
 				
 				try {
 					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
@@ -311,5 +285,4 @@ public class CountDownTimerService extends Service{
 	public IBinder onBind(Intent intent) {
 		return _serviceMessenger.getBinder();
 	}
-
 }
