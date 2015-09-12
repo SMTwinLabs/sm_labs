@@ -24,6 +24,8 @@ import android.util.Log;
 
 public class CountDownTimerService extends Service{
 	
+	private static final boolean SHOULD_WAIT_FOR_DEBUGGER = true; // FIXME - set false for production
+	
 	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
 	// common
@@ -77,7 +79,12 @@ public class CountDownTimerService extends Service{
     */
 	final Messenger _serviceMessenger = new Messenger(new IncomingHandler());
 
-	
+	// For debugging
+	static {
+		if(SHOULD_WAIT_FOR_DEBUGGER) {
+			android.os.Debug.waitForDebugger();
+		}	
+	}
 	
 	@SuppressLint("HandlerLeak") 
 	class IncomingHandler extends Handler {
@@ -122,6 +129,10 @@ public class CountDownTimerService extends Service{
 				
 			case MSG_DONE_USING_TIMER:
 				_timerState = TIMER_STATE_NONE;
+				// FIXME
+				Log.d("ALEX_LABS", ">>>>MSG_DONE_USING_TIMER");
+				AlarmBell.stop(getBaseContext());
+				
 				if(_scheduler != null && !_scheduler.isShutdown()) {
 					_scheduler.shutdown();
 				}
@@ -274,23 +285,26 @@ public class CountDownTimerService extends Service{
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
 		
-		_scheduler.scheduleWithFixedDelay(new Runnable() {
-			
-			@Override
-			public void run() {
-				WakeLocker localWakeLock = new WakeLocker();
-				localWakeLock.acquire(getBaseContext());
-				
-				Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(),
-						RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-			
-				if(ringtone != null)
-					ringtone.play();
-				
-				localWakeLock.release();
-				//TODO: shut down scheduler when the user does not want a repeating alarm.
-			}
-		}, 0, 10, TimeUnit.SECONDS);
+//		_scheduler.scheduleWithFixedDelay(new Runnable() {
+//			
+//			@Override
+//			public void run() {
+//				WakeLocker localWakeLock = new WakeLocker();
+//				localWakeLock.acquire(getBaseContext());
+//				
+//				AlarmBell.start(getBaseContext(), false);
+//				
+//				localWakeLock.release();
+//				//TODO: shut down scheduler when the user does not want a repeating alarm.
+//			}
+//		}, 0, 10, TimeUnit.SECONDS);
+		
+		WakeLocker localWakeLock = new WakeLocker();
+		localWakeLock.acquire(getBaseContext());
+		
+		AlarmBell.start(getBaseContext(), false);
+		
+		localWakeLock.release();
 	}
 	
 	@Override

@@ -58,9 +58,7 @@ public class ConfirmScheduledAramDialog extends DialogFragment{
 					Messenger countDownMessenger = ((MainActivity)getActivity()).getCountDownTimerService();
 					
 					// Notify the count down service that the alarm has been confirmed. 
-					Message msg = Message.obtain(null,
-		                    CountDownTimerService.MSG_DONE_USING_TIMER);
-			        msg.replyTo = countDownMessenger;
+					Message msg = Message.obtain(null, CountDownTimerService.MSG_DONE_USING_TIMER);
 			        try {
 			        	countDownMessenger.send(msg);
 					} catch (RemoteException e) {

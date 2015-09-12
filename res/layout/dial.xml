@@ -41,6 +41,7 @@
 	            android:layout_height="102dp"
 	            android:background="@drawable/circle_minutes_red"
 	            android:layout_gravity="center"
+	            android:visibility="gone"
             	/>
             
             <ImageView android:id="@+id/pulsatingCicrle"
@@ -48,6 +49,7 @@
 	            android:layout_height="142dp"
 	            android:src="@drawable/pulsation"
 	            android:layout_gravity="center"
+	            android:visibility="gone"
             	/>
             
             <LinearLayout android:id="@+id/timerDialDisplay"
