@@ -274,7 +274,13 @@ public class MainActivity extends ActionBarActivity {
 		// screen - whether it was on or off.
 		registerScreenReciver();
 
-		startService(new Intent(this, CountDownTimerService.class));        
+		startService(new Intent(this, CountDownTimerService.class));
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		  
         doBindToCountDownService();
 	}
 	
@@ -653,33 +659,24 @@ public class MainActivity extends ActionBarActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	// NOTE: onDestory() is not called when the screen is turned off, when the home button is pressed
+	// and when the user navigates to the overview screen. However, onStop() is called in all scenarios
+	// mentioned above including the scenario when the back button is pressed.
 	@Override
-	protected void onUserLeaveHint()
-	{
-	    super.onUserLeaveHint();
-		// If the timer is running and the user has exited the application themself,
+	protected void onStop() {
+		super.onStop();	
+		
+		// NOTE: when exiting the application, the UI mode is set to active.
+		if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
+			updateUIMode(CountDownTimerService.MODE_ACTIVE);
+		}
+
+		// If the timer is running and the user has exited the application itself,
 		// show toast that the timer is active.
 		if(_isTimerStarted){
 			UIUtils.showToast(this, R.string.timer_still_running);
 		}
-	}
-	
-	@Override
-	protected void onDestroy() {	
 		
-		// NOTE: when exiting the application, the UI mode is set to active.
-		if(isFinishing()  && _UIMode == CountDownTimerService.MODE_EDIT_TIME) {
-			updateUIMode(CountDownTimerService.MODE_ACTIVE);
-		}
-
-		// If the timer is running and the user has exited the application themself,
-		// show toast that the timer is active.
-		if(isFinishing() && _isTimerStarted){
-			UIUtils.showToast(this, R.string.timer_still_running);
-		}
-		
-		doUnbindFromCountDownService();
-		
-		super.onDestroy();
+		doUnbindFromCountDownService();		
 	}
 }
