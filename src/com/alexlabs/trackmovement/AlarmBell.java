@@ -12,6 +12,9 @@ import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.os.Vibrator;
 
 public class AlarmBell {
@@ -20,25 +23,31 @@ public class AlarmBell {
     
     private static MediaPlayer s_MediaPlayer;
 	private static RingerModeBroadcastRecever _ringerModeBroadcastReceiver;
-    
-    public static MediaPlayer getMediaPlayer(){
-    	if(s_MediaPlayer == null){
-    		s_MediaPlayer = new MediaPlayer();
-    	}
-    	
-    	return s_MediaPlayer;
-    }
-    
-    private static void dispose(){
-    	s_MediaPlayer = null;
-    }
+	private boolean mediaPlayerStarted;
+	private volatile static AlarmBell _bell;
+	
+	private AlarmBell(){
+	}
+	
+	// Double-checked locking
+	public static AlarmBell instance(){
+		if(_bell == null) {
+			synchronized(AlarmBell.class){
+				if(_bell == null) {
+					_bell = new AlarmBell();
+				}
+			}
+		}
+		
+		return _bell;
+	}
 
     /**
-     *  Stops both the media player and vibration
+     * If the media player is playing, then Stops both the media player and vibration
      * @param context
      */
-    public static void stop(Context context) {
-        if (getMediaPlayer().isPlaying()) {
+    public void stop(Context context) {
+        if (mediaPlayerStarted) {
             // Stop audio playing
             stopMediaPlayer(context);
     	    unregisterRingerModeBroadcastReciver(context);
@@ -48,7 +57,7 @@ public class AlarmBell {
 	    
     }
 
-	private static void stopVibration(Context context) {
+	private void stopVibration(Context context) {
 		((Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE)).cancel();
 	}
 
@@ -56,15 +65,15 @@ public class AlarmBell {
      * Stop the media player from producing any sound and dispose the media player.
      * @param context
      */
-	private static void stopMediaPlayer(Context context) {
-		if (getMediaPlayer() != null) {
-			getMediaPlayer().stop();
-		    AudioManager audioManager = (AudioManager)
-		            context.getSystemService(Context.AUDIO_SERVICE);
-		    audioManager.abandonAudioFocus(null);
-		    getMediaPlayer().release();
-		    dispose();
-		}
+	private void stopMediaPlayer(Context context) {
+		s_MediaPlayer.stop();
+	    AudioManager audioManager = (AudioManager)
+	            context.getSystemService(Context.AUDIO_SERVICE);
+	    audioManager.abandonAudioFocus(null);
+	    s_MediaPlayer.release();
+	    s_MediaPlayer = null;	
+	    
+	    mediaPlayerStarted = false;
 	}
 
 	/**
@@ -73,10 +82,7 @@ public class AlarmBell {
 	 * @param context
 	 * @param inTelephoneCall
 	 */
-    public static void start(final Context context, boolean inTelephoneCall) {
-        // Make sure we are stop before starting
-        stop(context);
-    	
+    public void start(final Context context, boolean inTelephoneCall) {
         // NOTE: because we are using a single instance of the media player, we need
         // to reset the media player, so that it goes in its uninitialized state. After
         // initialize the player again.
@@ -86,7 +92,7 @@ public class AlarmBell {
         startVibration(context);
     }
 
-	private static void startVibration(final Context context) {
+	private void startVibration(final Context context) {
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(new long[] {500, 500}, 0);
 	}
@@ -97,14 +103,20 @@ public class AlarmBell {
      * @param context
      * @param inTelephoneCall
      */
-	private static void startMediaPlayer(final Context context,
+	private void startMediaPlayer(final Context context,
 			boolean inTelephoneCall) {
-		getMediaPlayer().reset();        
+		
+		// Make sure we are stop before starting
+    	if(s_MediaPlayer != null){
+    		stopMediaPlayer(context);  
+    	}
+    	
+		s_MediaPlayer = new MediaPlayer();
         
-        getMediaPlayer().setOnErrorListener(new OnErrorListener() {
+        s_MediaPlayer.setOnErrorListener(new OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                AlarmBell.stop(context);
+                AlarmBell.instance().stop(context);
                 return true;
             }
         });
@@ -113,29 +125,31 @@ public class AlarmBell {
             // Check if we are in a call. If we are, use the in-call alarm
             // resource at a low volume to not disrupt the call.
             if (inTelephoneCall) {
-            	getMediaPlayer().setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
+            	s_MediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
             } 
             
             setDataSourceFromResource(context, R.raw.old_clock_ringing_short);
             
-            startAlarm(context, getMediaPlayer());
+            startAlarm(context, s_MediaPlayer);
         } catch (Exception ex) {
             // The alarmNoise may be on the SD card which could be busy right
             // now. Use the fallback ringtone.
             try {
                 // Must reset the media player to clear the error state.
-            	getMediaPlayer().reset();
-            	getMediaPlayer().setDataSource(context, provideFallbackAlarmNoise());
+            	s_MediaPlayer.reset();
+            	s_MediaPlayer.setDataSource(context, provideFallbackAlarmNoise());
                 startAlarm(context, s_MediaPlayer);
             } catch (Exception ex2) {
             	
             	// No rigtones are available, so the user will not hear anything.
-            	getMediaPlayer().stop();
-                getMediaPlayer().release();
-	            dispose();
+            	s_MediaPlayer.stop();
+                s_MediaPlayer.release();
+                s_MediaPlayer = null;
 	            // TODO - consider adding string vibration
             }
         }
+        
+        mediaPlayerStarted = true;
 	}
 
 	private static Uri provideFallbackAlarmNoise() {
@@ -166,7 +180,7 @@ public class AlarmBell {
             throws IOException {
         AssetFileDescriptor assetFileDescriptor = context.getResources().openRawResourceFd(res);
         if (assetFileDescriptor != null) {
-            getMediaPlayer().setDataSource(assetFileDescriptor.getFileDescriptor(), assetFileDescriptor.getStartOffset(), assetFileDescriptor.getLength());
+            s_MediaPlayer.setDataSource(assetFileDescriptor.getFileDescriptor(), assetFileDescriptor.getStartOffset(), assetFileDescriptor.getLength());
             assetFileDescriptor.close();
         }
     }
@@ -182,11 +196,11 @@ public class AlarmBell {
 				
 				// The audio output is on.
 				if(AudioManager.RINGER_MODE_NORMAL == audioManager.getRingerMode()){
-					AlarmBell.startMediaPlayer(context, false);
+					instance().startMediaPlayer(context, false);
 					
 				// The audio output is off.
 				} else {
-					AlarmBell.stopMediaPlayer(context);
+					instance().stopMediaPlayer(context);
 				}
 			}
 		}
@@ -201,5 +215,16 @@ public class AlarmBell {
 	
 	private static void unregisterRingerModeBroadcastReciver(Context context) {
 		context.unregisterReceiver(_ringerModeBroadcastReceiver);
+	}
+	
+	public static void sendStopAlarmNoiseAndVibrationMessage(Messenger service) {
+		Message msg = Message.obtain(null,
+		        CountDownTimerService.MSG_STOP_ALARM_NOISE_AND_VIBRATION);
+		try {
+			service.send(msg);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

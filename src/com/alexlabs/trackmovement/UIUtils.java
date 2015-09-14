@@ -1,8 +1,5 @@
 package com.alexlabs.trackmovement;
 
-import com.alexlabs.trackmovement.R.drawable;
-import com.alexlabs.trackmovement.R.string;
-
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -10,7 +7,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Builder;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;

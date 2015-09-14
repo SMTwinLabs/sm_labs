@@ -20,6 +20,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -485,7 +486,7 @@ public class MainActivity extends ActionBarActivity {
 		if(_isWaitingForConfirmation){
 			final FragmentManager manager = getSupportFragmentManager();
 			if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
-				DialogFragment d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
+				DialogFragment d = ConfirmScheduledAramDialog.newInstance(_countDownService, R.string.timer_finished);
 				d.setCancelable(false);
 				d.show(manager, ConfirmScheduledAramDialog.TAG);
 			}
@@ -678,5 +679,14 @@ public class MainActivity extends ActionBarActivity {
 		}
 		
 		doUnbindFromCountDownService();		
+	}
+	
+	@Override
+	protected void onUserLeaveHint() {
+		super.onUserLeaveHint();
+		
+		if(_isWaitingForConfirmation) {
+			AlarmBell.sendStopAlarmNoiseAndVibrationMessage(_countDownService);
+		}
 	}
 }

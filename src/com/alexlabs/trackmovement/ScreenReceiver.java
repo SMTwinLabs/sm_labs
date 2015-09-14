@@ -3,6 +3,8 @@ package com.alexlabs.trackmovement;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.util.Log;
 
 public class ScreenReceiver extends BroadcastReceiver {
@@ -17,6 +19,12 @@ public class ScreenReceiver extends BroadcastReceiver {
 			// screen is turned on
 			_isScreenOn = false;
 		
+			IBinder binder = peekService(context, new Intent(context, CountDownTimerService.class));
+			if(binder != null) {
+				Messenger countDownTimerSerivce = new Messenger(binder);
+				AlarmBell.sendStopAlarmNoiseAndVibrationMessage(countDownTimerSerivce);
+			}
+			
 		} else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {			
 			// screen is turned off
 			_isScreenOn = true;

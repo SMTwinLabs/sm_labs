@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -32,12 +33,13 @@ public class CountDownTimerService extends Service{
 	public static final int MSG_GET_TIMER_INFO = 7;
 	public static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
 	public static final int MSG_DONE_USING_TIMER = 9;
+	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 10;
 	
 	
 	// modes
-	static final int MODE_BASE = 10;
-	static final int MODE_ACTIVE = 11; 
-	static final int MODE_EDIT_TIME = 12;
+	static final int MODE_BASE = 11;
+	static final int MODE_ACTIVE = 12; 
+	static final int MODE_EDIT_TIME = 13;
 	
 	// states
 	static final int TIMER_STATE_NONE = 20;
@@ -125,9 +127,9 @@ public class CountDownTimerService extends Service{
 				
 			case MSG_DONE_USING_TIMER:
 				_timerState = TIMER_STATE_NONE;
-				// FIXME
-				Log.d("ALEX_LABS", ">>>>MSG_DONE_USING_TIMER");
-				AlarmBell.stop(getBaseContext());
+				
+				AlarmBell.instance().stop(getBaseContext());
+				Log.d("ALEX_LABS", AlarmBell.instance().toString());
 				
 				if(_scheduler != null && !_scheduler.isShutdown()) {
 					_scheduler.shutdown();
@@ -139,6 +141,9 @@ public class CountDownTimerService extends Service{
 					// TODO Auto-generated catch block
 				}
 				
+				break;
+			case MSG_STOP_ALARM_NOISE_AND_VIBRATION:
+				AlarmBell.instance().stop(getBaseContext());
 				break;
 				
 			case MSG_GET_TIMER_INFO:
@@ -211,7 +216,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
+		_countDownTimer = new CountDownTimer(3000, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -251,6 +256,15 @@ public class CountDownTimerService extends Service{
 		};
 	}
 	
+	private void showMainActivity() {
+		Intent i = new Intent();
+		i.setAction(Intent.ACTION_MAIN);
+		i.addCategory(Intent.CATEGORY_LAUNCHER);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+		i.setComponent(new ComponentName(getApplicationContext().getPackageName(), MainActivity.class.getName()));
+		startActivity(i);
+	}
+	
 	private void beginRepeatingAlarm() {
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
@@ -272,7 +286,9 @@ public class CountDownTimerService extends Service{
 		WakeLocker localWakeLock = new WakeLocker();
 		localWakeLock.acquire(getBaseContext());
 		
-		AlarmBell.start(getBaseContext(), false);
+		showMainActivity();
+		
+		AlarmBell.instance().start(getBaseContext(), false);
 		
 		localWakeLock.release();
 	}
