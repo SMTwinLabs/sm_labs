@@ -3,12 +3,12 @@
 		android:id="@+id/buttonArea"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-		android:background="@color/minutesColor">  
+		android:background="@color/minutesColor"
+		android:padding="5dp">  
     
     <ImageButton android:id="@+id/settings_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_settings_white_36dp"
 	        android:layout_centerHorizontal="true"
@@ -17,15 +17,14 @@
     <ImageButton android:id="@+id/start_stop_state_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_margin="10dp"
 	        android:background="@null"
+	        android:layout_marginBottom="10dp"
 	        android:layout_centerVertical="true"
 	        android:src="@drawable/ic_play_circle_outline_white_48dp"/>
 	    
     <ImageButton android:id="@+id/edit_time_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_timer_white_48dp"
 	        android:layout_below="@id/start_stop_state_button"/>
@@ -40,14 +39,13 @@
     <ImageButton android:id="@+id/edit_time_cancel_change_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_margin="10dp"
 	        android:background="@null"
+	        android:layout_marginBottom="10dp"
 	        android:src="@drawable/ic_clear_white_48dp"/>    
     
     <ImageButton android:id="@+id/edit_time_accept_change_button"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_margin="10dp"
 	        android:background="@null"
 	        android:src="@drawable/ic_done_white_48dp"
 	       android:layout_below="@id/edit_time_cancel_change_button"/>

@@ -216,7 +216,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(3000, 100) {
+		_countDownTimer = new CountDownTimer(10000, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -232,6 +232,11 @@ public class CountDownTimerService extends Service{
 						_remoteClientMessenger = null;
 					}
 				}
+				
+				if(_millisUntilFinished < 200) {					
+					// Wake the device and sound the ring tone.
+					beginRepeatingAlarm();
+				}
 			}
 			
 			@Override
@@ -240,11 +245,7 @@ public class CountDownTimerService extends Service{
 				
 				_mode = MODE_BASE;
 				
-				_millisUntilFinished = _selectedMinute = 0;
-				
-				// Wake the device and sound the ring tone.
-				beginRepeatingAlarm();
-				
+				_millisUntilFinished = _selectedMinute = 0;				
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
 				
 				try {

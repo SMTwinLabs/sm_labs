@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
@@ -167,9 +168,13 @@ public class MainActivity extends ActionBarActivity {
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
 		super.onCreate(savedInstanceState);
-
+		
+		// Unlock only non-secure lock key guards.
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+		
 		setContentView(R.layout.activity_main);
 
+		// Hide the action bar.
 		getSupportActionBar().hide();
 
 		_content = (RelativeLayout) findViewById(R.id.content);
