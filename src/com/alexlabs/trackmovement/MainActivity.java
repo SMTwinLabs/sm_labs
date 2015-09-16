@@ -63,7 +63,7 @@ public class MainActivity extends ActionBarActivity {
 
 	// flags
 	private boolean _isTimerStarted;
-	private boolean _isWaitingForConfirmation;
+	private boolean _shouldDisplayConfirmationDialog;
 	
 	// time
 	private int _selectedMinute;
@@ -114,7 +114,7 @@ public class MainActivity extends ActionBarActivity {
 			// timer state related
 			int timerState = info.getInt(CountDownTimerService.TIMER_STATE);
 			_isTimerStarted = timerState == CountDownTimerService.TIMER_STATE_STARTED;
-			_isWaitingForConfirmation = timerState == CountDownTimerService.TIMER_STATE_FINISHED;
+			_shouldDisplayConfirmationDialog = timerState == CountDownTimerService.TIMER_STATE_FINISHED;
 			
 			// time related
 			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
@@ -192,13 +192,9 @@ public class MainActivity extends ActionBarActivity {
 			
 			@Override
 			public void onClick(View v) {
-				try {
-					_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, 0, 0));
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-				
-				setTimerState(CountDownTimerService.MSG_START_TIMER);
+				Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				getBaseContext().startActivity(i);
 			}
 		});
 		
@@ -279,7 +275,7 @@ public class MainActivity extends ActionBarActivity {
 		// Register a broadcast receiver that saves the previous state of the
 		// screen - whether it was on or off.
 		registerScreenReciver();
-
+		
 		startService(new Intent(this, CountDownTimerService.class));
 	}
 	
@@ -488,7 +484,7 @@ public class MainActivity extends ActionBarActivity {
 			updateButtonBar();
 		}
 		
-		if(_isWaitingForConfirmation){
+		if(_shouldDisplayConfirmationDialog){
 			final FragmentManager manager = getSupportFragmentManager();
 			if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
 				DialogFragment d = ConfirmScheduledAramDialog.newInstance(_countDownService, R.string.timer_finished);
@@ -690,7 +686,7 @@ public class MainActivity extends ActionBarActivity {
 	protected void onUserLeaveHint() {
 		super.onUserLeaveHint();
 		
-		if(_isWaitingForConfirmation) {
+		if(_shouldDisplayConfirmationDialog) {
 			AlarmBell.sendStopAlarmNoiseAndVibrationMessage(_countDownService);
 		}
 	}

@@ -47,9 +47,13 @@ public class ConfirmScheduledAramDialog extends DialogFragment{
 			
 			@Override
 			public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-				AlarmBell.sendStopAlarmNoiseAndVibrationMessage((Messenger) getArguments().getParcelable(MESSENGER_KEY));
-				getActivity().finish();
-				return true;
+				if(KeyEvent.KEYCODE_BACK == keyCode) {
+					AlarmBell.sendStopAlarmNoiseAndVibrationMessage((Messenger) getArguments().getParcelable(MESSENGER_KEY));
+					getActivity().finish();
+					return true;
+				}
+				
+				return false;
 			}
 		});
 		return d;
