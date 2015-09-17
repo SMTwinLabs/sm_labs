@@ -11,7 +11,7 @@ public class Preferences {
 	private static Preferences _instance;
 	private Context _context;
 	private Resources _resources;
-	private SharedPreferences _sharedPreferences;
+	private SharedPreferences _preferences;
 	private SharedPreferences.Editor _preferenceEditor;
 	private boolean _isDirty;
 	
@@ -22,28 +22,20 @@ public class Preferences {
 	public Preferences(){
 		_context = App.instance();
 		_resources = _context.getResources();
-		_sharedPreferences = _context.getSharedPreferences(PREF_NAME, 0);
+		_preferences = _context.getSharedPreferences(PREF_NAME, Context.MODE_MULTI_PROCESS);
 		
 		init();
 	}
-	
-	public static Preferences instance(){
-		if(_instance == null) {
-			_instance = new Preferences();
-		}
-		
-		return _instance;
-	}
 
-	public SharedPreferences getSharedPreferences() {
-		return _sharedPreferences;
+	public SharedPreferences getPreferences() {
+		return _preferences;
 	}
 	
 	public synchronized void startEdit() {
 		if (_preferenceEditor != null)
 			throw new IllegalStateException();
 
-		_preferenceEditor = _sharedPreferences.edit();
+		_preferenceEditor = _preferences.edit();
 	}
 	
 	public synchronized void finishEdit() {
@@ -54,17 +46,9 @@ public class Preferences {
 		_preferenceEditor = null;			
 	}
 	
-	private void init() {
-		if(_preferenceEditor != null){
-			throw new IllegalArgumentException();
-		}
-		
-		_isSoundOn = _sharedPreferences.getBoolean(_resources.getString(R.string.sound_toggle_pref), true);
-		_isVibrationOn = _sharedPreferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
-	}
-	
-	public void updatePreferences(){
-		init();
+	private void init() {		
+		_isSoundOn = _preferences.getBoolean(_resources.getString(R.string.sound_toggle_pref), true);
+		_isVibrationOn = _preferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
 	}
 	
 	public boolean isSoundOn() {
