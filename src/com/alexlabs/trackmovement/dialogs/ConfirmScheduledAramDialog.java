@@ -27,7 +27,7 @@ public class ConfirmScheduledAramDialog extends DialogFragment{
 	private static final String MESSAGE_KEY = "messageResId";
 	private static final String MESSENGER_KEY = "messenger";
 	
-	private ConfirmScheduledAramDialog() {
+	public ConfirmScheduledAramDialog() {
 		// empty
 	}
 	

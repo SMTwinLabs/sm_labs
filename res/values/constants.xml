@@ -2,4 +2,5 @@
 <resources>    
 	<string name="sound_toggle_pref">SoundPref</string>	
 	<string name="vibration_toggle_pref">VibrationPref</string>
+	<string name="volume_pref">VolumePref</string>
 </resources>

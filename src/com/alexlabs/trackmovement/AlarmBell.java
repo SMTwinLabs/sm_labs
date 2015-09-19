@@ -50,7 +50,7 @@ public class AlarmBell {
     public void stop(Context context) {
         if (_isMediaPlayerStarted) {
             // Stop audio playing
-            stopMediaPlayer(context);
+            stopAlarmBell(context);
         }
 
         stopVibration(context);
@@ -65,13 +65,15 @@ public class AlarmBell {
      * Stop the media player from producing any sound and dispose the media player.
      * @param context
      */
-	private void stopMediaPlayer(Context context) {
-		_mediaPlayer.stop();
-	    AudioManager audioManager = (AudioManager)
-	            context.getSystemService(Context.AUDIO_SERVICE);
-	    audioManager.abandonAudioFocus(null);
-	    _mediaPlayer.release();
-	    _mediaPlayer = null;	
+	public void stopAlarmBell(Context context) {
+		if(_mediaPlayer != null) {
+			_mediaPlayer.stop();
+		    AudioManager audioManager = (AudioManager)
+		            context.getSystemService(Context.AUDIO_SERVICE);
+		    audioManager.abandonAudioFocus(null);
+		    _mediaPlayer.release();
+		    _mediaPlayer = null;	
+		}
 	    
 	    _isMediaPlayerStarted = false;
 	}
@@ -88,7 +90,11 @@ public class AlarmBell {
         // initialize the player again.
     	Preferences preferences = new Preferences();
     	if(preferences.isSoundOn()) {
-    		startMediaPlayer(context, inTelephoneCall);
+    		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
+    				audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)*preferences.getVolumeProgess()/100, AudioManager.ADJUST_SAME);
+    		
+    		startAlarmBell(context, inTelephoneCall, audioManager);
     	}
         
     	if(preferences.isVibrationOn()) {
@@ -109,19 +115,15 @@ public class AlarmBell {
      * @param context
      * @param inTelephoneCall
      */
-	private void startMediaPlayer(final Context context,
-			boolean inTelephoneCall) {
+	public void startAlarmBell(final Context context,
+			boolean inTelephoneCall, final AudioManager audioManager) {
 		
 		// Make sure we are stop before starting
     	if(_mediaPlayer != null){
-    		stopMediaPlayer(context);  
+    		stopAlarmBell(context);  
     	}
-
-		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
     	
 		_mediaPlayer = new MediaPlayer();
-        
         _mediaPlayer.setOnErrorListener(new OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -130,6 +132,8 @@ public class AlarmBell {
             }
         });
 
+
+        Preferences preferences = new Preferences();
         try {
             // Check if we are in a call. If we are, use the in-call alarm
             // resource at a low volume to not disrupt the call.
@@ -137,9 +141,9 @@ public class AlarmBell {
             	_mediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
             } 
             
-            setDataSourceFromResource(context, R.raw.old_clock_ringing_short);
+            setDataSourceFromResource(context, preferences.getRingtone());
             
-            startAlarm(context, _mediaPlayer);
+            startPlayer(context, audioManager);
         } catch (Exception ex) {
             // The alarmNoise may be on the SD card which could be busy right
             // now. Use the fallback ringtone.
@@ -147,7 +151,8 @@ public class AlarmBell {
                 // Must reset the media player to clear the error state.
             	_mediaPlayer.reset();
             	_mediaPlayer.setDataSource(context, provideFallbackAlarmNoise());
-                startAlarm(context, _mediaPlayer);
+                
+            	startPlayer(context, audioManager);
             } catch (Exception ex2) {
             	
             	// No rigtones are available, so the user will not hear anything.
@@ -172,15 +177,13 @@ public class AlarmBell {
 		return fallBackAlarmNoiseUri;
 	}
     
-    private void startAlarm(Context context, MediaPlayer player) throws IOException {
-        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-
-        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        player.setLooping(true);
-        player.prepare();
+    private void startPlayer(Context context, AudioManager audioManager) throws IOException {
+    	_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//        player.setLooping(true);
+    	_mediaPlayer.prepare();
         audioManager.requestAudioFocus(null,
                 AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-        player.start();
+        _mediaPlayer.start();
     }
     
     private void setDataSourceFromResource(Context context, int res)
