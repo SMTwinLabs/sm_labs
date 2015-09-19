@@ -47,7 +47,6 @@ public class MainActivity extends ActionBarActivity {
 	private RelativeLayout _content;
 	private TextView _minutesTextView;
 	private TextView _secondsTextView;
-	private TextView _currentModeTextView;
 	private TextView _messageTextView;
 	
 	// button bar
@@ -180,7 +179,6 @@ public class MainActivity extends ActionBarActivity {
 		_content = (RelativeLayout) findViewById(R.id.content);
 		_minutesTextView = (TextView) findViewById(R.id.minutesView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
-		_currentModeTextView = (TextView) findViewById(R.id.modeView);
 		_messageTextView = (TextView) findViewById(R.id.message_text_view);
 		
 		_buttonBar = findViewById(R.id.buttonArea);
@@ -272,17 +270,17 @@ public class MainActivity extends ActionBarActivity {
 
 		});
 		
-		// Register a broadcast receiver that saves the previous state of the
-		// screen - whether it was on or off.
-		registerScreenReciver();
-		
 		startService(new Intent(this, CountDownTimerService.class));
 	}
 	
 	@Override
 	protected void onStart() {
 		super.onStart();
-		  
+		
+		// Register a broadcast receiver that saves the previous state of the
+		// screen - whether it was on or off.
+		registerScreenReciver();
+		
         doBindToCountDownService();
 	}
 	
@@ -505,8 +503,7 @@ public class MainActivity extends ActionBarActivity {
 		setMessageViewText(R.string.set_new_time);
 		
 		_minutesTextView.setVisibility(View.VISIBLE);
-		_secondsTextView.setVisibility(View.GONE);		
-		_currentModeTextView.setVisibility(View.GONE);
+		_secondsTextView.setVisibility(View.GONE);
 		
 		if(_selectedMinute >= 0) {
 			minute = _selectedMinute;
@@ -543,8 +540,7 @@ public class MainActivity extends ActionBarActivity {
 		updateCurrentTime(_currentMinute, _currentSeconds);
 
 		_minutesTextView.setVisibility(View.VISIBLE);
-		_secondsTextView.setVisibility(View.VISIBLE);			
-		_currentModeTextView.setVisibility(View.GONE);
+		_secondsTextView.setVisibility(View.VISIBLE);
 		
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
@@ -576,17 +572,7 @@ public class MainActivity extends ActionBarActivity {
 
 		_secondsTextView.setVisibility(View.GONE);
 		_buttonBar.setVisibility(View.VISIBLE);
-		
-		if(_selectedMinute == 0){			
-			_minutesTextView.setVisibility(View.GONE);
-			
-			_currentModeTextView.setVisibility(View.VISIBLE);
-			_currentModeTextView.setText(R.string.set);
-		} else {
-			_minutesTextView.setVisibility(View.VISIBLE);
-			
-			_currentModeTextView.setVisibility(View.GONE);
-		}
+		_minutesTextView.setVisibility(View.VISIBLE);
 		
 		setMessageViewText(R.string.set_time);
 	}
@@ -678,6 +664,8 @@ public class MainActivity extends ActionBarActivity {
 		if(_isTimerStarted){
 			UIUtils.showToast(this, R.string.timer_still_running);
 		}
+		
+		unregisterReceiver(_screenReceiver);
 		
 		doUnbindFromCountDownService();		
 	}

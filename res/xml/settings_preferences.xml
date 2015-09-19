@@ -7,12 +7,12 @@
     <CheckBoxPreference android:title="@string/sound_toggle_label"
         android:key="@string/sound_toggle_pref"
         android:defaultValue="true"
-        android:icon="@drawable/ic_music_note_black_36dp"/> 
+        android:icon="@drawable/ic_speaker_black_36dp"/> 
         
     <CheckBoxPreference android:title="@string/vibration_toggle_label"
         android:key="@string/vibration_toggle_pref"
         android:defaultValue="true"
-        android:icon="@drawable/ic_notifications_active_black_36dp"/>
+        android:icon="@drawable/ic_vibration_black_36dp"/>
     
 
 </PreferenceScreen>
