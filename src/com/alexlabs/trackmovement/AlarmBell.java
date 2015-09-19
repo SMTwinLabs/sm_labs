@@ -57,7 +57,7 @@ public class AlarmBell {
         _isAlarmStarted = false;
     }
 
-	private void stopVibration(Context context) {
+	public void stopVibration(Context context) {
 		((Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE)).cancel();
 	}
 
@@ -104,7 +104,7 @@ public class AlarmBell {
         _isAlarmStarted = true;
     }
 
-	private void startVibration(final Context context) {
+	public void startVibration(final Context context) {
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(new long[] {500, 500}, 0);
 	}
