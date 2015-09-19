@@ -485,9 +485,16 @@ public class MainActivity extends ActionBarActivity {
 		if(_shouldDisplayConfirmationDialog){
 			final FragmentManager manager = getSupportFragmentManager();
 			if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
-				DialogFragment d = ConfirmScheduledAramDialog.newInstance(_countDownService, R.string.timer_finished);
-				d.setCancelable(false);
-				d.show(manager, ConfirmScheduledAramDialog.TAG);
+				// Show the dialog at the most convenient time.
+				new Handler().post(new Runnable() {
+					
+					@Override
+					public void run() {
+						DialogFragment d = ConfirmScheduledAramDialog.newInstance(_countDownService, R.string.timer_finished);
+						d.setCancelable(false);
+						d.show(manager, ConfirmScheduledAramDialog.TAG);
+					}
+				});
 			}
 		}
 	}

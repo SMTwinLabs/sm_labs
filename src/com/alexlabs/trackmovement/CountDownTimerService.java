@@ -216,7 +216,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
+		_countDownTimer = new CountDownTimer(15000, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -232,11 +232,6 @@ public class CountDownTimerService extends Service{
 						_remoteClientMessenger = null;
 					}
 				}
-				
-				if(_millisUntilFinished < 200) {					
-					// Wake the device and sound the ring tone.
-					beginRepeatingAlarm();
-				}
 			}
 			
 			@Override
@@ -245,14 +240,16 @@ public class CountDownTimerService extends Service{
 				
 				_mode = MODE_BASE;
 				
-				_millisUntilFinished = _selectedMinute = 0;				
+				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
-				
+						
 				try {
 					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 				}
+				
+				beginRepeatingAlarm();
 			}
 		};
 	}
@@ -261,7 +258,7 @@ public class CountDownTimerService extends Service{
 		Intent i = new Intent();
 		i.setAction(Intent.ACTION_MAIN);
 		i.addCategory(Intent.CATEGORY_LAUNCHER);
-		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		i.setComponent(new ComponentName(getApplicationContext().getPackageName(), MainActivity.class.getName()));
 		startActivity(i);
 	}
