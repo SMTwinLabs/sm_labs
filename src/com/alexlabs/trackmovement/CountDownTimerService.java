@@ -216,7 +216,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(10000, 100) {
+		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -284,14 +284,14 @@ public class CountDownTimerService extends Service{
 //			}
 //		}, 0, 10, TimeUnit.SECONDS);
 		
-//		WakeLocker localWakeLock = new WakeLocker();
-//		localWakeLock.acquire(getBaseContext());
+		WakeLocker localWakeLock = new WakeLocker();
+		localWakeLock.acquire(getBaseContext());
 		
 		showMainActivity();
 		
 		AlarmBell.instance().start(getBaseContext(), false);
 		
-//		localWakeLock.release();
+		localWakeLock.release();
 	}
 	
 	@Override
