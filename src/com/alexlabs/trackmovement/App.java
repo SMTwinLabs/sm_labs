@@ -1,5 +1,8 @@
 package com.alexlabs.trackmovement;
 
+import java.util.ArrayList;
+
+import android.app.Activity;
 import android.app.Application;
 
 public class App extends Application{
@@ -11,15 +14,10 @@ public class App extends Application{
 	
 	@Override
 	public void onCreate() {
-		// TODO Auto-generated method stub
 		super.onCreate();
 	}
 	
-	public static App instance(){
-		if(_instance == null){
-			_instance = new App();
-		}
-		
+	public static App instance(){		
 		return _instance;
 	}
 }

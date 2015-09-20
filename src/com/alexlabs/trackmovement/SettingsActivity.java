@@ -18,4 +18,9 @@ public class SettingsActivity extends Activity{
 	                .commit();
         }
 	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+	}
 }

@@ -34,20 +34,21 @@ public class CountDownTimerService extends Service{
 	public static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
 	public static final int MSG_DONE_USING_TIMER = 9;
 	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 10;
+	public static final int MSG_SHOW_CONFIRMATION_DIALOG = 11;
 	
 	
 	// modes
-	static final int MODE_BASE = 11;
-	static final int MODE_ACTIVE = 12; 
-	static final int MODE_EDIT_TIME = 13;
+	static final int MODE_BASE = 21;
+	static final int MODE_ACTIVE = 22; 
+	static final int MODE_EDIT_TIME = 23;
 	
 	// states
-	static final int TIMER_STATE_NONE = 20;
-	static final int TIMER_STATE_STARTED = 21;
-	static final int TIMER_STATE_STOPPED = 22;
-	static final int TIMER_STATE_FINISHED = 23;
+	static final int TIMER_STATE_NONE = 30;
+	static final int TIMER_STATE_STARTED = 31;
+	static final int TIMER_STATE_STOPPED = 32;
+	static final int TIMER_STATE_FINISHED = 33;
 	
-	static final int SEND_CURRENT_MILLIS_UNTIL_FINISHED = 30;
+	static final int SEND_CURRENT_MILLIS_UNTIL_FINISHED = 40;
 	
 	// Bundle constants
 	static final String MODE = "mode";
@@ -108,12 +109,12 @@ public class CountDownTimerService extends Service{
 
 			case MSG_SET_SELECTED_MINUTE:
 				_selectedMinute = msg.arg1;
-				Log.d("ALEX_LABS", "" + _selectedMinute);
+				Log.d("ALEX_LABS", "set selected minute:" + _selectedMinute);
 				break;
 				
 			case MSG_START_TIMER:
 				_millisUntilFinished = TimerUtils.convertMinuteToMillis(_selectedMinute);
-				Log.d("ALEX_LABS", "" + _millisUntilFinished);
+				Log.d("ALEX_LABS", "started timer: " + _millisUntilFinished);
 				startCountDown();	
 				break;
 			
@@ -134,12 +135,9 @@ public class CountDownTimerService extends Service{
 				if(_scheduler != null && !_scheduler.isShutdown()) {
 					_scheduler.shutdown();
 				}
-				
-				try {
-					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-				}
+
+				Log.d("ALEX_LABS", "request sent that timer is no longer used");
+				sendTimerInfoToRemoteClient();
 				
 				break;
 			case MSG_STOP_ALARM_NOISE_AND_VIBRATION:
@@ -147,16 +145,8 @@ public class CountDownTimerService extends Service{
 				break;
 				
 			case MSG_GET_TIMER_INFO:
-				if(_remoteClientMessenger != null){
-					try {
-						// get everything
-						Message infoMsg = Message.obtain(null, MSG_GET_TIMER_INFO);
-						infoMsg.setData(getDataInBundle());
-						_remoteClientMessenger.send(infoMsg);
-					} catch (RemoteException e) {
-						// TODO: handle exception
-					}
-				}
+				Log.d("ALEX_LABS", "request made to send time info");
+				sendTimerInfoToRemoteClient();
 				break;
 			
 			case MSG_CHECK_MODE_ON_SCREEN_TOGGLE:
@@ -165,11 +155,8 @@ public class CountDownTimerService extends Service{
 				if(_mode == MODE_EDIT_TIME) {
 					_mode = MODE_ACTIVE;
 					
-					try {
-						_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
-					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
-					}
+					Log.d("ALEX_LABS", "changing mode to: " + _mode);
+					sendTimerInfoToRemoteClient();
 				}
 				break;
 				
@@ -177,17 +164,17 @@ public class CountDownTimerService extends Service{
 				super.handleMessage(msg);
 			}
 		}
+	}
 
-		private Bundle getDataInBundle() {
-			Bundle data = new Bundle();
-			data.putInt(MODE, _mode);
-			data.putInt(TIMER_STATE, _timerState);			
-			data.putInt(SELECTED_MINUTE, _selectedMinute);
-			data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
-			data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));			
-			return data;
-		}
-	}	
+	private Bundle getDataInBundle() {
+		Bundle data = new Bundle();
+		data.putInt(MODE, _mode);
+		data.putInt(TIMER_STATE, _timerState);			
+		data.putInt(SELECTED_MINUTE, _selectedMinute);
+		data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
+		data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));			
+		return data;
+	}
 	
 	public void startCountDown() {
 		if (_countDownTimer != null) {
@@ -216,7 +203,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(15000, 100) {
+		_countDownTimer = new CountDownTimer(8000, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -242,28 +229,43 @@ public class CountDownTimerService extends Service{
 				
 				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
-						
-				try {
-					_serviceMessenger.send(Message.obtain(null, MSG_GET_TIMER_INFO));
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-				}
 				
-				beginRepeatingAlarm();
+				
+				
+				initAlarm();
 			}
 		};
 	}
+
+	private boolean sendTimerInfoToRemoteClient() {
+
+		Log.d("ALEX_LABS", ">>>>remote Client Messenger is: " + _remoteClientMessenger);
+
+		if(_remoteClientMessenger != null){
+			try {
+				// get everything
+				Message infoMsg = Message.obtain(null, MSG_GET_TIMER_INFO);
+				infoMsg.setData(getDataInBundle());
+				_remoteClientMessenger.send(infoMsg);
+				Log.d("ALEX_LABS", ">>>>sent info to MainActivity");
+				return true;
+			} catch (RemoteException e) {
+				// TODO: handle exception
+			}
+		}
+		Log.d("ALEX_LABS", ">>>>have to start MainActivity");
+		return false;
+	}
 	
 	private void showMainActivity() {
-		Intent i = new Intent();
+		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(Intent.ACTION_MAIN);
-		i.addCategory(Intent.CATEGORY_LAUNCHER);
-		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.setComponent(new ComponentName(getApplicationContext().getPackageName(), MainActivity.class.getName()));
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.putExtra("SHOW_DIALOG", true);
 		startActivity(i);
 	}
 	
-	private void beginRepeatingAlarm() {
+	private void initAlarm() {
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
 		
@@ -284,7 +286,16 @@ public class CountDownTimerService extends Service{
 		WakeLocker localWakeLock = new WakeLocker();
 		localWakeLock.acquire(getBaseContext());
 		
-		showMainActivity();
+		if(sendTimerInfoToRemoteClient()) {
+			try {
+				Message infoMsg = Message.obtain(null, MSG_SHOW_CONFIRMATION_DIALOG);
+				_remoteClientMessenger.send(infoMsg);
+			} catch (RemoteException e) {
+				// TODO: handle exception
+			}
+		} else {
+			showMainActivity();
+		}
 		
 		AlarmBell.instance().start(getBaseContext(), false);
 		
