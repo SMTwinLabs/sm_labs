@@ -34,9 +34,8 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity implements IDialogDismissListener{	
+public class MainActivity extends ActionBarActivity {	
 
-	private static final String DIALOG_DISSMISSED_INSTANCE_KEY = "CONSUMED_INTENT";
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
@@ -61,7 +60,6 @@ public class MainActivity extends ActionBarActivity implements IDialogDismissLis
 	// flags
 	private boolean _isTimerStarted;
 	private boolean _shouldDisplayConfirmationDialog;
-	private boolean _dialogDismissed;
 	
 	// time
 	private int _selectedMinute;
@@ -167,11 +165,6 @@ public class MainActivity extends ActionBarActivity implements IDialogDismissLis
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
 		super.onCreate(savedInstanceState);
-		if(savedInstanceState != null){
-			if(savedInstanceState.containsKey(DIALOG_DISSMISSED_INSTANCE_KEY)) {
-				_dialogDismissed = savedInstanceState.getBoolean(DIALOG_DISSMISSED_INSTANCE_KEY);
-			}
-		}
 		
 		// Unlock only non-secure lock key guards.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
@@ -283,7 +276,7 @@ public class MainActivity extends ActionBarActivity implements IDialogDismissLis
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
-		if(getIntent().hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY) && !_dialogDismissed) {
+		if(getIntent().hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY) && !_shouldDisplayConfirmationDialog) {
 			_shouldDisplayConfirmationDialog = getIntent().getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
 			getIntent().removeExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY);
 		}
@@ -728,7 +721,6 @@ public class MainActivity extends ActionBarActivity implements IDialogDismissLis
 	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putBoolean(DIALOG_DISSMISSED_INSTANCE_KEY, _dialogDismissed);
 		super.onSaveInstanceState(outState);
 	}
 	
@@ -749,10 +741,5 @@ public class MainActivity extends ActionBarActivity implements IDialogDismissLis
 		unregisterReceiver(_screenReceiver);
 		
 		doUnbindFromCountDownService();
-	}
-
-	@Override
-	public void notifyDialogClosed() {
-		_dialogDismissed = true;		
 	}
 }

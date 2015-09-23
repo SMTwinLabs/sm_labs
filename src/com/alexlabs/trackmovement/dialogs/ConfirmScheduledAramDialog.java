@@ -110,10 +110,6 @@ public class ConfirmScheduledAramDialog extends DialogFragment{
 						e.printStackTrace();
 					}
 				}
-				
-				if(getActivity() instanceof IDialogDismissListener) {
-					((IDialogDismissListener)getActivity()).notifyDialogClosed();
-				}
 			}
 		});
 		return builder.create();
