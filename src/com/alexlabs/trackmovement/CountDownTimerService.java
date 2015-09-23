@@ -5,7 +5,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,6 +21,8 @@ public class CountDownTimerService extends Service{
 	
 	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
+	public static final String SHOW_DIALOG_EXTRA_KEY = "SHOW_DIALOG";
+	
 	// common
 	public static final int MSG_REGISTER_CLIENT = 0;
 	public static final int MSG_UNREGISTER_CLIENT = 1;
@@ -31,10 +32,8 @@ public class CountDownTimerService extends Service{
 	public static final int MSG_UNPAUSE_TIMER = 5;
 	public static final int MSG_SET_SELECTED_MINUTE = 6;	
 	public static final int MSG_GET_TIMER_INFO = 7;
-	public static final int MSG_CHECK_MODE_ON_SCREEN_TOGGLE = 8;
-	public static final int MSG_DONE_USING_TIMER = 9;
-	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 10;
-	public static final int MSG_SHOW_CONFIRMATION_DIALOG = 11;
+	public static final int MSG_DONE_USING_TIMER = 8;
+	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 9;
 	
 	
 	// modes
@@ -73,7 +72,16 @@ public class CountDownTimerService extends Service{
 	/**
     * Target we publish for clients to send messages to IncomingHandler.
     */
-	final Messenger _serviceMessenger = new Messenger(new IncomingHandler());
+	private final Messenger _serviceMessenger = new Messenger(new IncomingHandler());
+	
+	// Activity related
+	private int _mainActivityState;
+	static final int MAIN_ACTIVITY_CLOSED = 0;
+	static final int MAIN_ACTIVITY_OPEN = 1;
+	
+	/////////////////////////////////////////////////
+	/////////// Model
+	/////////////////////////////////////////////////
 
 	// For debugging
 	static {
@@ -147,17 +155,6 @@ public class CountDownTimerService extends Service{
 			case MSG_GET_TIMER_INFO:
 				Log.d("ALEX_LABS", "request made to send time info");
 				sendTimerInfoToRemoteClient();
-				break;
-			
-			case MSG_CHECK_MODE_ON_SCREEN_TOGGLE:
-				// NOTE: the application is not destroyed when the screen is turned off. Therefore,
-				// it is safe to send a message to update the UI of the app.
-				if(_mode == MODE_EDIT_TIME) {
-					_mode = MODE_ACTIVE;
-					
-					Log.d("ALEX_LABS", "changing mode to: " + _mode);
-					sendTimerInfoToRemoteClient();
-				}
 				break;
 				
 			default:
@@ -260,7 +257,7 @@ public class CountDownTimerService extends Service{
 	private void showMainActivity() {
 		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(Intent.ACTION_MAIN);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		i.putExtra("SHOW_DIALOG", true);
 		startActivity(i);
 	}
@@ -286,16 +283,7 @@ public class CountDownTimerService extends Service{
 		WakeLocker localWakeLock = new WakeLocker();
 		localWakeLock.acquire(getBaseContext());
 		
-		if(sendTimerInfoToRemoteClient()) {
-			try {
-				Message infoMsg = Message.obtain(null, MSG_SHOW_CONFIRMATION_DIALOG);
-				_remoteClientMessenger.send(infoMsg);
-			} catch (RemoteException e) {
-				// TODO: handle exception
-			}
-		} else {
-			showMainActivity();
-		}
+		showMainActivity();
 		
 		AlarmBell.instance().start(getBaseContext(), false);
 		

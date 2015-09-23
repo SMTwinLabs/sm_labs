@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.alexlabs.trackmovement.AlarmBell;
 import com.alexlabs.trackmovement.CountDownTimerService;
+import com.alexlabs.trackmovement.IDialogDismissListener;
 import com.alexlabs.trackmovement.MainActivity;
 import com.alexlabs.trackmovement.R;
 
@@ -108,6 +109,10 @@ public class ConfirmScheduledAramDialog extends DialogFragment{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				}
+				
+				if(getActivity() instanceof IDialogDismissListener) {
+					((IDialogDismissListener)getActivity()).notifyDialogClosed();
 				}
 			}
 		});

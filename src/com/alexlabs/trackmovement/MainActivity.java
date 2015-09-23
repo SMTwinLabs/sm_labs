@@ -7,6 +7,7 @@ import com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -33,12 +34,9 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity {	
+public class MainActivity extends ActionBarActivity implements IDialogDismissListener{	
 
-	/////////////////////////////////////////////////
-	/////////// Model
-	/////////////////////////////////////////////////
-
+	private static final String DIALOG_DISSMISSED_INSTANCE_KEY = "CONSUMED_INTENT";
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
@@ -63,6 +61,7 @@ public class MainActivity extends ActionBarActivity {
 	// flags
 	private boolean _isTimerStarted;
 	private boolean _shouldDisplayConfirmationDialog;
+	private boolean _dialogDismissed;
 	
 	// time
 	private int _selectedMinute;
@@ -102,11 +101,6 @@ public class MainActivity extends ActionBarActivity {
     			if(msg.getData() != null) {
 	    			extractDataFromBundle(msg.getData());
     			}
-    			break;
-    			
-    		case CountDownTimerService.MSG_SHOW_CONFIRMATION_DIALOG:
-    			_shouldDisplayConfirmationDialog = true;
-    			showConfirmationDialog();
     			break;
     			
     		default:
@@ -173,6 +167,11 @@ public class MainActivity extends ActionBarActivity {
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState != null){
+			if(savedInstanceState.containsKey(DIALOG_DISSMISSED_INSTANCE_KEY)) {
+				_dialogDismissed = savedInstanceState.getBoolean(DIALOG_DISSMISSED_INSTANCE_KEY);
+			}
+		}
 		
 		// Unlock only non-secure lock key guards.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
@@ -277,27 +276,34 @@ public class MainActivity extends ActionBarActivity {
 		});
 		
 		startService(new Intent(this, CountDownTimerService.class));
-	}
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-		Log.d("ALEX_LABS", "MainActivity is Started");
 		
-        doBindToCountDownService();
+		doBindToCountDownService();
         
 		// Register a broadcast receiver that saves the previous state of the
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
-		if(getIntent().hasExtra("SHOW_DIALOG")) {
-			_shouldDisplayConfirmationDialog = true;
-			getIntent().removeExtra("SHOW_DIALOG");
+		if(getIntent().hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY) && !_dialogDismissed) {
+			_shouldDisplayConfirmationDialog = getIntent().getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
+			getIntent().removeExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY);
 		}
 		
 		if(_shouldDisplayConfirmationDialog) {	
 			showConfirmationDialog();
 		}
+	}
+	
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+
+		Log.d("ALEX_LABS", "MainActivity is ReStarted");
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		Log.d("ALEX_LABS", "MainActivity is Started");		
 	}
 
 	private void showConfirmationDialog() {
@@ -314,6 +320,20 @@ public class MainActivity extends ActionBarActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.d("ALEX_LABS", "MainActivity is Resumed");
+	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		Log.d("ALEX_LABS", "onNewIntent");
+		
+		if(intent.hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY)) {
+			_shouldDisplayConfirmationDialog = intent.getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
+		}
+		
+		if(_shouldDisplayConfirmationDialog) {	
+			showConfirmationDialog();
+		}
 	}
 	
 	private void initEditTimeButtonGroup() {
@@ -704,9 +724,12 @@ public class MainActivity extends ActionBarActivity {
 			UIUtils.showToast(this, R.string.timer_still_running);
 		}
 		
-		unregisterReceiver(_screenReceiver);
-		
-		doUnbindFromCountDownService();
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putBoolean(DIALOG_DISSMISSED_INSTANCE_KEY, _dialogDismissed);
+		super.onSaveInstanceState(outState);
 	}
 	
 	@Override
@@ -716,5 +739,20 @@ public class MainActivity extends ActionBarActivity {
 		if(_shouldDisplayConfirmationDialog) {
 			AlarmBell.sendStopAlarmNoiseAndVibrationMessage(_countDownService);
 		}
+	}
+	
+	@Override
+	protected void onDestroy() {
+		Log.d("ALEX_LABS", "MainActivity is Destoryed");
+		super.onDestroy();
+		
+		unregisterReceiver(_screenReceiver);
+		
+		doUnbindFromCountDownService();
+	}
+
+	@Override
+	public void notifyDialogClosed() {
+		_dialogDismissed = true;		
 	}
 }
