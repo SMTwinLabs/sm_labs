@@ -133,6 +133,8 @@ public class CountDownTimerService extends Service{
 				_timerState = TIMER_STATE_NONE;
 				
 				AlarmBell.instance().stop(getBaseContext());
+				sendAlarmConfirmedIntent();
+				
 				Log.d("ALEX_LABS", AlarmBell.instance().toString());
 				
 				if(_scheduler != null && !_scheduler.isShutdown()) {
@@ -195,7 +197,7 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(8000, 100) {
+		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -253,7 +255,15 @@ public class CountDownTimerService extends Service{
 		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(Intent.ACTION_MAIN);
 		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra("SHOW_DIALOG", true);
+		i.putExtra(SHOW_DIALOG_EXTRA_KEY, true);
+		startActivity(i);
+	}
+	
+	private void sendAlarmConfirmedIntent() {
+		Intent i = new Intent(this, MainActivity.class);
+		i.setAction(Intent.ACTION_MAIN);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.putExtra(SHOW_DIALOG_EXTRA_KEY, false);
 		startActivity(i);
 	}
 	

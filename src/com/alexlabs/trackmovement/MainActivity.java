@@ -57,7 +57,7 @@ public class MainActivity extends ActionBarActivity {
 
 	// flags
 	private boolean _isTimerStarted;
-	private boolean _shouldDisplayConfirmationDialog;
+	private int _timerState;
 	
 	// time
 	private int _selectedMinute;
@@ -108,7 +108,7 @@ public class MainActivity extends ActionBarActivity {
 			// timer state related
 			int timerState = info.getInt(CountDownTimerService.TIMER_STATE);
 			_isTimerStarted = timerState == CountDownTimerService.TIMER_STATE_STARTED;
-			_shouldDisplayConfirmationDialog = timerState == CountDownTimerService.TIMER_STATE_FINISHED;
+			_timerState = CountDownTimerService.TIMER_STATE_FINISHED;
 			
 			// time related
 			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
@@ -274,14 +274,13 @@ public class MainActivity extends ActionBarActivity {
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
-		Log.d("ALEX_LABS", "_shouldDisplayConfirmationDialog = " +_shouldDisplayConfirmationDialog);
-		if(getIntent().hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY) && !_shouldDisplayConfirmationDialog) {
-			_shouldDisplayConfirmationDialog = getIntent().getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
-			getIntent().removeExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY);
-		}
-		
-		if(_shouldDisplayConfirmationDialog) {	
-			showConfirmationDialog();
+		checkConfirmationDialogState(getIntent());
+	}
+
+	private void checkConfirmationDialogState(Intent intent) {
+		if(intent.hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY)) {
+			if(intent.getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false))
+				showConfirmationDialog();
 		}
 	}
 	
@@ -319,13 +318,9 @@ public class MainActivity extends ActionBarActivity {
 		super.onNewIntent(intent);
 		Log.d("ALEX_LABS", "onNewIntent");
 		
-		if(intent.hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY)) {
-			_shouldDisplayConfirmationDialog = intent.getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
-		}
+		requestTimerInfoFromCountDownTimerService();
 		
-		if(_shouldDisplayConfirmationDialog) {	
-			showConfirmationDialog();
-		}
+		checkConfirmationDialogState(intent);	
 	}
 	
 	private void initEditTimeButtonGroup() {
@@ -712,7 +707,7 @@ public class MainActivity extends ActionBarActivity {
 
 		// If the timer is running and the user has exited the application itself,
 		// show toast that the timer is active.
-		if(_isTimerStarted && !_shouldDisplayConfirmationDialog){
+		if(_isTimerStarted && _timerState != CountDownTimerService.TIMER_STATE_FINISHED){
 			UIUtils.showToast(this, R.string.timer_still_running);
 		}
 		
@@ -727,7 +722,7 @@ public class MainActivity extends ActionBarActivity {
 	protected void onUserLeaveHint() {
 		super.onUserLeaveHint();
 		
-		if(_shouldDisplayConfirmationDialog) {
+		if(_timerState == CountDownTimerService.TIMER_STATE_FINISHED) {
 			AlarmBell.sendStopAlarmNoiseAndVibrationMessage(_countDownService);
 		}
 	}
