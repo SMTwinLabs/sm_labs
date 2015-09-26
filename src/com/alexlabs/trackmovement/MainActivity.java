@@ -7,7 +7,6 @@ import com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -21,7 +20,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -276,6 +274,7 @@ public class MainActivity extends ActionBarActivity {
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
+		Log.d("ALEX_LABS", "_shouldDisplayConfirmationDialog = " +_shouldDisplayConfirmationDialog);
 		if(getIntent().hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY) && !_shouldDisplayConfirmationDialog) {
 			_shouldDisplayConfirmationDialog = getIntent().getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false);
 			getIntent().removeExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY);

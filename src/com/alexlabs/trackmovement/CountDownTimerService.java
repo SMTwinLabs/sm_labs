@@ -74,11 +74,6 @@ public class CountDownTimerService extends Service{
     */
 	private final Messenger _serviceMessenger = new Messenger(new IncomingHandler());
 	
-	// Activity related
-	private int _mainActivityState;
-	static final int MAIN_ACTIVITY_CLOSED = 0;
-	static final int MAIN_ACTIVITY_OPEN = 1;
-	
 	/////////////////////////////////////////////////
 	/////////// Model
 	/////////////////////////////////////////////////
@@ -257,7 +252,7 @@ public class CountDownTimerService extends Service{
 	private void showMainActivity() {
 		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(Intent.ACTION_MAIN);
-		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 		i.putExtra("SHOW_DIALOG", true);
 		startActivity(i);
 	}
