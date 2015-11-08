@@ -7,12 +7,13 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 
 public class SettingsFragment extends PreferenceFragment {
+	private VibrationManager _vibrationManager = new VibrationManager();
 	private Handler _vibrationDemoHandler = new Handler();
 	private Runnable _stopVibrationDemoRunnable = new Runnable() {
 		
 		@Override
 		public void run() {
-			AlarmBell.instance().stopVibration(getActivity());
+			_vibrationManager.stop(getActivity());
 		}
 	};
 
@@ -34,7 +35,7 @@ public class SettingsFragment extends PreferenceFragment {
 				// Start the device vibration only if the checkbox is selected
 				if((Boolean) newValue) {
 					// Start the device vibration.
-					AlarmBell.instance().startVibration(getActivity());
+					_vibrationManager.start(getActivity());
 				}			
 
 				// Stop the alarm vibration after a short delay

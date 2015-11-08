@@ -10,7 +10,8 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import com.alexlabs.trackmovement.AlarmBell;
+import com.alexlabs.trackmovement.MediaPlayerManager;
+import com.alexlabs.trackmovement.MediaPlayerManager.Volumes;
 import com.alexlabs.trackmovement.Preferences;
 import com.alexlabs.trackmovement.R;
 
@@ -20,6 +21,8 @@ import com.alexlabs.trackmovement.R;
  * selected volume level is appropriate.
  */
 public class AdjustVolumeDialog extends DialogPreference {
+	
+	private MediaPlayerManager _mediaPlayerManager = new MediaPlayerManager();
 	
 	/**
 	 * The current progress of the seekbar.
@@ -49,7 +52,7 @@ public class AdjustVolumeDialog extends DialogPreference {
 		
 		@Override
 		public void run() {
-			AlarmBell.instance().stopMediaPlayer(getContext());
+			_mediaPlayerManager.stopMediaPlayer(getContext());
 		}
 	};
 
@@ -94,12 +97,8 @@ public class AdjustVolumeDialog extends DialogPreference {
 		_seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-				int volume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)*_progress/100;
-				audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.ADJUST_SAME);
-				
-				AlarmBell.instance().startMediaPlayer(getContext(), false, audioManager);
+			public void onStopTrackingTouch(SeekBar seekBar) {				
+				_mediaPlayerManager.start(getContext(), (double)_progress / 100);
 				// Stop the noise after a short delay.
 				alaramBellDemoHandler.postDelayed(stopAlarmBellDemoRunnable, 1000);
 			}
