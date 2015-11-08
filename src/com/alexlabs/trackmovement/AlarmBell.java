@@ -14,10 +14,18 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.Vibrator;
 
+/**
+ * This class provides a facility for managing the alarm noise and vibration, which are grouped
+ * under the common term "alarm bell".
+ */
 public class AlarmBell {
 	// Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
     
+    /**
+     * Holds a reference to the current instance of the media player. Whenever the media player
+     * has been stopped, create a new instance of the media player.
+     */
     private MediaPlayer _mediaPlayer;
 	private boolean _isMediaPlayerStarted;
 	private boolean _isAlarmStarted;
@@ -38,34 +46,42 @@ public class AlarmBell {
 		
 		return _bell;
 	}
-
+	
+	/**
+	 * Returns weather the alarm bell has been started. 
+	 * @return Weather the alarm bell has been started. 
+	 */
 	public boolean isAlarmStarted() {
 		return _isAlarmStarted;
 	}
 	
     /**
-     * If the media player is playing, then Stops both the media player and vibration
+     * If the media player is playing, then stop both the media player and the vibration. This method
+     * should also be invoked in the case when an error occurs.
      * @param context
      */
     public void stop(Context context) {
         if (_isMediaPlayerStarted) {
             // Stop audio playing
-            stopAlarmBell(context);
+            stopMediaPlayer(context);
         }
 
         stopVibration(context);
         _isAlarmStarted = false;
     }
-
+    
+    /**
+     * Stop the vibration of the alarm bell.
+     */
 	public void stopVibration(Context context) {
 		((Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE)).cancel();
 	}
 
     /**
-     * Stop the media player from producing any sound and dispose the media player.
+     * Stop the media player from producing any sound and dispose of the media player.
      * @param context
      */
-	public void stopAlarmBell(Context context) {
+	public void stopMediaPlayer(Context context) {
 		if(_mediaPlayer != null) {
 			_mediaPlayer.stop();
 		    AudioManager audioManager = (AudioManager)
@@ -94,7 +110,7 @@ public class AlarmBell {
     		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
     				audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)*preferences.getVolumeProgess()/100, AudioManager.ADJUST_SAME);
     		
-    		startAlarmBell(context, inTelephoneCall, audioManager);
+    		startMediaPlayer(context, inTelephoneCall, audioManager);
     	}
         
     	if(preferences.isVibrationOn()) {
@@ -103,7 +119,11 @@ public class AlarmBell {
     	
         _isAlarmStarted = true;
     }
-
+    
+    /**
+     * Start only the vibration of the alarm bell.
+     * @param context
+     */
 	public void startVibration(final Context context) {
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(new long[] {500, 500}, 0);
@@ -115,12 +135,12 @@ public class AlarmBell {
      * @param context
      * @param inTelephoneCall
      */
-	public void startAlarmBell(final Context context,
+	public void startMediaPlayer(final Context context,
 			boolean inTelephoneCall, final AudioManager audioManager) {
 		
 		// Make sure we are stop before starting
     	if(_mediaPlayer != null){
-    		stopAlarmBell(context);  
+    		stopMediaPlayer(context);  
     	}
     	
 		_mediaPlayer = new MediaPlayer();
@@ -165,7 +185,10 @@ public class AlarmBell {
         
         _isMediaPlayerStarted = true;
 	}
-
+	
+	/**
+	 * Provide a fallback ringtone in case the originally intended ringtone cannot be loaded.
+	 */
 	private Uri provideFallbackAlarmNoise() {
 		Uri fallBackAlarmNoiseUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         // Fall back on the default alarm if the database does not have an
@@ -177,7 +200,17 @@ public class AlarmBell {
 		return fallBackAlarmNoiseUri;
 	}
     
+	/**
+	 * Start the media player. The method will do nothing unless an instance of the media player has already been created.
+	 * @param context
+	 * @param audioManager
+	 * @throws IOException
+	 */
     private void startPlayer(Context context, AudioManager audioManager) throws IOException {
+    	if(_mediaPlayer == null) {
+    		return;
+    	}
+    	
     	_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 //        player.setLooping(true);
     	_mediaPlayer.prepare();

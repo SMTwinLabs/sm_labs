@@ -6,6 +6,9 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.view.View;
 
+/**
+ * A class for creating and managing the characteristics of an Arc.
+ */
 public class Arc extends View {
 	private View _content;
 	private Context _context;

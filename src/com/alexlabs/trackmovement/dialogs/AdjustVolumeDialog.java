@@ -14,18 +14,42 @@ import com.alexlabs.trackmovement.AlarmBell;
 import com.alexlabs.trackmovement.Preferences;
 import com.alexlabs.trackmovement.R;
 
+/**
+ * This class establishes a custom preference dialog for adjusting the sound volume of the alarm bell.
+ * When selecting a volume level, a sound is produced, thus allowing the user to decide if the
+ * selected volume level is appropriate.
+ */
 public class AdjustVolumeDialog extends DialogPreference {
 	
+	/**
+	 * The current progress of the seekbar.
+	 */
 	private int _progress;
-	private SeekBar _seekBar;	
+	
+	/**
+	 * The seekbar employed to provide volume level control.
+	 */
+	private SeekBar _seekBar;
+	
+	/**
+	 * A text view that displays the selected volume level from the seekbar.
+	 */
 	private TextView _volumeProgressTextView;
 	
+	/**
+	 * Schedules a short sound when the user finishes selecting a volume level. When simply dragging the slider of
+	 * the seekbar, no volume is produced until the user releases the slider.
+	 */
 	private Handler alaramBellDemoHandler = new Handler();
+	
+	/**
+	 * Stop the sound of the demo alarm bell.
+	 */
 	private Runnable stopAlarmBellDemoRunnable = new Runnable() {
 		
 		@Override
 		public void run() {
-			AlarmBell.instance().stopAlarmBell(getContext());
+			AlarmBell.instance().stopMediaPlayer(getContext());
 		}
 	};
 
@@ -41,6 +65,7 @@ public class AdjustVolumeDialog extends DialogPreference {
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 		
+		// If the user confirms the changes, the new changes to the preferences are saved.
 		if(positiveResult) {
 			Preferences prefs = new Preferences();
 			prefs.startEdit();
@@ -60,11 +85,12 @@ public class AdjustVolumeDialog extends DialogPreference {
 	    final Preferences prefs = new Preferences();
 		_progress = prefs.getVolumeProgess();
 		
+		// Display the current volume label.
 		_volumeProgressTextView.setText("" + _progress);
 		_seekBar.setProgress(_progress);
 		
-		
-		
+		// When a change on the volume label is performed, produce a short sound. The sound is played once the
+		// user releases control of the slider of the seekbar.
 		_seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
@@ -73,12 +99,15 @@ public class AdjustVolumeDialog extends DialogPreference {
 				int volume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)*_progress/100;
 				audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.ADJUST_SAME);
 				
-				AlarmBell.instance().startAlarmBell(getContext(), false, audioManager);
+				AlarmBell.instance().startMediaPlayer(getContext(), false, audioManager);
+				// Stop the noise after a short delay.
 				alaramBellDemoHandler.postDelayed(stopAlarmBellDemoRunnable, 1000);
 			}
 			
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
+				// If the user edits the volume level while the sound from the previous change is still playing,
+				// stop the currently playing sound.
 				alaramBellDemoHandler.removeCallbacks(stopAlarmBellDemoRunnable);
 			}
 			

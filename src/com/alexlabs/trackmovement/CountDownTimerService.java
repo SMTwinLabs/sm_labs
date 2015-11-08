@@ -223,9 +223,7 @@ public class CountDownTimerService extends Service{
 				
 				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
-				
-				
-				
+
 				initAlarm();
 			}
 		};
