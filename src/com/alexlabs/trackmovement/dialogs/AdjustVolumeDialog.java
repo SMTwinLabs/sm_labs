@@ -52,7 +52,7 @@ public class AdjustVolumeDialog extends DialogPreference {
 		
 		@Override
 		public void run() {
-			_mediaPlayerManager.stopMediaPlayer(getContext());
+			_mediaPlayerManager.stop(getContext());
 		}
 	};
 

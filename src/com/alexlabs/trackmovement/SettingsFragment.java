@@ -1,7 +1,9 @@
 package com.alexlabs.trackmovement;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
@@ -25,7 +27,8 @@ public class SettingsFragment extends PreferenceFragment {
 		addPreferencesFromResource(R.xml.settings_preferences);
 		
 		// Monitor the 'Vibration' preference
-		findPreference(getActivity().getString(R.string.vibration_toggle_pref)).setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+		Preference vibrationPreference = findPreference(getActivity().getString(R.string.vibration_toggle_pref));
+		vibrationPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -44,5 +47,9 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+		
+		// NOTE: Not all devices have vibrators. Therefore a check for a vibrator needs to be done. 
+		Vibrator mVibrator = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+		vibrationPreference.setEnabled(mVibrator.hasVibrator());
 	}
 }

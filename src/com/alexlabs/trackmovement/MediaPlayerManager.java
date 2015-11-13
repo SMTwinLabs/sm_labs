@@ -22,7 +22,16 @@ public class MediaPlayerManager {
 		return _isMediaPlayerStarted;
 	}
 	
+	/**
+	 * NOTE: In this method looping is set to false.
+	 * @param context
+	 * @param level
+	 */
 	public void start(Context context, double level) {
+		start(context, level, false);
+	}
+	
+	public void start(Context context, double level, boolean shouldLoop) {
 		// NOTE: because we are using a single instance of the media player, we need
         // to reset the media player, so that it goes in its uninitialized state. After
         // initialize the player again.
@@ -30,21 +39,22 @@ public class MediaPlayerManager {
     		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * level), AudioManager.ADJUST_SAME);
     		
-    		initMediaPlayer(context, audioManager);
+    		initMediaPlayer(context, audioManager, shouldLoop);
     	}
 	}
-
+	
 	/**
 	 * Start the media player.If the user is taking a phone call,
 	 * the strength of the audio is greatly diminished.
 	 * @param context
 	 * @param inTelephoneCall
+	 * @param shouldLoop
 	 */
-	private void initMediaPlayer(final Context context, final AudioManager audioManager) {
+	private void initMediaPlayer(final Context context, final AudioManager audioManager, boolean shouldLoop) {
 		
 		// Make sure we are stop before starting
 		if(_mediaPlayer != null){
-			stopMediaPlayer(context);  
+			stop(context);  
 		}
 		
 		_mediaPlayer = new MediaPlayer();
@@ -61,7 +71,7 @@ public class MediaPlayerManager {
 	    try {
 	        setDataSourceFromResource(context, preferences.getRingtone());
 	        
-	        startMediaPlayer(context, audioManager);
+	        startMediaPlayer(context, audioManager, shouldLoop);
 	    } catch (Exception ex) {
 	        // The alarmNoise may be on the SD card which could be busy right
 	        // now. Use the fallback ringtone.
@@ -70,7 +80,7 @@ public class MediaPlayerManager {
 	        	_mediaPlayer.reset();
 	        	_mediaPlayer.setDataSource(context, provideFallbackAlarmNoise());
 	            
-	        	startMediaPlayer(context, audioManager);
+	        	startMediaPlayer(context, audioManager, shouldLoop);
 	        } catch (Exception ex2) {
 	        	
 	        	// No ringtones are available, so the user will not hear anything.
@@ -80,8 +90,6 @@ public class MediaPlayerManager {
 	            // TODO - consider adding string vibration
 	        }
 	    }
-	    
-	    _isMediaPlayerStarted = true;
 	}
 
 	/**
@@ -90,24 +98,26 @@ public class MediaPlayerManager {
 	 * @param audioManager
 	 * @throws IOException
 	 */
-    private void startMediaPlayer(Context context, AudioManager audioManager) throws IOException {
+    private void startMediaPlayer(Context context, AudioManager audioManager, boolean shouldLoop) throws IOException {
     	if(_mediaPlayer == null) {
     		return;
     	}
     	
     	_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        player.setLooping(true);
+    	_mediaPlayer.setLooping(shouldLoop);
     	_mediaPlayer.prepare();
         audioManager.requestAudioFocus(null,
                 AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
         _mediaPlayer.start();
+        
+        _isMediaPlayerStarted = true;
     }
 
 	/**
 	 * Stop the media player from producing any sound and dispose of the media player.
 	 * @param context
 	 */
-	public void stopMediaPlayer(Context context) {
+	public void stop(Context context) {
 		if(_mediaPlayer != null) {
 			_mediaPlayer.stop();
 		    AudioManager audioManager = (AudioManager)
@@ -142,15 +152,15 @@ public class MediaPlayerManager {
 	    }
 	}
 	
+	// TODO - consider making separate class
 	public static class Volumes {
 		// Volume suggested by media team for in-call alarms.
 	    private static final double IN_CALL_VOLUME = 0.125;
 		
-	    private static Preferences _preferences = new Preferences();
-		
 		public static double getPreferencesLevel() {
-			if(_preferences.isSoundOn()) {
-	    		return (double)_preferences.getVolumeProgess() / 100;
+			Preferences preferences = new Preferences();
+			if(preferences.isSoundOn()) {
+	    		return (double)preferences.getVolumeProgess() / 100;
 	    	}
 			
 			return 0;

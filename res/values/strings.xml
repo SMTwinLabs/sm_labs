@@ -20,4 +20,5 @@
 	<string name="sound_toggle_label">Sound</string>	
 	<string name="vibration_toggle_label">Vibration</string>
 	<string name="volume_label">Volume</string>
+	<string name="alarm_noise_default_duration_label">Alarm noise duration</string>
 </resources>

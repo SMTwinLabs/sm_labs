@@ -3,7 +3,6 @@ package com.alexlabs.trackmovement;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.media.AudioManager;
 
 /**
  * Does not save an instance. This class only access the preference file every time the constructor is called.
@@ -90,5 +89,9 @@ public class Preferences {
 	
 	public int getVolumeProgess(){
 		return _volumeProgress;
+	}
+	
+	public int getAlarmNoiseDuration() {
+		return Integer.parseInt(_preferences.getString(_resources.getString(R.string.alarm_noise_duration_pref), _resources.getString(R.string.alarm_noise_default_duration_label)));
 	}
 }

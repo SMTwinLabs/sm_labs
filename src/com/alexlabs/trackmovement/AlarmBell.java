@@ -1,6 +1,10 @@
 package com.alexlabs.trackmovement;
 
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.alexlabs.trackmovement.MediaPlayerManager.Volumes;
 
 import android.content.Context;
@@ -14,8 +18,7 @@ import android.os.RemoteException;
  */
 public class AlarmBell {
 	private static AlarmBell _bell;
-
-	private Preferences _preferences = new Preferences();
+	
 	private MediaPlayerManager _mediaPlayerManager;
 	private VibrationManager _vibrationManager;
 	
@@ -52,7 +55,7 @@ public class AlarmBell {
     public void stop(Context context) {
         if (_mediaPlayerManager.isMediaPlayerStarted()) {
             // Stop audio playing
-        	_mediaPlayerManager.stopMediaPlayer(context);
+        	_mediaPlayerManager.stop(context);
         }
 
         if(_vibrationManager.isVibrationStarted()) {
@@ -69,16 +72,34 @@ public class AlarmBell {
 	 * @param inTelephoneCall
 	 */
     public void start(final Context context, boolean inTelephoneCall) {
+    	Preferences preferences = new Preferences();
     	
-    	if(_preferences.isSoundOn()) {
-    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel());
+    	// The alarm bell's audio file is set to loop indefinitely. It will be stopped
+    	// below, taking into consideration the user preferences for the loop length.
+    	if(preferences.isSoundOn()) {
+    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), true);
     	}
 		
-		if(_preferences.isVibrationOn()) {
+		if(preferences.isVibrationOn()) {
 			_vibrationManager.start(context);
 		}
     	
         _isAlarmStarted = true;
+        
+        // After the alarm bell is started it is stopped after a period of time
+        // (this time period is chosen from the preferences).
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.schedule(new Runnable() {
+			
+			@Override
+			public void run() {
+				if(_isAlarmStarted) {
+					stop(context);
+				}
+			}
+		}, preferences.getAlarmNoiseDuration(), TimeUnit.SECONDS);
+        
+        scheduler.shutdown();
     }
     
     // FIXME send to another class

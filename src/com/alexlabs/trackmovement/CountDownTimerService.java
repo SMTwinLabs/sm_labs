@@ -225,7 +225,7 @@ public class CountDownTimerService extends Service{
 				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
 
-				initAlarm();
+				startAarm();
 			}
 		};
 	}
@@ -266,23 +266,9 @@ public class CountDownTimerService extends Service{
 		startActivity(i);
 	}
 	
-	private void initAlarm() {
+	private void startAarm() {
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
-		
-//		_scheduler.scheduleWithFixedDelay(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				WakeLocker localWakeLock = new WakeLocker();
-//				localWakeLock.acquire(getBaseContext());
-//				
-//				AlarmBell.start(getBaseContext(), false);
-//				
-//				localWakeLock.release();
-//				//TODO: shut down scheduler when the user does not want a repeating alarm.
-//			}
-//		}, 0, 10, TimeUnit.SECONDS);
 		
 		WakeLocker localWakeLock = new WakeLocker();
 		localWakeLock.acquire(getBaseContext());
