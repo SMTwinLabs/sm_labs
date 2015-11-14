@@ -13,6 +13,7 @@ import android.content.res.Resources;
  */
 public class Preferences {
 	public static final String PREF_NAME = "timerPref";
+	public static final int BEEP_DELAY_INTERVAL = 5;//FIXME: make 20 for production
 	private static final int DEFAULT_VOLUME_PROGRESS = 50;
 	
 	// Preference objects

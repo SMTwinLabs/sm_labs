@@ -2,6 +2,7 @@ package com.alexlabs.trackmovement;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -275,7 +276,17 @@ public class CountDownTimerService extends Service{
 		
 		showMainActivity();
 		
+		Preferences prefs = new Preferences();
 		AlarmBell.instance().start(getBaseContext(), false);
+		_scheduler.scheduleWithFixedDelay(new Runnable() {
+			
+			@Override
+			public void run() {
+				if(_timerState == TIMER_STATE_FINISHED) {
+					AlarmBeep.instance().beep(getBaseContext());
+				}
+			}
+		}, prefs.getAlarmNoiseDuration(), Preferences.BEEP_DELAY_INTERVAL, TimeUnit.SECONDS);
 		
 		localWakeLock.release();
 	}

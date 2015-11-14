@@ -27,11 +27,11 @@ public class MediaPlayerManager {
 	 * @param context
 	 * @param level
 	 */
-	public void start(Context context, double level) {
-		start(context, level, false);
+	public void start(Context context, double level, int ringtoneRes) {
+		start(context, level, ringtoneRes, false);
 	}
 	
-	public void start(Context context, double level, boolean shouldLoop) {
+	public void start(Context context, double level, int ringtoneRes, boolean shouldLoop) {
 		// NOTE: because we are using a single instance of the media player, we need
         // to reset the media player, so that it goes in its uninitialized state. After
         // initialize the player again.
@@ -39,7 +39,7 @@ public class MediaPlayerManager {
     		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * level), AudioManager.ADJUST_SAME);
     		
-    		initMediaPlayer(context, audioManager, shouldLoop);
+    		initMediaPlayer(context, audioManager, ringtoneRes, shouldLoop);
     	}
 	}
 	
@@ -50,7 +50,7 @@ public class MediaPlayerManager {
 	 * @param inTelephoneCall
 	 * @param shouldLoop
 	 */
-	private void initMediaPlayer(final Context context, final AudioManager audioManager, boolean shouldLoop) {
+	private void initMediaPlayer(final Context context, final AudioManager audioManager, int ringtoneRes, boolean shouldLoop) {
 		
 		// Make sure we are stop before starting
 		if(_mediaPlayer != null){
@@ -65,11 +65,9 @@ public class MediaPlayerManager {
 	            return true;
 	        }
 	    });
-	
-	
-	    Preferences preferences = new Preferences();
+	    
 	    try {
-	        setDataSourceFromResource(context, preferences.getRingtone());
+	        setDataSourceFromResource(context, ringtoneRes);
 	        
 	        startMediaPlayer(context, audioManager, shouldLoop);
 	    } catch (Exception ex) {

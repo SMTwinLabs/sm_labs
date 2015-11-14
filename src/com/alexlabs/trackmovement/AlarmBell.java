@@ -77,7 +77,7 @@ public class AlarmBell {
     	// The alarm bell's audio file is set to loop indefinitely. It will be stopped
     	// below, taking into consideration the user preferences for the loop length.
     	if(preferences.isSoundOn()) {
-    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), true);
+    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), preferences.getRingtone(), true);
     	}
 		
 		if(preferences.isVibrationOn()) {
