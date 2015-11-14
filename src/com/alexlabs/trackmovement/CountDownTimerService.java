@@ -278,15 +278,17 @@ public class CountDownTimerService extends Service{
 		
 		Preferences prefs = new Preferences();
 		AlarmBell.instance().start(getBaseContext(), false);
-		_scheduler.scheduleWithFixedDelay(new Runnable() {
-			
-			@Override
-			public void run() {
-				if(_timerState == TIMER_STATE_FINISHED) {
-					AlarmBeep.instance().beep(getBaseContext());
+		if(prefs.getShouldBeep()) {
+			_scheduler.scheduleWithFixedDelay(new Runnable() {
+				
+				@Override
+				public void run() {
+					if(_timerState == TIMER_STATE_FINISHED) {
+						AlarmBeep.instance().beep(getBaseContext());
+					}
 				}
-			}
-		}, prefs.getAlarmNoiseDuration(), Preferences.BEEP_DELAY_INTERVAL, TimeUnit.SECONDS);
+			}, prefs.getAlarmNoiseDuration() + AlarmBeep.BEEP_DELAY_INTERVAL, AlarmBeep.BEEP_DELAY_INTERVAL, TimeUnit.SECONDS);
+		}
 		
 		localWakeLock.release();
 	}

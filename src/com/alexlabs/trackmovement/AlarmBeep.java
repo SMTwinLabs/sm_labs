@@ -1,6 +1,5 @@
 package com.alexlabs.trackmovement;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +11,8 @@ public class AlarmBeep {
 	private static final int MINIMUM_PROGRESS = 45;
 
 	private MediaPlayerManager _mediaPlayerManager;
+
+	public static final int BEEP_DELAY_INTERVAL = 5;//FIXME: make 20 for production
 	private static AlarmBeep _alarmBeep;
 	
 	private AlarmBeep() {

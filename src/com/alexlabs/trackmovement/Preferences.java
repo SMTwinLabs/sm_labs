@@ -13,7 +13,6 @@ import android.content.res.Resources;
  */
 public class Preferences {
 	public static final String PREF_NAME = "timerPref";
-	public static final int BEEP_DELAY_INTERVAL = 5;//FIXME: make 20 for production
 	private static final int DEFAULT_VOLUME_PROGRESS = 50;
 	
 	// Preference objects
@@ -23,18 +22,10 @@ public class Preferences {
 	private SharedPreferences.Editor _preferenceEditor;
 	private boolean _isDirty;
 	
-	// Preference Settings
-	private boolean _isSoundOn;
-	private boolean _isVibrationOn;
-	private int _ringtoneResId;
-	private int _volumeProgress;
-	
 	public Preferences(){
 		_context = App.instance();
 		_resources = _context.getResources();
 		_preferences = _context.getSharedPreferences(PREF_NAME, Context.MODE_MULTI_PROCESS);
-		
-		init();
 	}
 
 	public SharedPreferences getPreferences() {
@@ -61,38 +52,34 @@ public class Preferences {
 			throw new IllegalStateException();
 	}
 	
-	private void init() {		
-		_isSoundOn = _preferences.getBoolean(_resources.getString(R.string.sound_toggle_pref), true);
-		_isVibrationOn = _preferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
-		_ringtoneResId = R.raw.old_clock_ringing_short;
-		_volumeProgress = _preferences.getInt(_resources.getString(R.string.volume_pref), DEFAULT_VOLUME_PROGRESS);
-	}
-	
 	public void onSaveVolumePreferences(int volumeProgess) {
 		checkEditMode();
-		_volumeProgress = volumeProgess;
-		_preferenceEditor.putInt(_resources.getString(R.string.volume_pref), _volumeProgress);
+		_preferenceEditor.putInt(_resources.getString(R.string.volume_pref), volumeProgess);
 		
 		_isDirty = true;
 	}
 	
 	public boolean isSoundOn() {
-		return _isSoundOn;
+		return _preferences.getBoolean(_resources.getString(R.string.sound_toggle_pref), true);
 	}
 	
 	public boolean isVibrationOn() {
-		return _isVibrationOn;
+		return _preferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
 	}
 	
 	public int getRingtone() {
-		return _ringtoneResId;
+		return R.raw.old_clock_ringing_short;
 	}
 	
 	public int getVolumeProgess(){
-		return _volumeProgress;
+		return _preferences.getInt(_resources.getString(R.string.volume_pref), DEFAULT_VOLUME_PROGRESS);
 	}
 	
 	public int getAlarmNoiseDuration() {
 		return Integer.parseInt(_preferences.getString(_resources.getString(R.string.alarm_noise_duration_pref), _resources.getString(R.string.alarm_noise_default_duration_label)));
+	}
+	
+	public boolean getShouldBeep() {
+		return _preferences.getBoolean(_resources.getString(R.string.alarm_beep_pref), true);
 	}
 }

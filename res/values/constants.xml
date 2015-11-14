@@ -3,6 +3,7 @@
 	<string name="sound_toggle_pref">SoundPref</string>	
 	<string name="vibration_toggle_pref">VibrationPref</string>
 	<string name="volume_pref">VolumePref</string>
+	<string name="alarm_beep_pref">BeepPref</string>
 	<string name="alarm_noise_duration_pref">AlaramNoiseDurationPref</string>
 	
 	<string-array name="alarm_noise_durations_labels">

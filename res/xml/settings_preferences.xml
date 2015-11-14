@@ -23,4 +23,9 @@
         android:defaultValue="true"
         android:icon="@drawable/ic_vibration_black_36dp"/>
     
+    <CheckBoxPreference android:title="@string/alarm_beep_label"
+        android:key="@string/alarm_beep_pref"
+        android:defaultValue="true"
+        android:icon="@drawable/ic_surround_sound_black_36dp"/>
+    
 </PreferenceScreen>
