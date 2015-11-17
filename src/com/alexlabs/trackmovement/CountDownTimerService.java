@@ -199,7 +199,7 @@ public class CountDownTimerService extends Service{
 	
 	// FIXME - revert to _millisUntilFinished for production
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(4000/*_millisUntilFinished*/, 100) {
+		_countDownTimer = new CountDownTimer(_millisUntilFinished, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -277,7 +277,7 @@ public class CountDownTimerService extends Service{
 		showMainActivity();
 		
 		Preferences prefs = new Preferences();
-		AlarmBell.instance().start(getBaseContext(), false);
+		AlarmBell.instance().start(getBaseContext());
 		if(prefs.getShouldBeep()) {
 			_scheduler.scheduleWithFixedDelay(new Runnable() {
 				

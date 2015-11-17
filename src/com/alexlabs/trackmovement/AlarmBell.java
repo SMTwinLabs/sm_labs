@@ -11,6 +11,7 @@ import android.content.Context;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.telephony.TelephonyManager;
 
 /**
  * This class provides a facility for managing the alarm noise and vibration, which are grouped
@@ -69,14 +70,15 @@ public class AlarmBell {
 	 * Start both the media player and vibration. If the user is taking a phone call,
 	 * the strength of the audio is greatly diminished.
 	 * @param context
-	 * @param inTelephoneCall
 	 */
-    public void start(final Context context, boolean inTelephoneCall) {
+    public void start(final Context context) {    	
     	Preferences preferences = new Preferences();
     	
     	// The alarm bell's audio file is set to loop indefinitely. It will be stopped
     	// below, taking into consideration the user preferences for the loop length.
     	if(preferences.isSoundOn()) {
+    		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+    		boolean inTelephoneCall = telephonyManager.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK;
     		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), preferences.getRingtone(), true);
     	}
 		

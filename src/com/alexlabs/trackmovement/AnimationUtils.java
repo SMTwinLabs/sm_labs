@@ -13,7 +13,7 @@ public class AnimationUtils {
 	
 	static AnimatorSet _animator = new AnimatorSet();
 	public static void toggleTimerSignalAnimation(Activity activity, boolean isTimerStarted) {		
-		ImageView pulsatingCircle = (ImageView) activity.findViewById(R.id.pulsatingCicrle);
+		ImageView pulsatingCircle = (ImageView) activity.findViewById(R.id.pulsatingCircleAnimation);
 		
 		View pulsatingCircleBackground = activity.findViewById(R.id.pulsatingCicrleBackground);
 		

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="clock_dial_diameter">280dp</dimen>
-    
-    <dimen name="miuntes_text_view_size">120dp</dimen>
-    
+    <dimen name="dail_pad_size">280dp</dimen>    
+    <dimen name="time_view_size">120dp</dimen>    
     <dimen name="clock_every_fifth_minute_area_diameter">214dp</dimen>
 </resources>

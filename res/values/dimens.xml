@@ -3,11 +3,18 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="clock_selectable_area_width">300dp</dimen>
     <dimen name="clock_selectable_area_height">300dp</dimen>
-    <dimen name="clock_dial_diameter">300dp</dimen>
+    <dimen name="dail_pad_size">300dp</dimen>
     
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="miuntes_text_view_size">60dp</dimen>
-    <dimen name="miuntes_container_view_size">80dp</dimen>
+    <dimen name="time_view_size">60dp</dimen>
+    <dimen name="time_display_container_size">80dp</dimen>
+    
+    <dimen name="minutes_text_size">60sp</dimen>
+    <dimen name="seconds_text_size">30sp</dimen>
+    
+    <dimen name="pulsating_circle_size">142dp</dimen>    
+    <dimen name="pulsating_animation_background_circle_size">102dp</dimen>
+    <dimen name="seconds_negative_top_margin">-15dp</dimen>
 </resources>

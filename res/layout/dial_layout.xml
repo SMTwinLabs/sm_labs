@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <View android:id="@+id/dialBackgroundView" 
-	        android:layout_width="@dimen/clock_dial_diameter"
-	        android:layout_height="@dimen/clock_dial_diameter"
+    	<View android:id="@+id/dialPad" 
+	        android:layout_width="@dimen/dail_pad_size"
+	        android:layout_height="@dimen/dail_pad_size"
 	        android:focusable="false"
         	android:background = "@drawable/timer_base"
         	android:layout_centerInParent="true"
         	android:padding="0dp"
         	android:layout_margin="0dp"/>
         
-	    <View android:id="@+id/dialView" 
-	        android:layout_width="@dimen/clock_dial_diameter"
-	        android:layout_height="@dimen/clock_dial_diameter"
+	    <View android:id="@+id/dial" 
+	        android:layout_width="@dimen/dail_pad_size"
+	        android:layout_height="@dimen/dail_pad_size"
 	        android:focusable="false"
 	        android:background="@drawable/timer_dial"
         	android:layout_centerInParent="true"
         	android:padding="0dp"
         	android:layout_margin="0dp"/>
 	    
-        
-        <FrameLayout android:id="@+id/timerDisplayLayout"
-            android:layout_width="@dimen/miuntes_container_view_size"
-            android:layout_height="@dimen/miuntes_container_view_size"           
+        <!-- This is a container for the time display and the pulstainion animation. -->
+        <FrameLayout
+            android:layout_width="@dimen/time_display_container_size"
+            android:layout_height="@dimen/time_display_container_size"           
             android:layout_centerInParent="true"
             android:orientation="vertical"
 	        android:gravity="center_vertical"
             android:padding="0dp"
             android:layout_margin="0dp" >
             
-            <View android:id="@+id/timerDisplayBackground"
-	            android:layout_width="@dimen/miuntes_text_view_size"
-	            android:layout_height="@dimen/miuntes_text_view_size" 
-	            android:background="@drawable/circle_minutes"
+            <View android:id="@+id/timeView"
+	            android:layout_width="@dimen/time_view_size"
+	            android:layout_height="@dimen/time_view_size" 
+	            android:background="@drawable/circle_blue"
 	            android:layout_gravity="center"
             	/>
 	         
             <View android:id="@+id/pulsatingCicrleBackground"
-	            android:layout_width="102dp"
-	            android:layout_height="102dp"
-	            android:background="@drawable/circle_minutes_red"
+	            android:layout_width="@dimen/pulsating_animation_background_circle_size"
+	            android:layout_height="@dimen/pulsating_animation_background_circle_size"
+	            android:background="@drawable/circle_red"
 	            android:layout_gravity="center"
 	            android:visibility="gone"
             	/>
             
-            <ImageView android:id="@+id/pulsatingCicrle"
-	            android:layout_width="142dp"
-	            android:layout_height="142dp"
+            <ImageView android:id="@+id/pulsatingCircleAnimation"
+	            android:layout_width="@dimen/pulsating_circle_size"
+	            android:layout_height="@dimen/pulsating_circle_size"
 	            android:src="@drawable/pulsation"
 	            android:layout_gravity="center"
 	            android:visibility="gone"
             	/>
             
-            <LinearLayout android:id="@+id/timerDialDisplay"
+            <LinearLayout
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 		        android:layout_gravity="center"
@@ -61,10 +61,10 @@
 	            android:padding="0dp"
 	            android:layout_margin="0dp" >
 	            
-		         <TextView android:id="@+id/minutesView"
+		         <TextView android:id="@+id/minutesTextView"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
-		            android:textSize="60sp"
+		            android:textSize="@dimen/minutes_text_size"
 		            android:textStyle="bold"
 		            android:textColor="@color/white"
 		            android:layout_gravity="center"
@@ -74,11 +74,11 @@
 		         <TextView android:id="@+id/secondsTextView"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
-		            android:textSize="30sp"
+		            android:textSize="@dimen/seconds_text_size"
 		            android:textColor="@color/white"
 		            android:layout_gravity="center"
 		            android:padding="0dp"
-		            android:layout_marginTop="-15dp"
+		            android:layout_marginTop="@dimen/seconds_negative_top_margin"
 		            android:background="@null"
 		            />         
 	        </LinearLayout>

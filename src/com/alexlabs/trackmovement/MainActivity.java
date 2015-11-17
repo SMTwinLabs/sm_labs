@@ -173,7 +173,7 @@ public class MainActivity extends ActionBarActivity {
 		getSupportActionBar().hide();
 
 		_content = (RelativeLayout) findViewById(R.id.content);
-		_minutesTextView = (TextView) findViewById(R.id.minutesView);
+		_minutesTextView = (TextView) findViewById(R.id.minutesTextView);
 		_secondsTextView = (TextView) findViewById(R.id.secondsTextView);
 		_messageTextView = (TextView) findViewById(R.id.message_text_view);
 		
