@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="clock_selectable_area_width">500dp</dimen>
+    <dimen name="clock_selectable_area_width">576dp</dimen>
     <dimen name="clock_selectable_area_height">600dp</dimen>
-    <dimen name="dail_pad_size">450dp</dimen>
+    <dimen name="dail_pad_size">540dp</dimen>
+      
+    <dimen name="time_view_size">216dp</dimen>
+    <dimen name="time_display_container_size">270dp</dimen>
     
-    <dimen name="clock_every_fifth_minute_area_diameter">246dp</dimen>
+    <dimen name="minutes_text_size">108sp</dimen>
+    <dimen name="seconds_text_size">54sp</dimen>
+    <dimen name="pulsating_circle_size">256dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size">186dp</dimen>
+    <dimen name="clock_every_fifth_minute_area_diameter">422dp</dimen>
+    
+    <dimen name="seconds_negative_top_margin">-28dp</dimen>
 </resources>

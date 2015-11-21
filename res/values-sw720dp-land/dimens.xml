@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>    
+    <dimen name="clock_selectable_area_width">720dp</dimen>
+    <dimen name="clock_selectable_area_height">691dp</dimen>
+    <dimen name="dail_pad_size">600dp</dimen>
+
+    <dimen name="clock_every_fifth_minute_area_diameter">492dp</dimen>
+</resources>
