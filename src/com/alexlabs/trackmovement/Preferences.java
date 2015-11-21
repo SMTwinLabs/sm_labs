@@ -76,7 +76,7 @@ public class Preferences {
 	}
 	
 	public int getAlarmNoiseDuration() {
-		return Integer.parseInt(_preferences.getString(_resources.getString(R.string.alarm_noise_duration_pref), _resources.getString(R.string.alarm_noise_default_duration_label)));
+		return Integer.parseInt(_preferences.getString(_resources.getString(R.string.alarm_noise_duration_pref), _resources.getString(R.string.alarm_noise_duration_value)));
 	}
 	
 	public boolean getShouldBeep() {
