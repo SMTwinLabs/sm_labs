@@ -57,6 +57,8 @@ public class MediaPlayerManager {
 			stop(context);  
 		}
 		
+		stop(context);
+		
 		_mediaPlayer = new MediaPlayer();
 	    _mediaPlayer.setOnErrorListener(new OnErrorListener() {
 	        @Override
@@ -117,12 +119,16 @@ public class MediaPlayerManager {
 	 */
 	public void stop(Context context) {
 		if(_mediaPlayer != null) {
-			_mediaPlayer.stop();
-		    AudioManager audioManager = (AudioManager)
-		            context.getSystemService(Context.AUDIO_SERVICE);
-		    audioManager.abandonAudioFocus(null);
-		    _mediaPlayer.release();
-		    _mediaPlayer = null;	
+			try {
+				_mediaPlayer.stop();
+			    AudioManager audioManager = (AudioManager)
+			            context.getSystemService(Context.AUDIO_SERVICE);
+			    audioManager.abandonAudioFocus(null);
+			    _mediaPlayer.release();
+			    _mediaPlayer = null;
+			} catch (Exception e) {
+				// do nothing
+			}
 		}
 	    
 	    _isMediaPlayerStarted = false;
