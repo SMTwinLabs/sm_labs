@@ -21,5 +21,6 @@
 	<string name="vibration_toggle_label">Vibration</string>
 	<string name="volume_label">Volume</string>
 	<string name="alarm_beep_label">Beeping reminder</string>
+	<string name="alarm_beep_summary">Repeating sound for an unconfirmed finished timer</string>
 	<string name="alarm_noise_default_duration_label">Alarm duration</string>
 </resources>

@@ -22,7 +22,7 @@
 	        android:layout_alignParentTop="true"
 	        android:layout_marginTop="10dp"
 	        android:gravity="center"
-	        android:textSize="22sp"/>
+	        android:textSize="@dimen/message_text_size"/>
     </RelativeLayout>
     
     <include layout="@layout/button_bar"/>

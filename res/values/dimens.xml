@@ -17,4 +17,7 @@
     <dimen name="pulsating_circle_size">142dp</dimen>    
     <dimen name="pulsating_animation_background_circle_size">102dp</dimen>
     <dimen name="seconds_negative_top_margin">-15dp</dimen>
+    
+    <dimen name="message_text_size">22sp</dimen>
+    <dimen name="message_text_margin_right">10dp</dimen>
 </resources>

@@ -27,6 +27,12 @@ public class SettingsFragment extends PreferenceFragment {
 		addPreferencesFromResource(R.xml.settings_preferences);
 		
 		// Monitor the 'Vibration' preference
+		initVibrationPreferences();
+		
+		Preference vibrationPreference = findPreference(getActivity().getString(R.string.volume_pref));
+	}
+
+	private void initVibrationPreferences() {
 		Preference vibrationPreference = findPreference(getActivity().getString(R.string.vibration_toggle_pref));
 		vibrationPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			

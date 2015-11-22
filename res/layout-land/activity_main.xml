@@ -24,9 +24,9 @@
         android:layout_alignTop="@id/content"
         android:layout_alignRight="@id/content"
         android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="@dimen/message_text_margin_right"
         android:singleLine="false"
         android:textColor="@color/white"
-        android:textSize="18sp"/>
+        android:textSize="@dimen/message_text_size"/>
 
 </RelativeLayout>
