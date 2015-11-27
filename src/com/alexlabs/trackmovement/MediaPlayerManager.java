@@ -10,6 +10,11 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.RingtoneManager;
 import android.net.Uri;
 
+/**
+ * 
+ * @author Alex
+ *
+ */
 public class MediaPlayerManager {
 	/**
      * Holds a reference to the current instance of the media player. Whenever the media player
