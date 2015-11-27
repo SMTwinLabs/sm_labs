@@ -11,7 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 
 /**
- * 
+ * Media player class.
  * @author Alex
  *
  */
