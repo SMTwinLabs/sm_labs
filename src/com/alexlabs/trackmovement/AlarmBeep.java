@@ -12,7 +12,7 @@ public class AlarmBeep {
 
 	private MediaPlayerManager _mediaPlayerManager;
 
-	public static final int BEEP_DELAY_INTERVAL = 5;//FIXME: make 20 for production
+	public static final int BEEP_DELAY_INTERVAL = 20;//FIXME: make 20 for production
 	private static AlarmBeep _alarmBeep;
 	
 	private AlarmBeep() {
