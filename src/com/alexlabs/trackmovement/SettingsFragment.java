@@ -1,9 +1,12 @@
 package com.alexlabs.trackmovement;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
@@ -11,6 +14,22 @@ import android.preference.PreferenceFragment;
 public class SettingsFragment extends PreferenceFragment {
 	private VibrationManager _vibrationManager = new VibrationManager();
 	private Handler _vibrationDemoHandler = new Handler();
+	private OnSharedPreferenceChangeListener _preferenceChangeListener = new OnSharedPreferenceChangeListener() {
+		
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+				String key) {
+			if(key.equals(getActivity().getResources().getString(R.string.volume_pref))
+					|| key.equals(getActivity().getResources().getString(R.string.sound_toggle_pref))) {
+				updateVolumePref();
+			} else if(key.equals(getActivity().getResources().getString(R.string.alarm_noise_duration_pref))) {
+				updateAlarmDurationPref();
+			} else {
+				// something is wrong
+			}
+		}
+	};
+	
 	private Runnable _stopVibrationDemoRunnable = new Runnable() {
 		
 		@Override
@@ -29,7 +48,12 @@ public class SettingsFragment extends PreferenceFragment {
 		// Monitor the 'Vibration' preference
 		initVibrationPreferences();
 		
-		Preference vibrationPreference = findPreference(getActivity().getString(R.string.volume_pref));
+		// Set the summary text for the 'Volume' preference.
+		updateVolumePref();
+		updateAlarmDurationPref();
+		updateRingtonePref();
+		
+		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(_preferenceChangeListener);		
 	}
 
 	private void initVibrationPreferences() {
@@ -57,5 +81,37 @@ public class SettingsFragment extends PreferenceFragment {
 		// NOTE: Not all devices have vibrators. Therefore a check for a vibrator needs to be done. 
 		Vibrator mVibrator = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		vibrationPreference.setEnabled(mVibrator.hasVibrator());
+	}
+	
+	/**
+	 * Shows the user the current volume's level.
+	 */
+	private void updateVolumePref() {
+		Preferences p = new Preferences();
+		Preference volumePreference = findPreference(getActivity().getString(R.string.volume_pref));
+		
+		// Update summary.
+		volumePreference.setSummary(String.format("Volume: %d%%", p.getVolumeProgess()));
+		
+		// Enabled only if the user has turned on the 'Sound' option.
+		volumePreference.setEnabled(p.isSoundOn());
+	}
+	
+	public void updateAlarmDurationPref() {
+		Preferences p = new Preferences();
+		Preference alarmNoiseDurationPreference = findPreference(getActivity().getString(R.string.alarm_noise_duration_pref));
+		alarmNoiseDurationPreference.setSummary(String.format("Duration: %d seconds", p.getAlarmNoiseDuration()));
+	}
+	
+	public void updateRingtonePref() {
+		Preferences p = new Preferences();
+		Preference alarmRingtonePreference = findPreference(getActivity().getString(R.string.alarm_ringtone_pref));
+		alarmRingtonePreference.setEnabled(p.isSoundOn());
+	}
+	
+	@Override
+	public void onDestroy() {
+		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(_preferenceChangeListener);
+		super.onDestroy();
 	}
 }

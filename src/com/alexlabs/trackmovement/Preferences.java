@@ -1,8 +1,12 @@
 package com.alexlabs.trackmovement;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
 
 /**
  * Does not save an instance. This class only access the preference file every time the constructor is called.
@@ -21,6 +25,13 @@ public class Preferences {
 	private SharedPreferences _preferences;
 	private SharedPreferences.Editor _preferenceEditor;
 	private boolean _isDirty;
+	
+	private static final String DEFAULT_RINGTONE_KEY = App.instance().getResources().getString(R.string.old_clock_ringing_short);
+	private static final Map<String, Integer> _ringtones = new HashMap<String, Integer>(){{
+		put(App.instance().getResources().getString(R.string.electronic_chime), R.raw.electronic_chime);
+		put(App.instance().getResources().getString(R.string.old_clock_ringing_short), R.raw.old_clock_ringing_short);
+		
+	}};
 	
 	public Preferences(){
 		_context = App.instance();
@@ -68,7 +79,12 @@ public class Preferences {
 	}
 	
 	public int getRingtone() {
-		return R.raw.old_clock_ringing_short;
+		Log.d("NOISE", _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null));
+		String key = _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null);
+		if(key == null) {
+			key = DEFAULT_RINGTONE_KEY;
+		}
+		return _ringtones.get(key);
 	}
 	
 	public int getVolumeProgess(){

@@ -8,7 +8,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 
 public class AlarmBeep {
-	private static final int MINIMUM_PROGRESS = 45;
+	private static final double MINIMUM_PROGRESS = 0.65;
 
 	private MediaPlayerManager _mediaPlayerManager;
 
@@ -29,9 +29,12 @@ public class AlarmBeep {
 	
 	public void beep(final Context context) {
 		Preferences preferences = new Preferences();
-		int level = preferences.getVolumeProgess();
+		// The level is between 0 and 1.
+		double level = preferences.getVolumeProgess()/100;
 		
-		if(level < MINIMUM_PROGRESS) {
+		// The minimum sound progress is set only when the selected sound is lower than the minimum audible
+		// threshold or when the sound option is turned off.
+		if(level < MINIMUM_PROGRESS || !preferences.isSoundOn()) {
 			level = MINIMUM_PROGRESS;
 		}
 		

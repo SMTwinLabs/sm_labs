@@ -5,6 +5,7 @@
 	<string name="volume_pref">VolumePref</string>
 	<string name="alarm_beep_pref">BeepPref</string>
 	<string name="alarm_noise_duration_pref">AlaramNoiseDurationPref</string>
+	<string name="alarm_ringtone_pref">AlarmRingtonePref</string>
 	
 	<string-array name="alarm_noise_durations_labels">
 	    <item>Short (2 seconds)</item>
@@ -14,6 +15,16 @@
 	<string-array name="alarm_noise_durations_values">
 	    <item>2</item>
 	    <item>10</item>
+	</string-array>
+	
+	<string-array name="alarm_ringtone_labels">
+	    <item>R1</item>
+	    <item>R2</item>
+	</string-array>
+	
+	<string-array name="alarm_ringtone_values">
+	    <item>@string/electronic_chime</item>
+	    <item>@string/old_clock_ringing_short</item>
 	</string-array>
 	
 	<string name="alarm_noise_duration_value">2</string>
