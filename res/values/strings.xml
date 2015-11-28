@@ -28,5 +28,8 @@
 	<string name="alarm_ringtone_label">Ringtone</string>
 	<string name="old_clock_ringing_short">Old clock ringing</string>
 	<string name="electronic_chime">Electronic chime</string>
+	<string name="mechanic_clock_sound_ringing">Mechanic clock</string>
+	<string name="quick_ringing_short">Quick ringing</string>
+	<string name="wind_up_lower_pitched_bell_ringing">Wind up bell</string>
 	<string name="choose_ringtone_dialog_title">Choose ringtone</string>
 </resources>

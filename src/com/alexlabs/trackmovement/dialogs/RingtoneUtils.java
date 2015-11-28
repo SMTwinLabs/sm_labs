@@ -13,7 +13,9 @@ public class RingtoneUtils {
 	
 	static {
 		_ringtoneEntryList.add(new RingtoneEntry(App.instance().getResources().getString(R.string.old_clock_ringing_short), R.raw.old_clock_ringing_short)); // Default
-		_ringtoneEntryList.add(new RingtoneEntry(App.instance().getResources().getString(R.string.electronic_chime), R.raw.electronic_chime));
+		_ringtoneEntryList.add(new RingtoneEntry(App.instance().getResources().getString(R.string.mechanic_clock_sound_ringing), R.raw.mechanic_clock_sound_ringing));
+		_ringtoneEntryList.add(new RingtoneEntry(App.instance().getResources().getString(R.string.quick_ringing_short), R.raw.quick_ringing_short));
+		_ringtoneEntryList.add(new RingtoneEntry(App.instance().getResources().getString(R.string.wind_up_lower_pitched_bell_ringing), R.raw.wind_up_lower_pitched_bell_ringing));
 	}
 	
 	public static class RingtoneEntry {

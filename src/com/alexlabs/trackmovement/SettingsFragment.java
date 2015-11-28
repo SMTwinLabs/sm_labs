@@ -94,10 +94,10 @@ public class SettingsFragment extends PreferenceFragment {
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				// Remove any existing runnables
 				_vibrationDemoHandler.removeCallbacks(_stopVibrationDemoRunnable);
-
 				// Start the device vibration only if the checkbox is selected
 				if((Boolean) newValue) {
 					// Start the device vibration.
+					_vibrationManager.stop(getActivity());
 					_vibrationManager.start(getActivity());
 				}			
 

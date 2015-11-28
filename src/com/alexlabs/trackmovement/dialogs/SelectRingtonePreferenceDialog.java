@@ -41,7 +41,7 @@ public class SelectRingtonePreferenceDialog extends DialogFragment{
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				_ringtoneDemoHandler.removeCallbacks(_stopRingtoneDemoRunnable);
-				_mediaPlayerManager.start(getActivity(), 1.0, RingtoneUtils.gerResId(which), true);
+				_mediaPlayerManager.start(getActivity(), 1.0, RingtoneUtils.gerResId(which));
 				_ringtoneDemoHandler.postDelayed(_stopRingtoneDemoRunnable, 2000);
 			}
 		})
@@ -57,13 +57,15 @@ public class SelectRingtonePreferenceDialog extends DialogFragment{
 				} finally {
 					prefs.finishEdit();
 				}
+				
+				_ringtoneDemoHandler.post(_stopRingtoneDemoRunnable);
 			}
 		})
 		.setNegativeButton(android.R.string.cancel, new OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				// Do nothing.
+				_ringtoneDemoHandler.post(_stopRingtoneDemoRunnable);
 			}
 		});
 		

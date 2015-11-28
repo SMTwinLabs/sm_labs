@@ -17,15 +17,5 @@
 	    <item>10</item>
 	</string-array>
 	
-	<string-array name="alarm_ringtone_labels">
-	    <item>R1</item>
-	    <item>R2</item>
-	</string-array>
-	
-	<string-array name="alarm_ringtone_values">
-	    <item>@string/electronic_chime</item>
-	    <item>@string/old_clock_ringing_short</item>
-	</string-array>
-	
 	<string name="alarm_noise_duration_value">2</string>
 </resources>

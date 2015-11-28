@@ -96,7 +96,7 @@ public class AdjustVolumeDialog extends DialogPreference {
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {				
-				_mediaPlayerManager.start(getContext(), (double)_progress / 100, prefs.getRingtoneResId(), true);
+				_mediaPlayerManager.start(getContext(), (double)_progress / 100, prefs.getRingtoneResId());
 				// Stop the noise after a short delay.
 				alaramBellDemoHandler.postDelayed(stopAlarmBellDemoRunnable, 1000);
 			}

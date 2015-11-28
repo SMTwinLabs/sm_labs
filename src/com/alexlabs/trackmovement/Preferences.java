@@ -71,13 +71,7 @@ public class Preferences {
 		return _preferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
 	}
 	
-	public int getRingtoneResId() {
-//		String key = _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null);
-//		if(key == null || !_ringtones.containsKey(key)) {
-//			key = DEFAULT_RINGTONE_KEY;
-//		}
-//		return _ringtones.get(key);
-		
+	public int getRingtoneResId() {		
 		return _preferences.getInt(_resources.getString(R.string.alarm_ringtone_pref), R.raw.old_clock_ringing_short);
 	}
 	
