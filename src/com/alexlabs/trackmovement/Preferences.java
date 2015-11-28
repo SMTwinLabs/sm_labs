@@ -79,9 +79,8 @@ public class Preferences {
 	}
 	
 	public int getRingtone() {
-		Log.d("NOISE", _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null));
 		String key = _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null);
-		if(key == null) {
+		if(key == null || !_ringtones.containsKey(key)) {
 			key = DEFAULT_RINGTONE_KEY;
 		}
 		return _ringtones.get(key);
