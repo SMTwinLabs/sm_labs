@@ -26,13 +26,6 @@ public class Preferences {
 	private SharedPreferences.Editor _preferenceEditor;
 	private boolean _isDirty;
 	
-	private static final String DEFAULT_RINGTONE_KEY = App.instance().getResources().getString(R.string.old_clock_ringing_short);
-	private static final Map<String, Integer> _ringtones = new HashMap<String, Integer>(){{
-		put(App.instance().getResources().getString(R.string.electronic_chime), R.raw.electronic_chime);
-		put(App.instance().getResources().getString(R.string.old_clock_ringing_short), R.raw.old_clock_ringing_short);
-		
-	}};
-	
 	public Preferences(){
 		_context = App.instance();
 		_resources = _context.getResources();
@@ -78,12 +71,14 @@ public class Preferences {
 		return _preferences.getBoolean(_resources.getString(R.string.vibration_toggle_pref), true);
 	}
 	
-	public int getRingtone() {
-		String key = _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null);
-		if(key == null || !_ringtones.containsKey(key)) {
-			key = DEFAULT_RINGTONE_KEY;
-		}
-		return _ringtones.get(key);
+	public int getRingtoneResId() {
+//		String key = _preferences.getString(_resources.getString(R.string.alarm_ringtone_pref), null);
+//		if(key == null || !_ringtones.containsKey(key)) {
+//			key = DEFAULT_RINGTONE_KEY;
+//		}
+//		return _ringtones.get(key);
+		
+		return _preferences.getInt(_resources.getString(R.string.alarm_ringtone_pref), R.raw.old_clock_ringing_short);
 	}
 	
 	public int getVolumeProgess(){
@@ -96,5 +91,12 @@ public class Preferences {
 	
 	public boolean getShouldBeep() {
 		return _preferences.getBoolean(_resources.getString(R.string.alarm_beep_pref), true);
+	}
+	
+	public void onSaveRingtonePreferences(int ringtoneResId) {
+		checkEditMode();
+		_preferenceEditor.putInt(_resources.getString(R.string.alarm_ringtone_pref), ringtoneResId);
+		
+		_isDirty = true;
 	}
 }

@@ -79,7 +79,7 @@ public class AlarmBell {
     	if(preferences.isSoundOn()) {
     		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
     		boolean inTelephoneCall = telephonyManager.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK;
-    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), preferences.getRingtone(), true);
+    		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), preferences.getRingtoneResId(), true);
     	}
 		
 		if(preferences.isVibrationOn()) {

@@ -1,7 +1,6 @@
 package com.alexlabs.trackmovement.dialogs;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.os.Handler;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
@@ -11,7 +10,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.alexlabs.trackmovement.MediaPlayerManager;
-import com.alexlabs.trackmovement.MediaPlayerManager.Volumes;
 import com.alexlabs.trackmovement.Preferences;
 import com.alexlabs.trackmovement.R;
 
@@ -98,7 +96,7 @@ public class AdjustVolumeDialog extends DialogPreference {
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {				
-				_mediaPlayerManager.start(getContext(), (double)_progress / 100, prefs.getRingtone());
+				_mediaPlayerManager.start(getContext(), (double)_progress / 100, prefs.getRingtoneResId(), true);
 				// Stop the noise after a short delay.
 				alaramBellDemoHandler.postDelayed(stopAlarmBellDemoRunnable, 1000);
 			}

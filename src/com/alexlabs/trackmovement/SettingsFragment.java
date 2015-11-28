@@ -1,14 +1,18 @@
 package com.alexlabs.trackmovement;
 
+import com.alexlabs.trackmovement.dialogs.RingtoneUtils;
+import com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog;
+
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 public class SettingsFragment extends PreferenceFragment {
@@ -24,6 +28,8 @@ public class SettingsFragment extends PreferenceFragment {
 				updateVolumePref();
 			} else if(key.equals(getActivity().getResources().getString(R.string.alarm_noise_duration_pref))) {
 				updateAlarmDurationPref();
+			} else if(key.equals(getActivity().getResources().getString(R.string.alarm_ringtone_pref))) {
+				updateRingtonePreferenceSummary();
 			} else {
 				// something is wrong
 			}
@@ -47,13 +53,37 @@ public class SettingsFragment extends PreferenceFragment {
 		
 		// Monitor the 'Vibration' preference
 		initVibrationPreferences();
+		initRingtonePreference();
 		
 		// Set the summary text for the 'Volume' preference.
 		updateVolumePref();
 		updateAlarmDurationPref();
 		updateRingtonePref();
+		updateRingtonePreferenceSummary();
 		
-		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(_preferenceChangeListener);		
+		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(_preferenceChangeListener);
+		
+		
+	}
+
+	private void initRingtonePreference() {
+		Preference alarmRingtonePreference = findPreference(getActivity().getString(R.string.alarm_ringtone_pref));
+		alarmRingtonePreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				DialogFragment ringtonesDialogFragment = new SelectRingtonePreferenceDialog();
+				ringtonesDialogFragment.show(getFragmentManager(), SelectRingtonePreferenceDialog.TAG);
+				return true;
+			}
+		});
+	}
+	
+	private void updateRingtonePreferenceSummary() {
+		Preference alarmRingtonePreference = findPreference(getActivity().getString(R.string.alarm_ringtone_pref));
+		Preferences prefs = new Preferences();
+		
+		alarmRingtonePreference.setSummary(String.format("Current: %s", RingtoneUtils.getRingtoneName(prefs.getRingtoneResId())));
 	}
 
 	private void initVibrationPreferences() {
