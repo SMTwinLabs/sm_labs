@@ -492,6 +492,12 @@ public class MainActivity extends ActionBarActivity {
 		registerReceiver(_screenReceiver, filter);
 	}
 	
+	private CallBroadcastReceiver _callReceiver;
+	public void registerCallReciver() {
+		_callReceiver = new CallBroadcastReceiver();
+		registerReceiver(_callReceiver, new IntentFilter(Intent.ACTION_CALL));
+	}
+	
 	/**
 	 * This method only renders the UI. To set the mode use {@link#updateUIMode}
 	 * @param newMode

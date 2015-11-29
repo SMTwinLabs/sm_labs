@@ -164,7 +164,7 @@ public class MediaPlayerManager {
 	// TODO - consider making separate class
 	public static class Volumes {
 		// Volume suggested by media team for in-call alarms.
-	    private static final double IN_CALL_VOLUME = 0.125;
+	    private static final double IN_CALL_VOLUME = 0.35;
 		
 		public static double getPreferencesLevel() {
 			Preferences preferences = new Preferences();

@@ -38,7 +38,7 @@ public class AlarmBeep {
 			level = MINIMUM_PROGRESS;
 		}
 		
-		_mediaPlayerManager.start(context, level, R.raw.electronic_chime, false);
+		_mediaPlayerManager.start(context, level, R.raw.electronic_chime);
 		ScheduledExecutorService execService = Executors.newScheduledThreadPool(1);
 		execService.schedule(new Runnable() {
 			

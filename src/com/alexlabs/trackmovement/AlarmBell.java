@@ -12,6 +12,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 /**
  * This class provides a facility for managing the alarm noise and vibration, which are grouped
@@ -78,7 +79,8 @@ public class AlarmBell {
     	// below, taking into consideration the user preferences for the loop length.
     	if(preferences.isSoundOn()) {
     		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-    		boolean inTelephoneCall = telephonyManager.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK;
+    		boolean inTelephoneCall = telephonyManager.getCallState() != TelephonyManager.CALL_STATE_IDLE;
+    		Log.d("ALEX_LABS", "!-- is in call = " + inTelephoneCall);
     		_mediaPlayerManager.start(context, inTelephoneCall ? Volumes.getInCallLevel() : Volumes.getPreferencesLevel(), preferences.getRingtoneResId(), true);
     	}
 		
