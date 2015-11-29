@@ -492,12 +492,6 @@ public class MainActivity extends ActionBarActivity {
 		registerReceiver(_screenReceiver, filter);
 	}
 	
-	private CallBroadcastReceiver _callReceiver;
-	public void registerCallReciver() {
-		_callReceiver = new CallBroadcastReceiver();
-		registerReceiver(_callReceiver, new IntentFilter(Intent.ACTION_CALL));
-	}
-	
 	/**
 	 * This method only renders the UI. To set the mode use {@link#updateUIMode}
 	 * @param newMode
@@ -616,6 +610,9 @@ public class MainActivity extends ActionBarActivity {
 		// If the timer finishes while the current mode is EDIT_MODE, remove all edit mode
 		// specific arcs.
 		removeEditModeArcs();
+		
+		if(_selectedMinute < 0)
+			_selectedMinute = 0;
 		
 		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_select_time_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
