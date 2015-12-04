@@ -1,4 +1,7 @@
-package com.alexlabs.trackmovement;
+package com.alexlabs.trackmovement.utils;
+
+import com.alexlabs.trackmovement.R;
+import com.alexlabs.trackmovement.R.dimen;
 
 import android.content.Context;
 import android.view.MotionEvent;

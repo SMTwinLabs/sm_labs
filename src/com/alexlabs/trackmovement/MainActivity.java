@@ -3,6 +3,9 @@ package com.alexlabs.trackmovement;
 import java.util.Locale;
 
 import com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog;
+import com.alexlabs.trackmovement.utils.AnimationUtils;
+import com.alexlabs.trackmovement.utils.TimerUtils;
+import com.alexlabs.trackmovement.utils.UIUtils;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -58,6 +61,11 @@ public class MainActivity extends ActionBarActivity {
 	// flags
 	private boolean _isTimerStarted;
 	private int _timerState;
+	
+	// This flag shows weather the user has picked a different time while in the EDIT mode.
+	// While in the edit mode, the user may not perform any changes but still click accept.
+	// This flag eliminates any ambiguities as to the user's actions.
+	private boolean _isTimeEdited;
 	
 	// time
 	private int _selectedMinute;
@@ -241,17 +249,14 @@ public class MainActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				// Make sure that if the timer is being set for the 1st time 
 				// the milliseconds are set.
+				if (_UIMode == CountDownTimerService.MODE_BASE){					
+					if (_selectedMinute == 0) {
+						UIUtils.showToast(getBaseContext(), R.string.pick_time_prompt);
 
-				if (_selectedMinute == 0) {
-					UIUtils.showToast(getBaseContext(), R.string.pick_time_prompt);
-
-					_secondsTextView.setVisibility(View.GONE);
-					return;
-				}
-
-				if (_UIMode == CountDownTimerService.MODE_BASE){
+						_secondsTextView.setVisibility(View.GONE);
+						return;
+					}
 					setTimerState(CountDownTimerService.MSG_START_TIMER);
-				
 				} else if (_UIMode == CountDownTimerService.MODE_ACTIVE) {
 					if (_isTimerStarted) {
 						setTimerState(CountDownTimerService.MSG_PAUSE_TIMER);
@@ -357,18 +362,23 @@ public class MainActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				if(_selectedMinute > 0) {
-					// apply the new time
-					setTimerState(CountDownTimerService.MSG_START_TIMER);
-					updateUIMode(CountDownTimerService.MODE_ACTIVE);
-				} else if(_selectedMinute < 0){
+				// When the changes are accepted, we have to take the appropriate action based on
+				// weather the user actually edited the time. If he did not, we simply return back to the previous
+				// mode without making any changes to the current time.
+				if(_isTimeEdited) {
+					if(_selectedMinute > 0) {
+						// apply the new time
+						setTimerState(CountDownTimerService.MSG_START_TIMER);
+						updateUIMode(CountDownTimerService.MODE_ACTIVE);
+					} else if(_selectedMinute == 0){
+						// when the timer is 0, the timer will finish immediately, setting everything to 
+						// BASE mode.
+						setTimerState(CountDownTimerService.MSG_START_TIMER);
+					}
+				} else {
 					// simply return to active mode without doing any work.
 					updateUIMode(CountDownTimerService.MODE_ACTIVE);
-				} else if(_selectedMinute == 0){
-					// when the timer is 0, the timer will finish immediately, setting everything to 
-					// BASE mode.
-					setTimerState(CountDownTimerService.MSG_START_TIMER);
-				}
+				} 
 			}
 			
 		});
@@ -395,6 +405,11 @@ public class MainActivity extends ActionBarActivity {
 			throw new IllegalArgumentException("Motion event is null.");
 
 		_selectedMinute = TimerUtils.generateMinute(_motionEvent, context, content);
+		
+		// If a minute is selected while in the edit mode, the edit time flag has to be set.
+		if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
+			_isTimeEdited = true;
+		}
 		
 		try {
 			_countDownService.send(Message.obtain(null, CountDownTimerService.MSG_SET_SELECTED_MINUTE, _selectedMinute, 0));
@@ -493,7 +508,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	/**
-	 * This method only renders the UI. To set the mode use {@link#updateUIMode}
+	 * This method only renders the UI interface based on the UI mode the user is currently in.
+	 * To set the mode use {@link#updateUIMode}
 	 * @param newMode
 	 */
 	public void renderAll(int newMode) {
@@ -548,7 +564,10 @@ public class MainActivity extends ActionBarActivity {
 		_minutesTextView.setVisibility(View.VISIBLE);
 		_secondsTextView.setVisibility(View.GONE);
 		
-		if(_selectedMinute >= 0) {
+		// The minute that will be displayed depends on weather the user has picked a different
+		// time or has just entered edit mode. In the latter case, we just show the current minute
+		// of the timer.
+		if(_isTimeEdited) {
 			minute = _selectedMinute;
 		} else {				
 			minute = _currentMinute;
@@ -575,7 +594,11 @@ public class MainActivity extends ActionBarActivity {
 	private void renderUIActiveMode() {
 		setMessageViewText(_isTimerStarted ? R.string.timer_state_active : R.string.timer_state_paused);
 		
-		_selectedMinute = -1;		
+		// The user has no right to edit the time in this mode. Any circumstance in which
+		// the user transitions to this state clears the "edited time" flag.
+		_isTimeEdited = false;
+		// Accordingly, the selected minute has to be cleared as well.
+		_selectedMinute = 0;		
 		
 		removeEditModeArcs();
 		
@@ -611,12 +634,10 @@ public class MainActivity extends ActionBarActivity {
 		// specific arcs.
 		removeEditModeArcs();
 		
-		if(_selectedMinute < 0)
-			_selectedMinute = 0;
-		
 		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_select_time_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
-
+		
+		// Make visible the buttons for the base mode.
 		_secondsTextView.setVisibility(View.GONE);
 		_buttonBar.setVisibility(View.VISIBLE);
 		_minutesTextView.setVisibility(View.VISIBLE);
@@ -624,7 +645,7 @@ public class MainActivity extends ActionBarActivity {
 		setMessageViewText(R.string.set_time);
 	}
 
-	void updateButtonBar() {
+	public void updateButtonBar() {
 		if(_UIMode == CountDownTimerService.MODE_BASE) {
 			renderButtonBarBaseMode();
 		

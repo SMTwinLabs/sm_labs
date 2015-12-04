@@ -1,4 +1,4 @@
-package com.alexlabs.trackmovement.dialogs;
+package com.alexlabs.trackmovement.utils;
 
 import java.util.ArrayList;
 import java.util.List;

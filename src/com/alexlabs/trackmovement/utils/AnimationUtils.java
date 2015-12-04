@@ -1,4 +1,9 @@
-package com.alexlabs.trackmovement;
+package com.alexlabs.trackmovement.utils;
+
+import com.alexlabs.trackmovement.MainActivity;
+import com.alexlabs.trackmovement.R;
+import com.alexlabs.trackmovement.R.anim;
+import com.alexlabs.trackmovement.R.id;
 
 import android.animation.AnimatorSet;
 import android.app.Activity;

@@ -4,6 +4,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alexlabs.trackmovement.utils.TimerUtils;
+import com.alexlabs.trackmovement.utils.UIUtils;
+
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
@@ -199,7 +202,7 @@ public class CountDownTimerService extends Service{
 	
 	// FIXME - revert to _millisUntilFinished for production
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(8000/*_millisUntilFinished*/, 100) {
+		_countDownTimer = new CountDownTimer(_millisUntilFinished/*15000*/, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {

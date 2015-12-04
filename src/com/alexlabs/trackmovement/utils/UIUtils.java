@@ -1,4 +1,11 @@
-package com.alexlabs.trackmovement;
+package com.alexlabs.trackmovement.utils;
+
+import com.alexlabs.trackmovement.MainActivity;
+import com.alexlabs.trackmovement.R;
+import com.alexlabs.trackmovement.R.drawable;
+import com.alexlabs.trackmovement.R.id;
+import com.alexlabs.trackmovement.R.layout;
+import com.alexlabs.trackmovement.R.string;
 
 import android.app.Activity;
 import android.app.Notification;

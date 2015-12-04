@@ -1,7 +1,7 @@
 package com.alexlabs.trackmovement;
 
-import com.alexlabs.trackmovement.dialogs.RingtoneUtils;
 import com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog;
+import com.alexlabs.trackmovement.utils.RingtoneUtils;
 
 import android.app.DialogFragment;
 import android.content.Context;
