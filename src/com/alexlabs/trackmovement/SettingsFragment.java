@@ -3,7 +3,9 @@ package com.alexlabs.trackmovement;
 import com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog;
 import com.alexlabs.trackmovement.utils.RingtoneUtils;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -14,6 +16,8 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
+import android.util.DisplayMetrics;
+import android.widget.TextView;
 
 public class SettingsFragment extends PreferenceFragment {
 	private VibrationManager _vibrationManager = new VibrationManager();
@@ -60,10 +64,32 @@ public class SettingsFragment extends PreferenceFragment {
 		updateAlarmDurationPref();
 		updateRingtonePref();
 		updateRingtonePreferenceSummary();
+		initTestInfoPreference();
 		
 		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(_preferenceChangeListener);
-		
-		
+	}
+
+	private void initTestInfoPreference() {
+		Preference testInfoPreference = findPreference(getActivity().getString(R.string.test_info_pref));
+		testInfoPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				AlertDialog.Builder ad = new AlertDialog.Builder(getActivity());
+				TextView tv  = new TextView(getActivity());
+				DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+
+		        float dpHeight = displayMetrics.heightPixels / displayMetrics.density;
+		        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+		        
+				tv.setText(String.format("density = %f\nheight = %f\nwidth = %f", displayMetrics.density, dpHeight, dpWidth));
+				
+				ad.setView(tv);
+				ad.create().show();
+				return true;
+			}
+		});
+		//testInfoPreference.set
 	}
 
 	private void initRingtonePreference() {

@@ -44,4 +44,8 @@
 	        android:layout="@layout/preference"/>
     </PreferenceCategory>
     
+    <Preference android:title="@string/test_info_label"
+	        android:key="@string/test_info_pref"
+	        android:layout="@layout/preference"/>
+    
 </PreferenceScreen>

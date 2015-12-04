@@ -37,6 +37,8 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {	
 
+	private static final boolean SHOULD_USE_TESTING_FEATURES = true;
+	
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
