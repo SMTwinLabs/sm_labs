@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="@string/settings_key">
     <PreferenceCategory android:title="@string/volume_control_preference_category_title">
        	<CheckBoxPreference android:title="@string/sound_toggle_label"
 	        android:key="@string/sound_toggle_pref"

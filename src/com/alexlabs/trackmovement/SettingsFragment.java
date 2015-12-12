@@ -5,7 +5,6 @@ import com.alexlabs.trackmovement.utils.RingtoneUtils;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;
-import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -13,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.Preference;
+import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
@@ -20,6 +20,9 @@ import android.util.DisplayMetrics;
 import android.widget.TextView;
 
 public class SettingsFragment extends PreferenceFragment {
+	private static final boolean SHOULD_DISPLAY_TEST_INFO = false;
+	
+	
 	private VibrationManager _vibrationManager = new VibrationManager();
 	private Handler _vibrationDemoHandler = new Handler();
 	private OnSharedPreferenceChangeListener _preferenceChangeListener = new OnSharedPreferenceChangeListener() {
@@ -89,7 +92,12 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
-		//testInfoPreference.set
+		
+		// TODO: remove the test info for production
+		PreferenceScreen ps = (PreferenceScreen) findPreference(getResources().getString(R.string.settings_key));
+		if(!SHOULD_DISPLAY_TEST_INFO) {
+			ps.removePreference(testInfoPreference);
+		}
 	}
 
 	private void initRingtonePreference() {
