@@ -17,6 +17,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.widget.TextView;
 
 public class SettingsFragment extends PreferenceFragment {
@@ -145,6 +146,11 @@ public class SettingsFragment extends PreferenceFragment {
 		// NOTE: Not all devices have vibrators. Therefore a check for a vibrator needs to be done. 
 		Vibrator mVibrator = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		vibrationPreference.setEnabled(mVibrator.hasVibrator());
+		
+		// If the device has no vibrator, the preference is loaded with the disabled layout resource.
+		if(!mVibrator.hasVibrator()) {
+			vibrationPreference.setLayoutResource(R.layout.preference_disabled);
+		}
 	}
 	
 	/**

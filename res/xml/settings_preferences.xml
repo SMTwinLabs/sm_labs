@@ -14,7 +14,7 @@
 	        android:layout="@layout/preference"/>	        
     </PreferenceCategory>
     
-    <PreferenceCategory android:title="@string/alarm_settings_preference_category_title">
+    <PreferenceCategory android:title="@string/timer_settings_preference_category_title">
 	    <ListPreference
 	        android:key="@string/alarm_noise_duration_pref"
 	        android:title="@string/alarm_noise_default_duration_label"

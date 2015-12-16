@@ -24,7 +24,7 @@
 	<string name="alarm_beep_summary">Repeating sound for an unconfirmed finished timer</string>
 	<string name="alarm_noise_default_duration_label">Alarm duration</string>
 	<string name="volume_control_preference_category_title">Volume control</string>
-	<string name="alarm_settings_preference_category_title">Alarm settings</string>
+	<string name="timer_settings_preference_category_title">Timer settings</string>
 	<string name="alarm_ringtone_label">Ringtone</string>
 	<string name="old_clock_ringing_short">Old clock ringing</string>
 	<string name="electronic_chime">Electronic chime</string>
