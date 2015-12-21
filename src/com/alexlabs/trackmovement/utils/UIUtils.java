@@ -51,7 +51,7 @@ public class UIUtils {
 	public  static void sendNotification(Context context, Service service, int notificationId, String text) {
 		// Create the Notification.Builder.
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
-			.setSmallIcon(R.drawable.ic_launcher)
+			.setSmallIcon(R.drawable.ic_timelapse_white)
 			.setContentText(text)
 			.setContentTitle(context.getString(R.string.app_name));
 		
