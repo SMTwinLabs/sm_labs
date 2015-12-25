@@ -23,6 +23,7 @@ import com.alexlabs.trackmovement.CountDownTimerService;
 import com.alexlabs.trackmovement.R;
 
 public class ConfrimClearTimerDialog extends DialogFragment {
+	
 	public static final String TAG = "confirmClear";	
 	
 	private Messenger _countDownService;
@@ -88,5 +89,11 @@ public class ConfrimClearTimerDialog extends DialogFragment {
 		});
 		
 		return builder.create();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		getActivity().unbindService(_serviceConnetcion);
 	}
 }

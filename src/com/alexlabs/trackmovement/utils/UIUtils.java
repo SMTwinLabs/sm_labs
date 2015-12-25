@@ -2,10 +2,6 @@ package com.alexlabs.trackmovement.utils;
 
 import com.alexlabs.trackmovement.MainActivity;
 import com.alexlabs.trackmovement.R;
-import com.alexlabs.trackmovement.R.drawable;
-import com.alexlabs.trackmovement.R.id;
-import com.alexlabs.trackmovement.R.layout;
-import com.alexlabs.trackmovement.R.string;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -23,6 +19,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 public class UIUtils {
+	
+	private static Toast _setNewTimeToast;
 
 	public static boolean isLandscape(Activity activity) {
 		Display display = ((WindowManager)activity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -41,11 +39,16 @@ public class UIUtils {
 		LayoutInflater inflater = activity.getLayoutInflater();
 		View toastView = inflater.inflate(R.layout.edit_mode_toast_promt_layout,
 		                               (ViewGroup) activity.findViewById(R.id.relativeLayout1));
-	
-		Toast toast = new Toast(activity.getBaseContext());
-		toast.setView(toastView);
-		toast.setDuration(Toast.LENGTH_LONG);
-		toast.show();
+		try{
+			if(_setNewTimeToast == null || !_setNewTimeToast.getView().isShown()) {
+				_setNewTimeToast = new Toast(activity.getBaseContext());
+				_setNewTimeToast.setView(toastView);
+				_setNewTimeToast.setDuration(Toast.LENGTH_LONG);
+				_setNewTimeToast.show();
+			}
+		} catch (Exception e) {
+			// invisible if exception
+        }
 	}
 
 	public  static void sendNotification(Context context, Service service, int notificationId, String text) {

@@ -23,7 +23,7 @@
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
 		        android:background="@null"
-		        android:layout_marginRight="10dp"
+		        android:layout_marginRight="15dp"
 		        android:layout_centerInParent="true"
 		        android:src="@drawable/ic_play_circle_outline_white_48dp"/>
 	       
@@ -31,7 +31,6 @@
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
 		        android:background="@null"
-		        android:layout_marginRight="10dp"
 		        android:src="@drawable/ic_timer_white_48dp"
 		        android:layout_toRightOf="@id/start_stop_state_button"
 		        android:visibility="gone"/>
@@ -58,7 +57,7 @@
 	        android:layout_height="wrap_content"
 	        android:background="@null"
 	        android:layout_marginRight="10dp"
-	        android:src="@drawable/ic_clear_white_48dp"
+	        android:src="@drawable/ic_replay_white_48dp"
 	        android:visibility="gone"/>    
     
     <ImageButton android:id="@+id/edit_time_accept_change_button"
