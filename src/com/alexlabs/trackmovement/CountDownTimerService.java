@@ -34,12 +34,12 @@ public class CountDownTimerService extends Service{
 	public static final int MSG_START_TIMER = 3;
 	public static final int MSG_PAUSE_TIMER = 4;
 	public static final int MSG_UNPAUSE_TIMER = 5;
-	public static final int MSG_SET_SELECTED_MINUTE = 6;	
-	public static final int MSG_GET_TIMER_INFO = 7;
-	public static final int MSG_DONE_USING_TIMER = 8;
-	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 9;
-	
-	
+	public static final int MSG_CLEAR_TIMER = 6;
+	public static final int MSG_SET_SELECTED_MINUTE = 7;	
+	public static final int MSG_GET_TIMER_INFO = 8;
+	public static final int MSG_DONE_USING_TIMER = 9;
+	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 10;
+		
 	// modes
 	static final int MODE_BASE = 21;
 	static final int MODE_ACTIVE = 22; 
@@ -126,11 +126,15 @@ public class CountDownTimerService extends Service{
 				break;
 			
 			case MSG_PAUSE_TIMER:
-				stopCountDown();
+				pauseCountDown();
 				break;
 				
 			case MSG_UNPAUSE_TIMER:
 				startCountDown();
+				break;
+			
+			case MSG_CLEAR_TIMER:
+				clearCountDown();
 				break;
 				
 			case MSG_DONE_USING_TIMER:
@@ -174,7 +178,7 @@ public class CountDownTimerService extends Service{
 		return data;
 	}
 	
-	public void startCountDown() {
+	private void startCountDown() {
 		if (_countDownTimer != null) {
 			_countDownTimer.cancel();
 			_countDownTimer = null;
@@ -189,7 +193,7 @@ public class CountDownTimerService extends Service{
 		_countDownTimer.start();
 	}
 	
-	public void stopCountDown() {
+	private void pauseCountDown() {
 		if (_countDownTimer != null) {
 			_countDownTimer.cancel();
 			_countDownTimer = null;
@@ -198,6 +202,22 @@ public class CountDownTimerService extends Service{
 			
 			UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_paused));
 		}
+	}
+	
+	private void clearCountDown() {
+		if (_countDownTimer != null) {
+			_countDownTimer.cancel();
+			_countDownTimer = null;
+		}
+		
+		_mode = MODE_BASE;
+		_timerState = TIMER_STATE_NONE;
+		_selectedMinute = 0;
+		_millisUntilFinished = 0;
+		
+		sendTimerInfoToRemoteClient();
+		
+		UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_cleared));
 	}
 	
 	// FIXME - revert to _millisUntilFinished for production
@@ -229,7 +249,7 @@ public class CountDownTimerService extends Service{
 				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
 
-				startAarm();
+				startAlarm();
 			}
 		};
 	}
@@ -270,7 +290,7 @@ public class CountDownTimerService extends Service{
 		startActivity(i);
 	}
 	
-	private void startAarm() {
+	private void startAlarm() {
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
 		

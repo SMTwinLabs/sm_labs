@@ -3,6 +3,7 @@ package com.alexlabs.trackmovement;
 import java.util.Locale;
 
 import com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog;
+import com.alexlabs.trackmovement.dialogs.ConfrimClearTimerDialog;
 import com.alexlabs.trackmovement.utils.AnimationUtils;
 import com.alexlabs.trackmovement.utils.TimerUtils;
 import com.alexlabs.trackmovement.utils.UIUtils;
@@ -56,6 +57,7 @@ public class MainActivity extends ActionBarActivity {
 	private ImageButton _editTimeAcceptChangeButton;
 	private ImageButton _editTimeCancelChangeButton;
 	private ImageButton _settingsButton;
+	private ImageButton _clearTimerButton;
 
 	// events
 	private MotionEvent _motionEvent;
@@ -203,6 +205,7 @@ public class MainActivity extends ActionBarActivity {
 		});
 		
 		initEditTimeButtonGroup();
+		initClearTimerButton();
 		
 		_content.setOnTouchListener(new OnTouchListener() {
 
@@ -383,6 +386,18 @@ public class MainActivity extends ActionBarActivity {
 				} 
 			}
 			
+		});
+	}
+	
+	private void initClearTimerButton(){
+		_clearTimerButton = (ImageButton) findViewById(R.id.clear_timer_button);
+		_clearTimerButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				ConfrimClearTimerDialog timerClearConfirmationDialog = new ConfrimClearTimerDialog();
+				timerClearConfirmationDialog.show(getFragmentManager(), ConfrimClearTimerDialog.TAG);
+			}
 		});
 	}
 	
