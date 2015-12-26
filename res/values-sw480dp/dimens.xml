@@ -14,6 +14,8 @@
     <dimen name="clock_every_fifth_minute_area_diameter">351dp</dimen>
     
     <dimen name="seconds_negative_top_margin">-23dp</dimen>
-    <dimen name="message_text_size">33sp</dimen>
-    <dimen name="message_text_margin_right">15dp</dimen>
+    <dimen name="message_text_size">25sp</dimen>
+    <dimen name="message_text_margin_y">35dp</dimen>
+    
+    <dimen name="rounding_factor">10dp</dimen>
 </resources>

@@ -5,4 +5,7 @@
     <dimen name="dail_pad_size">440dp</dimen>
 
     <dimen name="clock_every_fifth_minute_area_diameter">341dp</dimen>
+    
+    <dimen name="message_text_margin_x">15dp</dimen>
+    <dimen name="message_text_margin_y">15dp</dimen>
 </resources>

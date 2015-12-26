@@ -5,5 +5,6 @@
     <dimen name="clock_every_fifth_minute_area_diameter">214dp</dimen>
     
     <dimen name="message_text_size">18sp</dimen>
-    <dimen name="message_text_margin_right">10dp</dimen>
+    <dimen name="message_text_margin_x">10dp</dimen>
+    <dimen name="message_text_margin_y">8dp</dimen>
 </resources>

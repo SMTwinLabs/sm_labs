@@ -272,6 +272,9 @@ public class MainActivity extends ActionBarActivity {
 				}
 				
 				updateUIMode(CountDownTimerService.MODE_ACTIVE);
+
+				// Change layout of the message text view when the state is altered.
+				updateMessageTextViewLayout();
 			}
 
 		});
@@ -550,6 +553,8 @@ public class MainActivity extends ActionBarActivity {
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {
 			AnimationUtils.slideButtonBar(_buttonBar, this);
+			// Change layout of the message text view when the mode is altered.
+			updateMessageTextViewLayout();
 		} else {
 			updateButtonBar();
 		}
@@ -566,7 +571,24 @@ public class MainActivity extends ActionBarActivity {
 //				d.show(manager, ConfirmScheduledAramDialog.TAG);
 //			}
 //		}
+		
+		
 	}
+
+	// FIXME is message appropriate
+	private void updateMessageTextViewLayout() {
+		_messageTextView.setBackgroundDrawable(getResources().getDrawable(R.drawable.rounded_corners_mode_change_background));
+		final Handler h = new Handler();
+		h.postDelayed(new Runnable() {
+			
+			@Override
+			public void run() {
+				_messageTextView.setBackgroundDrawable(getResources().getDrawable(R.drawable.rounded_corners_background));
+				h.removeCallbacks(this);
+			}
+		}, 1000);
+	}
+	
 	
 	private DialogFragment retrieveConfirmSchedulingAlarmDialog(FragmentManager manager){
 		DialogFragment d = (DialogFragment) manager.findFragmentByTag(ConfirmScheduledAramDialog.TAG);

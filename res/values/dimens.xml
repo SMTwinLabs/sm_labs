@@ -19,5 +19,6 @@
     <dimen name="seconds_negative_top_margin">-15dp</dimen>
     
     <dimen name="message_text_size">22sp</dimen>
-    <dimen name="message_text_margin_right">10dp</dimen>
+    <dimen name="message_text_margin_x">10dp</dimen>
+    <dimen name="message_text_margin_y">10dp</dimen>
 </resources>
