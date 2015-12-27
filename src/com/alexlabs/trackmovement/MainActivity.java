@@ -631,7 +631,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void renderUIActiveMode() {
-		setMessageViewText(_isTimerStarted ? R.string.timer_state_active : R.string.timer_state_paused);
+		setMessageViewText(_isTimerStarted ? R.string.timer_state_running : R.string.timer_state_paused);
 		
 		// The user has no right to edit the time in this mode. Any circumstance in which
 		// the user transitions to this state clears the "edited time" flag.
@@ -769,7 +769,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 
 		// If the timer is running and the user has exited the application itself,
-		// show toast that the timer is active.
+		// show toast that the timer is running.
 		if(_isTimerStarted && _timerState != CountDownTimerService.TIMER_STATE_FINISHED){
 			UIUtils.showToast(this, R.string.timer_still_running);
 		}

@@ -13,7 +13,7 @@
 	<string name="timer_finished">Timer has finished.</string>
 	<string name="set_time">Set time</string>
 	<string name="set_new_time">Set new time</string>
-	<string name="timer_state_active">Timer active</string>
+	<string name="timer_state_running">Timer running</string>
 	<string name="timer_state_paused">Timer paused</string>
 	<string name="OK">OK</string>
 	<string name="cancel">Cancel</string>

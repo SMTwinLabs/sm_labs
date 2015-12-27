@@ -18,4 +18,5 @@
     <dimen name="message_text_margin_y">35dp</dimen>
     
     <dimen name="rounding_factor">10dp</dimen>
+    <dimen name="buttons_margin">25dp</dimen>
 </resources>
