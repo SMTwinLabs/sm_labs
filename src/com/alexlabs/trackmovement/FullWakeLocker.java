@@ -3,11 +3,11 @@ package com.alexlabs.trackmovement;
 import android.content.Context;
 import android.os.PowerManager;
 
-public class WakeLocker {
+public class FullWakeLocker {
 	private PowerManager.WakeLock _wakeLock;
 	private static final String APP_TAG = "com.alexlabs.trackmovement.Main";
 
-	public WakeLocker() {
+	public FullWakeLocker() {
 		// empty
 	}
 

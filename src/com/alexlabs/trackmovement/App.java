@@ -1,8 +1,5 @@
 package com.alexlabs.trackmovement;
 
-import java.util.ArrayList;
-
-import android.app.Activity;
 import android.app.Application;
 
 public class App extends Application{

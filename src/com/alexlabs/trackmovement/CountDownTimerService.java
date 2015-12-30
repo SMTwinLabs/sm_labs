@@ -73,6 +73,9 @@ public class CountDownTimerService extends Service{
 	private Messenger _remoteClientMessenger;
 	private CountDownTimer _countDownTimer;
 	
+	// Waker lockers
+	private PartialWakeLocker _cpuLocker = new PartialWakeLocker();
+	
 	/**
     * Target we publish for clients to send messages to IncomingHandler.
     */
@@ -138,19 +141,7 @@ public class CountDownTimerService extends Service{
 				break;
 				
 			case MSG_DONE_USING_TIMER:
-				_timerState = TIMER_STATE_NONE;
-				
-				AlarmBell.instance().stop(getBaseContext());
-				sendAlarmConfirmedIntent();
-				
-				Log.d("ALEX_LABS", AlarmBell.instance().toString());
-				
-				if(_scheduler != null && !_scheduler.isShutdown()) {
-					_scheduler.shutdown();
-				}
-
-				Log.d("ALEX_LABS", "request sent that timer is no longer used");
-				sendTimerInfoToRemoteClient();
+				doneUsingTimer();
 				
 				break;
 			case MSG_STOP_ALARM_NOISE_AND_VIBRATION:
@@ -166,8 +157,9 @@ public class CountDownTimerService extends Service{
 				super.handleMessage(msg);
 			}
 		}
-	}
 
+	}
+	
 	private Bundle getDataInBundle() {
 		Bundle data = new Bundle();
 		data.putInt(MODE, _mode);
@@ -191,6 +183,7 @@ public class CountDownTimerService extends Service{
 		UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_started));
 		
 		_countDownTimer.start();
+		_cpuLocker.acquire(getBaseContext());
 	}
 	
 	private void pauseCountDown() {
@@ -204,6 +197,24 @@ public class CountDownTimerService extends Service{
 		}
 	}
 	
+	private void doneUsingTimer() {
+		_timerState = TIMER_STATE_NONE;
+		
+		AlarmBell.instance().stop(getBaseContext());
+		sendAlarmConfirmedIntent();
+		
+		Log.d("ALEX_LABS", AlarmBell.instance().toString());
+		
+		if(_scheduler != null && !_scheduler.isShutdown()) {
+			_scheduler.shutdown();
+		}
+		
+		_cpuLocker.release();
+
+		Log.d("ALEX_LABS", "request sent that timer is no longer used");
+		sendTimerInfoToRemoteClient();
+	}
+	
 	private void clearCountDown() {
 		if (_countDownTimer != null) {
 			_countDownTimer.cancel();
@@ -214,6 +225,8 @@ public class CountDownTimerService extends Service{
 		_timerState = TIMER_STATE_NONE;
 		_selectedMinute = 0;
 		_millisUntilFinished = 0;
+		
+		_cpuLocker.release();
 		
 		sendTimerInfoToRemoteClient();
 		
@@ -294,7 +307,7 @@ public class CountDownTimerService extends Service{
 		if(_scheduler == null || _scheduler.isShutdown())
 			_scheduler = Executors.newScheduledThreadPool(1);
 		
-		WakeLocker localWakeLock = new WakeLocker();
+		FullWakeLocker localWakeLock = new FullWakeLocker();
 		localWakeLock.acquire(getBaseContext());
 		
 		showMainActivity();
