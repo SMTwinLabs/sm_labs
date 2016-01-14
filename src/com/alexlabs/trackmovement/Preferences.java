@@ -1,12 +1,7 @@
 package com.alexlabs.trackmovement;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.util.Log;
 
 /**
  * Does not save an instance. This class only access the preference file every time the constructor is called.
@@ -17,7 +12,7 @@ import android.util.Log;
  */
 public class Preferences {
 	public static final String PREF_NAME = "timerPref";
-	private static final int DEFAULT_VOLUME_PROGRESS = 50;
+	private static final int DEFAULT_VOLUME_PROGRESS = 100;
 	
 	// Preference objects
 	private Context _context;
