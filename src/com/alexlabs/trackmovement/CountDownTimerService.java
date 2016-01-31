@@ -39,7 +39,7 @@ public class CountDownTimerService extends Service{
 	public static final int MSG_GET_TIMER_INFO = 8;
 	public static final int MSG_DONE_USING_TIMER = 9;
 	public static final int MSG_STOP_ALARM_NOISE_AND_VIBRATION = 10;
-		
+			
 	// modes
 	static final int MODE_BASE = 21;
 	static final int MODE_ACTIVE = 22; 
@@ -166,7 +166,7 @@ public class CountDownTimerService extends Service{
 		data.putInt(TIMER_STATE, _timerState);			
 		data.putInt(SELECTED_MINUTE, _selectedMinute);
 		data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
-		data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));			
+		data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));
 		return data;
 	}
 	
@@ -213,6 +213,8 @@ public class CountDownTimerService extends Service{
 
 		Log.d("ALEX_LABS", "request sent that timer is no longer used");
 		sendTimerInfoToRemoteClient();
+		
+		stopForeground(true);
 	}
 	
 	private void clearCountDown() {
@@ -231,6 +233,8 @@ public class CountDownTimerService extends Service{
 		sendTimerInfoToRemoteClient();
 		
 		UIUtils.sendNotification(getBaseContext(), this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_cleared));
+		
+		stopForeground(true);
 	}
 	
 	// FIXME - revert to _millisUntilFinished for production

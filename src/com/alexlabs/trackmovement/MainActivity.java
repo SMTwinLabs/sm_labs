@@ -131,40 +131,13 @@ public class MainActivity extends ActionBarActivity {
 		}
     }
     
+    // FIXME
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
-    private final Messenger _clientMessenger = new Messenger(new IncomingHandler());
+    private Messenger _clientMessenger;
     
-    private ServiceConnection _serviceConnetcion = new ServiceConnection() {
-		
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			_countDownService = null;
-		}
-		
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			_countDownService = new Messenger(service);
-			
-            // We want to monitor the service for as long as we are
-            // connected to it.
-			Message msg = null;
-            try {
-                msg = Message.obtain(null,
-                                CountDownTimerService.MSG_REGISTER_CLIENT);
-                msg.replyTo = _clientMessenger;
-                _countDownService.send(msg);
-            } catch (RemoteException e) {
-                // In this case the service has crashed before we could even
-                // do anything with it; we can count on soon being
-                // disconnected (and then reconnected if it can be restarted)
-                // so there is no need to do anything here.
-            }
-            
-            requestTimerInfoFromCountDownTimerService();
-		}
-	};
+    private ServiceConnection _serviceConnetcion;
 
 	/////////////////////////////////////////////////
 	/////////// View
@@ -261,14 +234,16 @@ public class MainActivity extends ActionBarActivity {
 						_secondsTextView.setVisibility(View.GONE);
 						return;
 					}
+					
 					setTimerState(CountDownTimerService.MSG_START_TIMER);
+					
 				} else if (_UIMode == CountDownTimerService.MODE_ACTIVE) {
 					if (_isTimerStarted) {
 						setTimerState(CountDownTimerService.MSG_PAUSE_TIMER);
 						
 					} else {
 						setTimerState(CountDownTimerService.MSG_UNPAUSE_TIMER);					
-					}					
+					}
 				}
 				
 				updateUIMode(CountDownTimerService.MODE_ACTIVE);
@@ -279,15 +254,54 @@ public class MainActivity extends ActionBarActivity {
 
 		});
 		
-		startService(new Intent(this, CountDownTimerService.class));
-		
-		doBindToCountDownService();
+		runCountDownTimerService();
         
 		// Register a broadcast receiver that saves the previous state of the
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
 		checkConfirmationDialogState(getIntent());
+	}
+
+	/**
+	 * Start the service if it has not been started and bind to it.
+	 */
+	private void runCountDownTimerService() {
+		_clientMessenger = new Messenger(new IncomingHandler());
+	    
+	    _serviceConnetcion = new ServiceConnection() {
+			
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				_countDownService = null;
+			}
+			
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				_countDownService = new Messenger(service);
+				
+	            // We want to monitor the service for as long as we are
+	            // connected to it.
+				Message msg = null;
+	            try {
+	                msg = Message.obtain(null,
+	                                CountDownTimerService.MSG_REGISTER_CLIENT);
+	                msg.replyTo = _clientMessenger;
+	                _countDownService.send(msg);
+	            } catch (RemoteException e) {
+	                // In this case the service has crashed before we could even
+	                // do anything with it; we can count on soon being
+	                // disconnected (and then reconnected if it can be restarted)
+	                // so there is no need to do anything here.
+	            }
+	            
+	            requestTimerInfoFromCountDownTimerService();
+			}
+		};
+		
+		startService(new Intent(MainActivity.this, CountDownTimerService.class));
+		
+		doBindToCountDownService();
 	}
 
 	private void checkConfirmationDialogState(Intent intent) {
@@ -517,7 +531,9 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Detach our existing connection.
-        unbindService(_serviceConnetcion);
+        if(_serviceConnetcion != null) {
+        	unbindService(_serviceConnetcion);
+        }
     }
 
 	public void registerScreenReciver() {
