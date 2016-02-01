@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,6 +46,7 @@ public class MainActivity extends ActionBarActivity {
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
+	private final static int TIME_CIRCLE_ID_KEY = 3;
 
 	// dial view
 	private RelativeLayout _content;
@@ -262,8 +264,6 @@ public class MainActivity extends ActionBarActivity {
 		// Register a broadcast receiver that saves the previous state of the
 		// screen - whether it was on or off.
 		registerScreenReciver();
-        
-		//checkConfirmationDialogState(getIntent());
 	}
 
 	/**
@@ -463,6 +463,21 @@ public class MainActivity extends ActionBarActivity {
 		_content.addView(arc, index);
 	}
 	
+	private void renderCircle(float angle, int circleId, int index, int color, int alpha) {
+		// Remove the current arc. This is done so that a new arc will be
+		// generated with the newly selected angle.
+		_content.removeView(_content.findViewById(circleId));
+
+		// Create the new arc from the new angle that has been selected.
+		Circle circle = new Circle(getBaseContext(), _content, angle, color, alpha);
+
+		// Set the arc view's id.
+		circle.setId(circleId);
+
+		// Add the arc to the content view of the clock.
+		_content.addView(circle, index);
+	}
+	
 	private void onActionMove(Context context, View content) {
 		if (_motionEvent == null)
 			throw new IllegalArgumentException("Motion event is null.");
@@ -580,6 +595,8 @@ public class MainActivity extends ActionBarActivity {
 	public void renderAll(int newMode) {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
+		
+		renderCircle(90f, TIME_CIRCLE_ID_KEY, 2, R.color.timer_select_time_color, 255);
 		if(_UIMode == CountDownTimerService.MODE_BASE) {			
 			renderUIBaseMode();
 		

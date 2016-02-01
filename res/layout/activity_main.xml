@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     tools:context="com.alexlabs.trackmovement.MainActivity"
     android:orientation="vertical" 
-    android:background="@color/bg">
+    android:background="@color/bg"
+    android:id="@+id/entire_screen">
     
   	<RelativeLayout android:id="@+id/content"
         android:layout_width="wrap_content"

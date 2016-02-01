@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.alexlabs.trackmovement.MainActivity"
-    android:background="@color/bg">   
+    android:background="@color/bg"
+    android:id="@+id/entire_screen">   
 	  
     <include layout="@layout/button_bar"
         android:id="@+id/buttonArea"/>
