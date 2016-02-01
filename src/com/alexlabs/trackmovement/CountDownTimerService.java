@@ -57,6 +57,7 @@ public class CountDownTimerService extends Service{
 	static final String CURRENT_SECONDS = "currentSeconds";
 	static final String CURRENT_MINUTE = "currentMinute";
 	static final String SELECTED_MINUTE = "selectedMinute";
+	static final String PREVEOUSLY_SET_TIME = "preveouslySetTime";
 	static final String TIMER_STATE = "isTimerStarted";
 	
 	// Timer related
@@ -64,6 +65,7 @@ public class CountDownTimerService extends Service{
 	private int _mode = MODE_BASE;
 	
 	private int _selectedMinute;
+	private int _preveouslySetTime;
 	private long _millisUntilFinished;
 	private ScheduledExecutorService _scheduler;
 
@@ -122,6 +124,7 @@ public class CountDownTimerService extends Service{
 				break;
 				
 			case MSG_START_TIMER:
+				_preveouslySetTime = _selectedMinute;
 				_millisUntilFinished = TimerUtils.convertMinuteToMillis(_selectedMinute);
 				Log.d("ALEX_LABS", "started timer: " + _millisUntilFinished);
 				startCountDown();	
@@ -164,6 +167,7 @@ public class CountDownTimerService extends Service{
 		data.putInt(MODE, _mode);
 		data.putInt(TIMER_STATE, _timerState);			
 		data.putInt(SELECTED_MINUTE, _selectedMinute);
+		data.putInt(PREVEOUSLY_SET_TIME, _preveouslySetTime);
 		data.putInt(CURRENT_MINUTE, TimerUtils.getMinuteFromMillisecnods(_millisUntilFinished));
 		data.putInt(CURRENT_SECONDS, TimerUtils.getSecondsFromMillisecnods(_millisUntilFinished));
 		return data;

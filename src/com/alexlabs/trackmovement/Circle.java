@@ -3,6 +3,7 @@ package com.alexlabs.trackmovement;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.view.View;
 
 public class Circle extends View {
@@ -36,15 +37,6 @@ public class Circle extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		// Calculate the radius of the dial.
-		float radius = _context.getResources().getDimension(R.dimen.dail_pad_size)/2f;
-		
-		// Center values
-		float centerX = ((float)_content.getWidth())/2f;
-		float centerY = ((float)_content.getHeight())/2f;
-		
-		// Calculating coordinates
-		float coordX = (float) (centerX + Math.cos((double)_angle)*radius);
-		float coordY = (float) (centerY + Math.sin((double)_angle)*radius);
 		
 		_paint.setColor(getContext().getResources().getColor(_colorResId));
 		_paint.setStrokeWidth(5);	
@@ -54,7 +46,48 @@ public class Circle extends View {
 		// Set the opacity of the arc's paint
 		_paint.setAlpha(_alpha);
 		
+		Point coordinates = calculateCircleCoordinates();
+		
 		// draw the arc
-		canvas.drawCircle(coordX, coordY, 10, _paint);
+		canvas.drawCircle(coordinates.x, coordinates.y, 10, _paint);
+	}
+	
+	private Point calculateCircleCoordinates() {
+		float radius = _context.getResources().getDimension(R.dimen.dail_pad_size)/2f;
+
+		// Center values
+		float halfWidth = ((float)_content.getWidth())/2f;
+		float halfHeight = ((float)_content.getHeight())/2f;
+		
+		int quadrant = 1;
+		if(_angle < 360) {
+			quadrant += (int)(_angle/90);
+		}
+		
+		double angle = _angle % 90;
+		
+		angle = Math.toRadians(angle);
+		
+		Point coordinates = new Point();
+		switch(quadrant) {
+			case 1:
+				coordinates.x = (int) (halfWidth + radius * Math.sin(angle));
+				coordinates.y = (int) (halfHeight - radius * Math.cos(angle));
+				break;
+			case 2:
+				coordinates.x = (int) (halfWidth + radius * Math.cos(angle));
+				coordinates.y = (int) (halfHeight + radius * Math.sin(angle));
+				break;
+			case 3:
+				coordinates.x = (int) (halfWidth - radius * Math.sin(angle));
+				coordinates.y = (int) (halfHeight + radius * Math.cos(angle));
+				break;
+			case 4:
+				coordinates.x = (int) (halfWidth - radius * Math.cos(angle));
+				coordinates.y = (int) (halfHeight - radius * Math.sin(angle));
+				break;
+		}
+		
+		return coordinates;
 	}
 }

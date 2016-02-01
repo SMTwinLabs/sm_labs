@@ -77,6 +77,7 @@ public class MainActivity extends ActionBarActivity {
 	
 	// time
 	private int _selectedMinute;
+	private int _preveouslySetTime;
 	private int _currentMinute;
 	private int _currentSeconds;
 	private int _UIMode = CountDownTimerService.MODE_BASE;
@@ -131,6 +132,7 @@ public class MainActivity extends ActionBarActivity {
 			
 			// time related
 			_selectedMinute = info.getInt(CountDownTimerService.SELECTED_MINUTE);
+			_preveouslySetTime = info.getInt(CountDownTimerService.PREVEOUSLY_SET_TIME);
 			_currentMinute = info.getInt(CountDownTimerService.CURRENT_MINUTE);
 			_currentSeconds = info.getInt(CountDownTimerService.CURRENT_SECONDS);
 			
@@ -596,7 +598,8 @@ public class MainActivity extends ActionBarActivity {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
 		
-		renderCircle(90f, TIME_CIRCLE_ID_KEY, 2, R.color.timer_select_time_color, 255);
+		renderCircle(TimerUtils.generateAngleFromMinute(_preveouslySetTime), TIME_CIRCLE_ID_KEY, 1, R.color.timer_select_time_color, 255);
+		
 		if(_UIMode == CountDownTimerService.MODE_BASE) {			
 			renderUIBaseMode();
 		
