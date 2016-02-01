@@ -25,8 +25,6 @@ public class CountDownTimerService extends Service{
 	
 	private static final int ONGOING_NOTIFICATION_ID = 1;
 	
-	public static final String SHOW_DIALOG_EXTRA_KEY = "SHOW_DIALOG";
-	
 	// common
 	public static final int MSG_REGISTER_CLIENT = 0;
 	public static final int MSG_UNREGISTER_CLIENT = 1;
@@ -44,6 +42,7 @@ public class CountDownTimerService extends Service{
 	static final int MODE_BASE = 21;
 	static final int MODE_ACTIVE = 22; 
 	static final int MODE_EDIT_TIME = 23;
+	static final int MODE_WAITING_FOR_CONFIRMATION = 24;
 	
 	// states
 	static final int TIMER_STATE_NONE = 30;
@@ -198,10 +197,11 @@ public class CountDownTimerService extends Service{
 	}
 	
 	private void doneUsingTimer() {
+		_mode = MODE_BASE;
 		_timerState = TIMER_STATE_NONE;
 		
 		AlarmBell.instance().stop(getBaseContext());
-		sendAlarmConfirmedIntent();
+		showMainActivity();
 		
 		Log.d("ALEX_LABS", AlarmBell.instance().toString());
 		
@@ -239,7 +239,7 @@ public class CountDownTimerService extends Service{
 	
 	// FIXME - revert to _millisUntilFinished for production
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(_millisUntilFinished/*15000*/, 100) {
+		_countDownTimer = new CountDownTimer(/*_millisUntilFinished*/5000, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
@@ -261,7 +261,7 @@ public class CountDownTimerService extends Service{
 			public void onFinish() {
 				_timerState = TIMER_STATE_FINISHED;
 				
-				_mode = MODE_BASE;
+				_mode = MODE_WAITING_FOR_CONFIRMATION;
 				
 				_millisUntilFinished = _selectedMinute = 0;
 				UIUtils.sendNotification(getBaseContext(), CountDownTimerService.this, ONGOING_NOTIFICATION_ID, getApplicationContext().getString(R.string.timer_finished));
@@ -295,15 +295,6 @@ public class CountDownTimerService extends Service{
 		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(Intent.ACTION_MAIN);
 		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(SHOW_DIALOG_EXTRA_KEY, true);
-		startActivity(i);
-	}
-	
-	private void sendAlarmConfirmedIntent() {
-		Intent i = new Intent(this, MainActivity.class);
-		i.setAction(Intent.ACTION_MAIN);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(SHOW_DIALOG_EXTRA_KEY, false);
 		startActivity(i);
 	}
 	
@@ -315,6 +306,7 @@ public class CountDownTimerService extends Service{
 		localWakeLock.acquire(getBaseContext());
 		
 		showMainActivity();
+		sendTimerInfoToRemoteClient();
 		
 		Preferences prefs = new Preferences();
 		AlarmBell.instance().start(getBaseContext());

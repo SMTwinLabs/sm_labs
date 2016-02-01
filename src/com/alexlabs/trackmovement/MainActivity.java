@@ -14,9 +14,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -80,6 +82,9 @@ public class MainActivity extends ActionBarActivity {
 	// broadcast receivers
 	private ScreenReceiver _screenReceiver;
 	
+	// state
+	private boolean _isActivityRunning;
+	
 	// interprocess communication
 	 /** Messenger for communicating with service. */
     Messenger _countDownService;
@@ -131,7 +136,6 @@ public class MainActivity extends ActionBarActivity {
 		}
     }
     
-    // FIXME
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
@@ -166,7 +170,6 @@ public class MainActivity extends ActionBarActivity {
 		_startStopStateButton = (ImageButton) findViewById(R.id.start_stop_state_button);
 		_settingsButton = (ImageButton) findViewById(R.id.settings_button);
 		
-		// FIXME remove after testing
 		_settingsButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -260,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
 		// screen - whether it was on or off.
 		registerScreenReciver();
         
-		checkConfirmationDialogState(getIntent());
+		//checkConfirmationDialogState(getIntent());
 	}
 
 	/**
@@ -303,13 +306,6 @@ public class MainActivity extends ActionBarActivity {
 		
 		doBindToCountDownService();
 	}
-
-	private void checkConfirmationDialogState(Intent intent) {
-		if(intent.hasExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY)) {
-			if(intent.getBooleanExtra(CountDownTimerService.SHOW_DIALOG_EXTRA_KEY, false))
-				showConfirmationDialog();
-		}
-	}
 	
 	@Override
 	protected void onRestart() {
@@ -321,33 +317,66 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.d("ALEX_LABS", "MainActivity is Started");		
+		Log.d("ALEX_LABS", "MainActivity is Started");
+		_isActivityRunning = true;
 	}
 
+	/**
+	 * Shows the confirmation dialog for confirming the alarm.
+	 * <br/><br/>
+	 * <b>NOTE:</b> When the activity is restarted (either after it was destroyed or simply stopped) by the count down timer service
+	 * it quickly alternates its life cycle state in the chain start->stop->start. The dialog's show() method is called when
+	 * the activity is in the stopped state as the first change start->stop is almost immediate. This causes an exception that crashes
+	 * the app as a dialog(or any other view or fragment) cannot be displayed when the activity is stopped. To overcome this
+	 * a worker(background) thread is started which checks the state of the activity every 50 ms and when the activity is in
+	 * the started(running) state, the dialog is displayed.
+	 */
 	private void showConfirmationDialog() {
-		FragmentManager manager = getSupportFragmentManager();
-		if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
-			// Show the dialog at the most convenient time.				
-			DialogFragment d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
-			d.setCancelable(false);
-			d.show(manager, ConfirmScheduledAramDialog.TAG);
-		}
+		final FragmentManager manager = getSupportFragmentManager();
+		
+		final Handler handler = new Handler();
+		
+		final Thread th = new Thread() {
+			
+			@Override
+			public void run() {
+				while(!_isActivityRunning) {
+					try {
+						sleep(50);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} 
+				
+				if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
+					// NOTE: when we are sure the dialog is safe to be shown, the code
+					// for displaying it must be put on the UI thread, which is accomplished
+					// with the post() method from the Handler class.
+					handler.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							// Show the dialog at the most convenient time.				
+							DialogFragment d = ConfirmScheduledAramDialog.newInstance(R.string.timer_finished);
+							d.setCancelable(false);
+							d.show(manager, ConfirmScheduledAramDialog.TAG);
+						}
+					});
+					
+					interrupt();
+				}
+				
+			}
+		};
+		
+		th.start();
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.d("ALEX_LABS", "MainActivity is Resumed");
-	}
-	
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		Log.d("ALEX_LABS", "onNewIntent");
-		
-		requestTimerInfoFromCountDownTimerService();
-		
-		checkConfirmationDialogState(intent);	
 	}
 	
 	private void initEditTimeButtonGroup() {
@@ -559,7 +588,10 @@ public class MainActivity extends ActionBarActivity {
 		
 		} else if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
 			renderUIEditMode();
-			
+		
+		} else if(_UIMode == CountDownTimerService.MODE_WAITING_FOR_CONFIRMATION) {
+			renderUIBaseMode();
+			showConfirmationDialog();
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -573,21 +605,7 @@ public class MainActivity extends ActionBarActivity {
 			updateMessageTextViewLayout();
 		} else {
 			updateButtonBar();
-		}
-		
-		// NOTE: there seems to be an IlleagalStateException thrown from the VM when restarting the activity. For that reason
-		// to avoid layout reconfiguration error, delay the showing of the dialog.
-//		if(_shouldDisplayConfirmationDialog){
-//			final FragmentManager manager = getSupportFragmentManager();
-//			if(retrieveConfirmSchedulingAlarmDialog(manager) == null) {
-//				// Show the dialog at the most convenient time.				
-//				DialogFragment d = ConfirmScheduledAramDialog.newInstance(_countDownService, R.string.timer_finished);
-//				d.setCancelable(false);
-//				Log.d("ALEX_LABS", ">>>>show dialog");
-//				d.show(manager, ConfirmScheduledAramDialog.TAG);
-//			}
-//		}
-		
+		}	
 		
 	}
 
@@ -778,6 +796,7 @@ public class MainActivity extends ActionBarActivity {
 		super.onStop();	
 
 		Log.d("ALEX_LABS", "MainActivity is Stopped");
+		_isActivityRunning = false;
 		
 		// NOTE: when exiting the application, the UI mode is set to active.
 		if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
