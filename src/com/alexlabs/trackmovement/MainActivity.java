@@ -471,7 +471,7 @@ public class MainActivity extends ActionBarActivity {
 		_content.removeView(_content.findViewById(circleId));
 
 		// Create the new arc from the new angle that has been selected.
-		Circle circle = new Circle(getBaseContext(), _content, angle, color, alpha);
+		TimeCircle circle = new TimeCircle(getBaseContext(), _content, angle, color, alpha);
 
 		// Set the arc view's id.
 		circle.setId(circleId);

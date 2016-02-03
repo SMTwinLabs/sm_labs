@@ -23,4 +23,6 @@
     <dimen name="message_text_margin_y">10dp</dimen>
     
     <dimen name="buttons_margin">15dp</dimen>
+    
+    <dimen name="time_circle">6dp</dimen>
 </resources>

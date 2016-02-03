@@ -19,4 +19,6 @@
     
     <dimen name="rounding_factor">10dp</dimen>
     <dimen name="buttons_margin">25dp</dimen>
+    
+    <dimen name="time_circle">10dp</dimen>
 </resources>

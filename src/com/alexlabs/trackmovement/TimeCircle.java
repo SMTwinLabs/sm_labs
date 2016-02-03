@@ -6,26 +6,25 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.View;
 
-public class Circle extends View {
+public class TimeCircle extends View {
 	private View _content;
 	private Context _context;
 	private int _alpha;
 	
 	private int _colorResId;
+	private Paint _paint;
 	
 	// The angle corresponding to the selected minute. 
 	private float _angle;
 	
-	private Paint _paint;
 	
-	
-	public Circle(Context context) {
+	public TimeCircle(Context context) {
 		super(context);
 		_context = context;
 		_paint = new Paint();
 	}
 	
-	public Circle(Context context, View parentView, float angle, int colorResId, int alpha) {
+	public TimeCircle(Context context, View parentView, float angle, int colorResId, int alpha) {
 		this(context);
 		_content = parentView;
 		_angle = angle;
@@ -49,7 +48,7 @@ public class Circle extends View {
 		Point coordinates = calculateCircleCoordinates();
 		
 		// draw the arc
-		canvas.drawCircle(coordinates.x, coordinates.y, 10, _paint);
+		canvas.drawCircle(coordinates.x, coordinates.y, (int)getResources().getDimension(R.dimen.time_circle), _paint);
 	}
 	
 	private Point calculateCircleCoordinates() {

@@ -243,7 +243,7 @@ public class CountDownTimerService extends Service{
 	
 	// FIXME - revert to _millisUntilFinished for production
 	private void initCountDownTimer() {
-		_countDownTimer = new CountDownTimer(/*_millisUntilFinished*/5000, 100) {
+		_countDownTimer = new CountDownTimer(_millisUntilFinished/*5000*/, 100) {
 			
 			@Override
 			public void onTick(long millisUntilFinished) {
