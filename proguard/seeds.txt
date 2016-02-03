@@ -1796,6 +1796,7 @@ com.alexlabs.trackmovement.R$dimen: int pulsating_circle_size
 com.alexlabs.trackmovement.R$dimen: int rounding_factor
 com.alexlabs.trackmovement.R$dimen: int seconds_negative_top_margin
 com.alexlabs.trackmovement.R$dimen: int seconds_text_size
+com.alexlabs.trackmovement.R$dimen: int time_circle
 com.alexlabs.trackmovement.R$dimen: int time_display_container_size
 com.alexlabs.trackmovement.R$dimen: int time_view_size
 com.alexlabs.trackmovement.R$drawable: int abc_ab_share_pack_holo_dark
@@ -1934,6 +1935,7 @@ com.alexlabs.trackmovement.R$id: int edit_time_accept_change_button
 com.alexlabs.trackmovement.R$id: int edit_time_button
 com.alexlabs.trackmovement.R$id: int edit_time_cancel_change_button
 com.alexlabs.trackmovement.R$id: int end
+com.alexlabs.trackmovement.R$id: int entire_screen
 com.alexlabs.trackmovement.R$id: int expand_activities_button
 com.alexlabs.trackmovement.R$id: int expanded_menu
 com.alexlabs.trackmovement.R$id: int home

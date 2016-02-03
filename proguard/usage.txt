@@ -3146,7 +3146,6 @@ com.alexlabs.trackmovement.BuildConfig
 com.alexlabs.trackmovement.CountDownTimerService:
     private static final boolean SHOULD_WAIT_FOR_DEBUGGER
     private static final int ONGOING_NOTIFICATION_ID
-    public static final java.lang.String SHOW_DIALOG_EXTRA_KEY
     public static final int MSG_REGISTER_CLIENT
     public static final int MSG_UNREGISTER_CLIENT
     public static final int MSG_SET_MODE
@@ -3161,6 +3160,7 @@ com.alexlabs.trackmovement.CountDownTimerService:
     static final int MODE_BASE
     static final int MODE_ACTIVE
     static final int MODE_EDIT_TIME
+    static final int MODE_WAITING_FOR_CONFIRMATION
     static final int TIMER_STATE_NONE
     static final int TIMER_STATE_STARTED
     static final int TIMER_STATE_STOPPED
@@ -3170,6 +3170,7 @@ com.alexlabs.trackmovement.CountDownTimerService:
     static final java.lang.String CURRENT_SECONDS
     static final java.lang.String CURRENT_MINUTE
     static final java.lang.String SELECTED_MINUTE
+    static final java.lang.String PREVEOUSLY_SET_TIME
     static final java.lang.String TIMER_STATE
 com.alexlabs.trackmovement.FullWakeLocker:
     private static final java.lang.String APP_TAG
@@ -3178,7 +3179,8 @@ com.alexlabs.trackmovement.MainActivity:
     private static final int ARC_ACTIVE_ID_KEY
     private static final int ARC_EDIT_TIME_ID_KEY
     private static final int ARC_SUPPORT_EDIT_TIME_ID_KEY
-    735:735:public android.os.Messenger getCountDownTimerService()
+    private static final int TIME_CIRCLE_ID_KEY
+    789:789:public android.os.Messenger getCountDownTimerService()
 com.alexlabs.trackmovement.MediaPlayerManager$Volumes:
     private static final double IN_CALL_VOLUME
     165:165:public MediaPlayerManager$Volumes()
@@ -3187,7 +3189,7 @@ com.alexlabs.trackmovement.PartialWakeLocker:
 com.alexlabs.trackmovement.Preferences:
     public static final java.lang.String PREF_NAME
     private static final int DEFAULT_VOLUME_PROGRESS
-    36:36:public android.content.SharedPreferences getPreferences()
+    31:31:public android.content.SharedPreferences getPreferences()
 com.alexlabs.trackmovement.R
 com.alexlabs.trackmovement.R$anim
 com.alexlabs.trackmovement.R$array
