@@ -6323,31 +6323,32 @@ com.alexlabs.trackmovement.FullWakeLocker -> com.alexlabs.trackmovement.i:
     void acquire(android.content.Context) -> a
     void release() -> a
 com.alexlabs.trackmovement.MainActivity -> com.alexlabs.trackmovement.MainActivity:
-    android.widget.RelativeLayout _content -> o
-    android.widget.TextView _minutesTextView -> p
-    android.widget.TextView _secondsTextView -> q
-    android.widget.TextView _messageTextView -> r
-    android.view.View _buttonBar -> s
-    android.widget.ImageButton _startStopStateButton -> t
-    android.widget.ImageButton _editTimeButton -> u
-    android.widget.ImageButton _editTimeAcceptChangeButton -> v
-    android.widget.ImageButton _editTimeCancelChangeButton -> w
-    android.widget.ImageButton _settingsButton -> x
-    android.widget.ImageButton _clearTimerButton -> y
-    android.view.MotionEvent _motionEvent -> z
-    boolean _isTimerStarted -> A
-    int _timerState -> B
-    boolean _isTimeEdited -> C
-    int _selectedMinute -> D
-    int _preveouslySetTime -> E
-    int _currentMinute -> F
-    int _currentSeconds -> G
-    int _UIMode -> H
-    com.alexlabs.trackmovement.ScreenReceiver _screenReceiver -> I
-    boolean _isActivityRunning -> J
+    android.widget.RelativeLayout _content -> p
+    android.widget.TextView _minutesTextView -> q
+    android.widget.TextView _secondsTextView -> r
+    android.widget.TextView _messageTextView -> s
+    android.view.View _buttonBar -> t
+    android.widget.ImageButton _startStopStateButton -> u
+    android.widget.ImageButton _editTimeButton -> v
+    android.widget.ImageButton _editTimeAcceptChangeButton -> w
+    android.widget.ImageButton _editTimeCancelChangeButton -> x
+    android.widget.ImageButton _settingsButton -> y
+    android.widget.ImageButton _clearTimerButton -> z
+    android.view.MotionEvent _motionEvent -> A
+    boolean _isTimerStarted -> B
+    int _timerState -> C
+    boolean _isTimeEdited -> D
+    int _selectedMinute -> E
+    int _preveouslySetTime -> F
+    int _currentMinute -> G
+    int _currentSeconds -> H
+    int _UIMode -> I
+    com.alexlabs.trackmovement.ScreenReceiver _screenReceiver -> J
+    boolean _isActivityRunning -> K
     android.os.Messenger _countDownService -> n
-    android.os.Messenger _clientMessenger -> K
-    android.content.ServiceConnection _serviceConnetcion -> L
+    android.os.Messenger _clientMessenger -> L
+    android.content.ServiceConnection _serviceConnetcion -> M
+    com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation pa -> o
     void onCreate(android.os.Bundle) -> onCreate
     void runCountDownTimerService() -> n
     void onRestart() -> onRestart
@@ -6635,8 +6636,6 @@ com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog$4 -> com.alexl
     com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog this$0 -> a
     void onClick(android.content.DialogInterface,int) -> onClick
 com.alexlabs.trackmovement.utils.AnimationUtils -> com.alexlabs.trackmovement.a.a:
-    android.animation.AnimatorSet _animator -> a
-    void toggleTimerSignalAnimation(android.app.Activity,boolean) -> a
     void slideButtonBar(android.view.View,android.app.Activity) -> a
     android.view.animation.Animation slideShow(android.view.View,android.app.Activity) -> b
     android.view.animation.Animation slideHide(android.view.View,android.app.Activity) -> c
@@ -6646,18 +6645,36 @@ com.alexlabs.trackmovement.utils.AnimationUtils$1 -> com.alexlabs.trackmovement.
     void onAnimationStart(android.view.animation.Animation) -> onAnimationStart
     void onAnimationRepeat(android.view.animation.Animation) -> onAnimationRepeat
     void onAnimationEnd(android.view.animation.Animation) -> onAnimationEnd
-com.alexlabs.trackmovement.utils.RingtoneUtils -> com.alexlabs.trackmovement.a.c:
+com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation -> com.alexlabs.trackmovement.a.c:
+    boolean _isStarted -> a
+    android.os.Handler h -> b
+    java.lang.Runnable r -> c
+    com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation$IntervalIterator w -> d
+    void toggleTimerSignalAnimation(android.app.Activity,boolean) -> a
+    com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation$IntervalIterator access$0(com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation) -> a
+    android.os.Handler access$1(com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation) -> b
+com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation$1 -> com.alexlabs.trackmovement.a.d:
+    com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation this$1 -> a
+    android.view.ViewGroup val$anim -> b
+    void run() -> run
+com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation$IntervalIterator -> com.alexlabs.trackmovement.a.e:
+    int index -> a
+    int direction -> b
+    int count -> c
+    int getPrevIndex() -> a
+    void next() -> b
+com.alexlabs.trackmovement.utils.RingtoneUtils -> com.alexlabs.trackmovement.a.f:
     java.util.List _ringtoneEntryList -> a
     java.lang.String[] getRingtonePreferenceNames() -> a
     int findSavedRingtonePos(com.alexlabs.trackmovement.Preferences) -> a
     int gerResId(int) -> a
     java.lang.String getRingtoneName(int) -> b
-com.alexlabs.trackmovement.utils.RingtoneUtils$RingtoneEntry -> com.alexlabs.trackmovement.a.d:
+com.alexlabs.trackmovement.utils.RingtoneUtils$RingtoneEntry -> com.alexlabs.trackmovement.a.g:
     java.lang.String _ringtoneName -> a
     int _ringtoneResId -> b
     int getRingtoneResId() -> a
     java.lang.String getRingtoneName() -> b
-com.alexlabs.trackmovement.utils.TimerUtils -> com.alexlabs.trackmovement.a.e:
+com.alexlabs.trackmovement.utils.TimerUtils -> com.alexlabs.trackmovement.a.h:
     int generateMinute(android.view.MotionEvent,android.content.Context,android.view.View) -> a
     double calculateLineLengthBetweenTwoPoints(double,double,double,double) -> a
     double calculatePivotAngle(double,double,android.content.Context,android.view.View) -> a
@@ -6669,7 +6686,7 @@ com.alexlabs.trackmovement.utils.TimerUtils -> com.alexlabs.trackmovement.a.e:
     long convertMinuteToMillis(int) -> c
     int getSecondsFromMillisecnods(long) -> a
     int getMinuteFromMillisecnods(long) -> b
-com.alexlabs.trackmovement.utils.UIUtils -> com.alexlabs.trackmovement.a.f:
+com.alexlabs.trackmovement.utils.UIUtils -> com.alexlabs.trackmovement.a.i:
     android.widget.Toast _setNewTimeToast -> a
     boolean isLandscape(android.app.Activity) -> a
     void showToast(android.content.Context,int) -> a

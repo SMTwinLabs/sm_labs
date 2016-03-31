@@ -3180,7 +3180,7 @@ com.alexlabs.trackmovement.MainActivity:
     private static final int ARC_EDIT_TIME_ID_KEY
     private static final int ARC_SUPPORT_EDIT_TIME_ID_KEY
     private static final int TIME_CIRCLE_ID_KEY
-    789:789:public android.os.Messenger getCountDownTimerService()
+    791:791:public android.os.Messenger getCountDownTimerService()
 com.alexlabs.trackmovement.MediaPlayerManager$Volumes:
     private static final double IN_CALL_VOLUME
     165:165:public MediaPlayerManager$Volumes()
@@ -3219,7 +3219,7 @@ com.alexlabs.trackmovement.dialogs.ConfrimClearTimerDialog:
 com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog:
     public static final java.lang.String TAG
 com.alexlabs.trackmovement.utils.AnimationUtils:
-    16:16:public AnimationUtils()
+    15:15:public AnimationUtils()
 com.alexlabs.trackmovement.utils.RingtoneUtils:
     10:10:public RingtoneUtils()
 com.alexlabs.trackmovement.utils.RingtoneUtils$RingtoneEntry:
