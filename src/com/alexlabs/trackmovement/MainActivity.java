@@ -594,6 +594,7 @@ public class MainActivity extends ActionBarActivity {
 	 * To set the mode use {@link#updateUIMode}
 	 * @param newMode
 	 */
+	AnimationUtils.PulsationAnimation pa = new AnimationUtils.PulsationAnimation();
 	public void renderAll(int newMode) {
 		int priviousMode = _UIMode;
 		_UIMode = newMode;
@@ -616,7 +617,8 @@ public class MainActivity extends ActionBarActivity {
 			throw new IllegalArgumentException();
 		}
 		
-		AnimationUtils.toggleTimerSignalAnimation(this, _isTimerStarted);
+		pa.toggleTimerSignalAnimation(this, _isTimerStarted);
+		//AnimationUtils.toggleTimerSignalAnimation(this, _isTimerStarted);
 		
 		// If the mode changed - animate the button bar transition.
 		if(_UIMode != priviousMode) {

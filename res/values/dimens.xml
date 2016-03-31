@@ -25,4 +25,16 @@
     <dimen name="buttons_margin">15dp</dimen>
     
     <dimen name="time_circle">6dp</dimen>
+    
+    <dimen name="pulsating_animation_background_circle_size_0">102dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_1">106dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_2">110dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_3">114dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_4">118dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_5">122dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_6">126dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_7">130dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_8">134dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_9">138dp</dimen>
+    <dimen name="pulsating_animation_background_circle_size_max">142dp</dimen>
 </resources>

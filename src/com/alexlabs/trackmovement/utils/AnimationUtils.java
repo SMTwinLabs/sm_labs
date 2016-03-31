@@ -1,50 +1,87 @@
 package com.alexlabs.trackmovement.utils;
 
-import com.alexlabs.trackmovement.MainActivity;
-import com.alexlabs.trackmovement.R;
-import com.alexlabs.trackmovement.R.anim;
-import com.alexlabs.trackmovement.R.id;
-
-import android.animation.AnimatorSet;
 import android.app.Activity;
-import android.graphics.drawable.AnimationDrawable;
+import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
 
+import com.alexlabs.trackmovement.MainActivity;
+import com.alexlabs.trackmovement.R;
+
 public class AnimationUtils {
-
 	
-	static AnimatorSet _animator = new AnimatorSet();
-	public static void toggleTimerSignalAnimation(Activity activity, boolean isTimerStarted) {		
-		ImageView pulsatingCircle = (ImageView) activity.findViewById(R.id.pulsatingCircleAnimation);
+	public static class PulsationAnimation {
 		
-		View pulsatingCircleBackground = activity.findViewById(R.id.pulsatingCicrleBackground);
-		
-		AnimationDrawable pulsationAnimation = (AnimationDrawable) pulsatingCircle.getDrawable();
-		
-		if(isTimerStarted){
-			pulsatingCircle.setVisibility(View.VISIBLE);
-			pulsatingCircle.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+		private static class IntervalIterator {
+			int index;
+			int direction;
+			int count;
 			
+			public IntervalIterator (ViewGroup anim){
+				index = 0;
+				direction = 0;
+				count = anim.getChildCount();
+			}
+			
+			public int getPrevIndex(){
+				return index - direction;
+			}
+			
+			public void next() {
+				if(index == count - 1) {
+					direction = -1;
+				} else if(index == 0) {
+					direction = 1;
+				}
+				
+				index += direction;
+			}
+		}
+		
+		private boolean _isStarted;
+		private Handler h = new Handler();
+		private Runnable r;
+		
+		private IntervalIterator w;
+		
+		public void toggleTimerSignalAnimation(Activity activity, boolean isTimerStarted) {
+			final ViewGroup anim = (ViewGroup) activity.findViewById(R.id.pulsatingCircleView);
+			View pulsatingCircleBackground = activity.findViewById(R.id.pulsatingCicrleBackground);
+			
+			if(_isStarted == isTimerStarted) {
+				return;
+			} else if(_isStarted == true && isTimerStarted == false) {
+				h.removeCallbacks(r);
+				_isStarted = isTimerStarted;
+				pulsatingCircleBackground.setVisibility(View.INVISIBLE);
+				// We need to hide the last visible circle from the animation
+				((ImageView) anim.getChildAt(w.getPrevIndex())).setVisibility(View.INVISIBLE);
+				return;
+			}
+			
+			_isStarted = true;
+			w = new IntervalIterator(anim);
 			pulsatingCircleBackground.setVisibility(View.VISIBLE);
-			pulsatingCircleBackground.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 			
-			pulsationAnimation.start();
-			pulsationAnimation.setAlpha(180);
-
-		} else {			
-			pulsationAnimation.stop();
+			r = new Runnable() {
 			
-			pulsatingCircle.setVisibility(View.INVISIBLE);
-			pulsatingCircle.setLayerType(View.LAYER_TYPE_NONE, null);
-			
-			pulsatingCircleBackground.setVisibility(View.INVISIBLE);
-			pulsatingCircleBackground.setLayerType(View.LAYER_TYPE_NONE, null);
+				@Override
+				public void run() {
+					int prevIndex = w.getPrevIndex();
+					((ImageView) anim.getChildAt(prevIndex)).setVisibility(View.INVISIBLE);
+					((ImageView) anim.getChildAt(w.index)).setVisibility(View.VISIBLE);
+					w.next();
+					h.postDelayed(this, 50);				
+				}
+			};
+			activity.runOnUiThread(r);
 		}
 	}
-	
+		
 	public static void slideButtonBar(final View buttonBarLayout, final Activity activity){
 		Animation slideHide = slideHide(buttonBarLayout, activity);
 		slideHide.setAnimationListener(new AnimationListener() {

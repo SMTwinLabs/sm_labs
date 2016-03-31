@@ -47,11 +47,13 @@
             <ImageView android:id="@+id/pulsatingCircleAnimation"
 	            android:layout_width="@dimen/pulsating_circle_size"
 	            android:layout_height="@dimen/pulsating_circle_size"
-	            android:src="@drawable/pulsation"
+	            android:background="@drawable/circle_red_180_alpha"
 	            android:layout_gravity="center"
 	            android:visibility="gone"
             	/>
             
+            <include layout="@layout/pulsation_layout"/> 
+
             <LinearLayout
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
