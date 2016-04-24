@@ -11,8 +11,8 @@
     <dimen name="time_view_size">60dp</dimen>
     <dimen name="time_display_container_size">80dp</dimen>
     
-    <dimen name="minutes_text_size">60sp</dimen>
-    <dimen name="seconds_text_size">30sp</dimen>
+    <dimen name="minutes_text_size">50sp</dimen>
+    <dimen name="seconds_text_size">25sp</dimen>
     
     <dimen name="pulsating_circle_size">142dp</dimen>    
     <dimen name="pulsating_animation_background_circle_size">102dp</dimen>
