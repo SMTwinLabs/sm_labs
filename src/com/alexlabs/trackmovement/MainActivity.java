@@ -14,12 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -41,12 +38,13 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {	
 
-	private static final boolean SHOULD_USE_TESTING_FEATURES = true;
+	private static final boolean SHOULD_USE_TESTING_FEATURES = false;
 	
 	private final static int ARC_ACTIVE_ID_KEY = 0;
 	private final static int ARC_EDIT_TIME_ID_KEY = 1;
 	private final static int ARC_SUPPORT_EDIT_TIME_ID_KEY = 2;
 	private final static int TIME_CIRCLE_ID_KEY = 3;
+	private final static int LIGHT_BEAM_ID_KEY = 4;
 
 	// dial view
 	private RelativeLayout _content;
@@ -87,6 +85,8 @@ public class MainActivity extends ActionBarActivity {
 	
 	// state
 	private boolean _isActivityRunning;
+	// Flag indicating when the light beam should be shown on the screen.
+	private boolean _shouldShowLightBeam = false;
 	
 	// interprocess communication
 	 /** Messenger for communicating with service. */
@@ -196,26 +196,36 @@ public class MainActivity extends ActionBarActivity {
 
 				switch (action) {
 				case MotionEvent.ACTION_DOWN:
+					// When the user touches the screen the light beam can
+					// be displayed.
+					_shouldShowLightBeam = true;
 					view.performClick();
 					break;
 					
 				case MotionEvent.ACTION_MOVE:
 					if (_UIMode != CountDownTimerService.MODE_ACTIVE) {
+						_shouldShowLightBeam = true;
 						onActionMove(getBaseContext(), _content);
 					}
 					break;
 					
 				case MotionEvent.ACTION_UP:
+					// When the user's is no longer touching the screen
+					// the light beam should not be displayed. 
+					_shouldShowLightBeam = false;
+					view.performClick();
 					break;
 					
 				case MotionEvent.ACTION_CANCEL:
+					_shouldShowLightBeam = false;
+					view.performClick();
 					break;
 				}
 				
 				return true;
 			}
 		});
-
+		
 		_content.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -466,18 +476,30 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	private void renderCircle(float angle, int circleId, int index, int color, int alpha) {
-		// Remove the current arc. This is done so that a new arc will be
+		// Remove the current time circle. This is done so that a new circle will be
 		// generated with the newly selected angle.
 		_content.removeView(_content.findViewById(circleId));
 
-		// Create the new arc from the new angle that has been selected.
+		// Create the new circle from the new angle that has been selected.
 		TimeCircle circle = new TimeCircle(getBaseContext(), _content, angle, color, alpha);
 
-		// Set the arc view's id.
+		// Set the circle view's id.
 		circle.setId(circleId);
 
-		// Add the arc to the content view of the clock.
+		// Add the circle to the content view of the clock.
 		_content.addView(circle, index);
+	}
+	
+	private void renderLightBeam(float angle, int beamId, int index, int color, int alpha) {
+		// Remove the currently drawn light beam, so that it can be redrawn with new
+		// coordinates if the user has moved their finger across the screen. 
+		_content.removeView(_content.findViewById(beamId));
+		
+		if (_shouldShowLightBeam) {			
+			LightBeam lightBeam = new LightBeam(getBaseContext(), _content, _motionEvent, angle, color, alpha);			
+			lightBeam.setId(beamId);			
+			_content.addView(lightBeam, index);
+		}
 	}
 	
 	private void onActionMove(Context context, View content) {
@@ -601,6 +623,11 @@ public class MainActivity extends ActionBarActivity {
 		
 		renderCircle(TimerUtils.generateAngleFromMinute(_preveouslySetTime), TIME_CIRCLE_ID_KEY, 1, R.color.timer_select_time_color, 255);
 		
+		// The light beam is active and is displayed only when the user is not in Active mode.
+		if(_UIMode != CountDownTimerService.MODE_ACTIVE) {			
+			renderLightBeam(TimerUtils.generateAngleFromMinute(_selectedMinute), LIGHT_BEAM_ID_KEY, 1, R.color.white, 200);
+		}
+		
 		if(_UIMode == CountDownTimerService.MODE_BASE) {			
 			renderUIBaseMode();
 		
@@ -671,9 +698,9 @@ public class MainActivity extends ActionBarActivity {
 		// NOTE: at the lowest level, a pure red arc is created. Above it is a green arc that shows the current time. Lastly,
 		// at the top, an arc that is opaque is displayed that shows selected time over the green arc.
 		
-		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_SUPPORT_EDIT_TIME_ID_KEY, 1, R.color.red, 255);
-		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 2, R.color.timer_active_color, 255);
-		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 3, R.color.timer_select_time_color, 120);
+		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_SUPPORT_EDIT_TIME_ID_KEY, 2, R.color.red, 255);
+		renderArc(TimerUtils.generateAngleFromTime(_currentMinute, _currentSeconds), ARC_ACTIVE_ID_KEY, 3, R.color.timer_active_color, 255);
+		renderArc(TimerUtils.generateAngleFromMinute(minute), ARC_EDIT_TIME_ID_KEY, 4, R.color.timer_select_time_color, 120);
 		
 		updateCurrentTime(minute, 0);
 	}
@@ -729,7 +756,8 @@ public class MainActivity extends ActionBarActivity {
 		// specific arcs.
 		removeEditModeArcs();
 		
-		renderArc(TimerUtils.generateAngleFromMinute(_selectedMinute), ARC_ACTIVE_ID_KEY, 1, R.color.timer_select_time_color, 255);		
+		float angle = TimerUtils.generateAngleFromMinute(_selectedMinute);
+		renderArc(angle, ARC_ACTIVE_ID_KEY, 2, R.color.timer_select_time_color, 255);		
 		updateCurrentTime(_selectedMinute, 0);
 		
 		// Make visible the buttons for the base mode.
