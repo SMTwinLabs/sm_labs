@@ -3180,7 +3180,8 @@ com.alexlabs.trackmovement.MainActivity:
     private static final int ARC_EDIT_TIME_ID_KEY
     private static final int ARC_SUPPORT_EDIT_TIME_ID_KEY
     private static final int TIME_CIRCLE_ID_KEY
-    791:791:public android.os.Messenger getCountDownTimerService()
+    private static final int LIGHT_BEAM_ID_KEY
+    819:819:public android.os.Messenger getCountDownTimerService()
 com.alexlabs.trackmovement.MediaPlayerManager$Volumes:
     private static final double IN_CALL_VOLUME
     165:165:public MediaPlayerManager$Volumes()

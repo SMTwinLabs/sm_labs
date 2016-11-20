@@ -6322,6 +6322,14 @@ com.alexlabs.trackmovement.FullWakeLocker -> com.alexlabs.trackmovement.i:
     android.os.PowerManager$WakeLock _wakeLock -> a
     void acquire(android.content.Context) -> a
     void release() -> a
+com.alexlabs.trackmovement.LightBeam -> com.alexlabs.trackmovement.j:
+    android.view.View _content -> a
+    int _colorResId -> b
+    android.graphics.Paint _paint -> c
+    int _alpha -> d
+    float _angle -> e
+    android.view.MotionEvent _motionEvent -> f
+    void onDraw(android.graphics.Canvas) -> onDraw
 com.alexlabs.trackmovement.MainActivity -> com.alexlabs.trackmovement.MainActivity:
     android.widget.RelativeLayout _content -> p
     android.widget.TextView _minutesTextView -> q
@@ -6345,9 +6353,10 @@ com.alexlabs.trackmovement.MainActivity -> com.alexlabs.trackmovement.MainActivi
     int _UIMode -> I
     com.alexlabs.trackmovement.ScreenReceiver _screenReceiver -> J
     boolean _isActivityRunning -> K
+    boolean _shouldShowLightBeam -> L
     android.os.Messenger _countDownService -> n
-    android.os.Messenger _clientMessenger -> L
-    android.content.ServiceConnection _serviceConnetcion -> M
+    android.os.Messenger _clientMessenger -> M
+    android.content.ServiceConnection _serviceConnetcion -> N
     com.alexlabs.trackmovement.utils.AnimationUtils$PulsationAnimation pa -> o
     void onCreate(android.os.Bundle) -> onCreate
     void runCountDownTimerService() -> n
@@ -6362,6 +6371,7 @@ com.alexlabs.trackmovement.MainActivity -> com.alexlabs.trackmovement.MainActivi
     void initClearTimerButton() -> t
     void renderArc(float,int,int,int,int) -> a
     void renderCircle(float,int,int,int,int) -> b
+    void renderLightBeam(float,int,int,int,int) -> c
     void onActionMove(android.content.Context,android.view.View) -> a
     void toggleStartStopButtonState() -> u
     void renderButtonBarEditMode() -> v
@@ -6401,65 +6411,66 @@ com.alexlabs.trackmovement.MainActivity -> com.alexlabs.trackmovement.MainActivi
     void access$9(com.alexlabs.trackmovement.MainActivity,int) -> d
     void access$10(com.alexlabs.trackmovement.MainActivity,int) -> e
     void access$11(com.alexlabs.trackmovement.MainActivity,android.view.MotionEvent) -> a
-    android.widget.RelativeLayout access$12(com.alexlabs.trackmovement.MainActivity) -> e
-    void access$13(com.alexlabs.trackmovement.MainActivity,android.content.Context,android.view.View) -> a
-    int access$14(com.alexlabs.trackmovement.MainActivity) -> f
-    android.widget.TextView access$15(com.alexlabs.trackmovement.MainActivity) -> g
-    void access$16(com.alexlabs.trackmovement.MainActivity,int) -> f
-    void access$17(com.alexlabs.trackmovement.MainActivity,int) -> g
-    void access$18(com.alexlabs.trackmovement.MainActivity) -> h
-    android.os.Messenger access$19(com.alexlabs.trackmovement.MainActivity) -> i
-    void access$20(com.alexlabs.trackmovement.MainActivity) -> j
-    boolean access$21(com.alexlabs.trackmovement.MainActivity) -> k
-    android.support.v4.app.DialogFragment access$22(com.alexlabs.trackmovement.MainActivity,android.support.v4.app.FragmentManager) -> a
-    boolean access$23(com.alexlabs.trackmovement.MainActivity) -> l
-    android.widget.TextView access$24(com.alexlabs.trackmovement.MainActivity) -> m
-com.alexlabs.trackmovement.MainActivity$1 -> com.alexlabs.trackmovement.j:
+    void access$12(com.alexlabs.trackmovement.MainActivity,boolean) -> b
+    android.widget.RelativeLayout access$13(com.alexlabs.trackmovement.MainActivity) -> e
+    void access$14(com.alexlabs.trackmovement.MainActivity,android.content.Context,android.view.View) -> a
+    int access$15(com.alexlabs.trackmovement.MainActivity) -> f
+    android.widget.TextView access$16(com.alexlabs.trackmovement.MainActivity) -> g
+    void access$17(com.alexlabs.trackmovement.MainActivity,int) -> f
+    void access$18(com.alexlabs.trackmovement.MainActivity,int) -> g
+    void access$19(com.alexlabs.trackmovement.MainActivity) -> h
+    android.os.Messenger access$20(com.alexlabs.trackmovement.MainActivity) -> i
+    void access$21(com.alexlabs.trackmovement.MainActivity) -> j
+    boolean access$22(com.alexlabs.trackmovement.MainActivity) -> k
+    android.support.v4.app.DialogFragment access$23(com.alexlabs.trackmovement.MainActivity,android.support.v4.app.FragmentManager) -> a
+    boolean access$24(com.alexlabs.trackmovement.MainActivity) -> l
+    android.widget.TextView access$25(com.alexlabs.trackmovement.MainActivity) -> m
+com.alexlabs.trackmovement.MainActivity$1 -> com.alexlabs.trackmovement.k:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$10 -> com.alexlabs.trackmovement.k:
+com.alexlabs.trackmovement.MainActivity$10 -> com.alexlabs.trackmovement.l:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$11 -> com.alexlabs.trackmovement.l:
+com.alexlabs.trackmovement.MainActivity$11 -> com.alexlabs.trackmovement.m:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     android.os.Handler val$h -> b
     void run() -> run
-com.alexlabs.trackmovement.MainActivity$2 -> com.alexlabs.trackmovement.m:
+com.alexlabs.trackmovement.MainActivity$2 -> com.alexlabs.trackmovement.n:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     boolean onTouch(android.view.View,android.view.MotionEvent) -> onTouch
-com.alexlabs.trackmovement.MainActivity$3 -> com.alexlabs.trackmovement.n:
+com.alexlabs.trackmovement.MainActivity$3 -> com.alexlabs.trackmovement.o:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$4 -> com.alexlabs.trackmovement.o:
+com.alexlabs.trackmovement.MainActivity$4 -> com.alexlabs.trackmovement.p:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$5 -> com.alexlabs.trackmovement.p:
+com.alexlabs.trackmovement.MainActivity$5 -> com.alexlabs.trackmovement.q:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onServiceDisconnected(android.content.ComponentName) -> onServiceDisconnected
     void onServiceConnected(android.content.ComponentName,android.os.IBinder) -> onServiceConnected
-com.alexlabs.trackmovement.MainActivity$6 -> com.alexlabs.trackmovement.q:
+com.alexlabs.trackmovement.MainActivity$6 -> com.alexlabs.trackmovement.r:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     android.support.v4.app.FragmentManager val$manager -> b
     android.os.Handler val$handler -> c
     void run() -> run
-com.alexlabs.trackmovement.MainActivity$6$1 -> com.alexlabs.trackmovement.r:
+com.alexlabs.trackmovement.MainActivity$6$1 -> com.alexlabs.trackmovement.s:
     com.alexlabs.trackmovement.MainActivity$6 this$1 -> a
     android.support.v4.app.FragmentManager val$manager -> b
     void run() -> run
-com.alexlabs.trackmovement.MainActivity$7 -> com.alexlabs.trackmovement.s:
+com.alexlabs.trackmovement.MainActivity$7 -> com.alexlabs.trackmovement.t:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$8 -> com.alexlabs.trackmovement.t:
+com.alexlabs.trackmovement.MainActivity$8 -> com.alexlabs.trackmovement.u:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$9 -> com.alexlabs.trackmovement.u:
+com.alexlabs.trackmovement.MainActivity$9 -> com.alexlabs.trackmovement.v:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void onClick(android.view.View) -> onClick
-com.alexlabs.trackmovement.MainActivity$IncomingHandler -> com.alexlabs.trackmovement.v:
+com.alexlabs.trackmovement.MainActivity$IncomingHandler -> com.alexlabs.trackmovement.w:
     com.alexlabs.trackmovement.MainActivity this$0 -> a
     void handleMessage(android.os.Message) -> handleMessage
     void extractDataFromBundle(android.os.Bundle) -> a
-com.alexlabs.trackmovement.MediaPlayerManager -> com.alexlabs.trackmovement.w:
+com.alexlabs.trackmovement.MediaPlayerManager -> com.alexlabs.trackmovement.x:
     android.media.MediaPlayer _mediaPlayer -> a
     boolean _isMediaPlayerStarted -> b
     boolean isMediaPlayerStarted() -> a
@@ -6470,18 +6481,18 @@ com.alexlabs.trackmovement.MediaPlayerManager -> com.alexlabs.trackmovement.w:
     void stop(android.content.Context) -> a
     android.net.Uri provideFallbackAlarmNoise() -> b
     void setDataSourceFromResource(android.content.Context,int) -> a
-com.alexlabs.trackmovement.MediaPlayerManager$1 -> com.alexlabs.trackmovement.x:
+com.alexlabs.trackmovement.MediaPlayerManager$1 -> com.alexlabs.trackmovement.y:
     com.alexlabs.trackmovement.MediaPlayerManager this$0 -> a
     android.content.Context val$context -> b
     boolean onError(android.media.MediaPlayer,int,int) -> onError
-com.alexlabs.trackmovement.MediaPlayerManager$Volumes -> com.alexlabs.trackmovement.y:
+com.alexlabs.trackmovement.MediaPlayerManager$Volumes -> com.alexlabs.trackmovement.z:
     double getPreferencesLevel() -> a
     double getInCallLevel() -> b
-com.alexlabs.trackmovement.PartialWakeLocker -> com.alexlabs.trackmovement.z:
+com.alexlabs.trackmovement.PartialWakeLocker -> com.alexlabs.trackmovement.aa:
     android.os.PowerManager$WakeLock _wakeLock -> a
     void acquire(android.content.Context) -> a
     void release() -> a
-com.alexlabs.trackmovement.Preferences -> com.alexlabs.trackmovement.aa:
+com.alexlabs.trackmovement.Preferences -> com.alexlabs.trackmovement.ab:
     android.content.Context _context -> a
     android.content.res.Resources _resources -> b
     android.content.SharedPreferences _preferences -> c
@@ -6498,14 +6509,14 @@ com.alexlabs.trackmovement.Preferences -> com.alexlabs.trackmovement.aa:
     int getAlarmNoiseDuration() -> g
     boolean getShouldBeep() -> h
     void onSaveRingtonePreferences(int) -> b
-com.alexlabs.trackmovement.ScreenReceiver -> com.alexlabs.trackmovement.ab:
+com.alexlabs.trackmovement.ScreenReceiver -> com.alexlabs.trackmovement.ac:
     java.lang.String SYSTEM_DIALOG_REASON_KEY -> a
     boolean _isScreenOn -> b
     void onReceive(android.content.Context,android.content.Intent) -> onReceive
 com.alexlabs.trackmovement.SettingsActivity -> com.alexlabs.trackmovement.SettingsActivity:
     void onCreate(android.os.Bundle) -> onCreate
     void onDestroy() -> onDestroy
-com.alexlabs.trackmovement.SettingsFragment -> com.alexlabs.trackmovement.ac:
+com.alexlabs.trackmovement.SettingsFragment -> com.alexlabs.trackmovement.ad:
     com.alexlabs.trackmovement.VibrationManager _vibrationManager -> a
     android.os.Handler _vibrationDemoHandler -> b
     android.content.SharedPreferences$OnSharedPreferenceChangeListener _preferenceChangeListener -> c
@@ -6524,22 +6535,22 @@ com.alexlabs.trackmovement.SettingsFragment -> com.alexlabs.trackmovement.ac:
     com.alexlabs.trackmovement.VibrationManager access$2(com.alexlabs.trackmovement.SettingsFragment) -> c
     android.os.Handler access$3(com.alexlabs.trackmovement.SettingsFragment) -> d
     java.lang.Runnable access$4(com.alexlabs.trackmovement.SettingsFragment) -> e
-com.alexlabs.trackmovement.SettingsFragment$1 -> com.alexlabs.trackmovement.ad:
+com.alexlabs.trackmovement.SettingsFragment$1 -> com.alexlabs.trackmovement.ae:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     void onSharedPreferenceChanged(android.content.SharedPreferences,java.lang.String) -> onSharedPreferenceChanged
-com.alexlabs.trackmovement.SettingsFragment$2 -> com.alexlabs.trackmovement.ae:
+com.alexlabs.trackmovement.SettingsFragment$2 -> com.alexlabs.trackmovement.af:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     void run() -> run
-com.alexlabs.trackmovement.SettingsFragment$3 -> com.alexlabs.trackmovement.af:
+com.alexlabs.trackmovement.SettingsFragment$3 -> com.alexlabs.trackmovement.ag:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     boolean onPreferenceClick(android.preference.Preference) -> onPreferenceClick
-com.alexlabs.trackmovement.SettingsFragment$4 -> com.alexlabs.trackmovement.ag:
+com.alexlabs.trackmovement.SettingsFragment$4 -> com.alexlabs.trackmovement.ah:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     boolean onPreferenceClick(android.preference.Preference) -> onPreferenceClick
-com.alexlabs.trackmovement.SettingsFragment$5 -> com.alexlabs.trackmovement.ah:
+com.alexlabs.trackmovement.SettingsFragment$5 -> com.alexlabs.trackmovement.ai:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     boolean onPreferenceChange(android.preference.Preference,java.lang.Object) -> onPreferenceChange
-com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.ai:
+com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.aj:
     android.view.View _content -> a
     android.content.Context _context -> b
     int _alpha -> c
@@ -6548,7 +6559,7 @@ com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.ai:
     float _angle -> f
     void onDraw(android.graphics.Canvas) -> onDraw
     android.graphics.Point calculateCircleCoordinates() -> a
-com.alexlabs.trackmovement.VibrationManager -> com.alexlabs.trackmovement.aj:
+com.alexlabs.trackmovement.VibrationManager -> com.alexlabs.trackmovement.ak:
     boolean _isVibrationStarted -> a
     boolean isVibrationStarted() -> a
     void start(android.content.Context) -> a
