@@ -160,10 +160,6 @@ public class MainActivity extends ActionBarActivity {
 		
 		// Unlock only non-secure lock key guards.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-		Preferences prefs = new Preferences();
-		if (prefs.getShouldKeepScreenAwake()) {
-			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		}
 		
 		setContentView(R.layout.activity_main);
 
@@ -336,6 +332,16 @@ public class MainActivity extends ActionBarActivity {
 		super.onStart();
 		Log.d("ALEX_LABS", "MainActivity is Started");
 		_isActivityRunning = true;
+		// NOTE: Every time the app is started the 'Keep screen awake' flag needs to be set
+		// if the user has specified it. This code is not in onCreate(), because
+		// despite what the docs say, when the app is closed the device screen is not
+		// put to sleep if the 'Keep screen awake' preference has been turned on.
+		// To solve this issue we have to set the flag when the activity is started and
+		// clear it in onStop() when the activity is stopped.
+		Preferences prefs = new Preferences();
+		if (prefs.getShouldKeepScreenAwake()) {
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
 	}
 
 	/**
@@ -852,6 +858,7 @@ public class MainActivity extends ActionBarActivity {
 
 		Log.d("ALEX_LABS", "MainActivity is Stopped");
 		_isActivityRunning = false;
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		
 		// NOTE: when exiting the application, the UI mode is set to active.
 		if(_UIMode == CountDownTimerService.MODE_EDIT_TIME) {
