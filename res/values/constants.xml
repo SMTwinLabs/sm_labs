@@ -6,6 +6,7 @@
 	<string name="alarm_beep_pref">BeepPref</string>
 	<string name="alarm_noise_duration_pref">AlaramNoiseDurationPref</string>
 	<string name="alarm_ringtone_pref">AlarmRingtonePref</string>
+	<string name="keep_screen_awake_pref">KeepScreenAwakePref</string>
 	
 	<string-array name="alarm_noise_durations_labels">
 	    <item>Short (2 seconds)</item>

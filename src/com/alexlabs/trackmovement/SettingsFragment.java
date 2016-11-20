@@ -1,11 +1,17 @@
 package com.alexlabs.trackmovement;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.alexlabs.trackmovement.dialogs.SelectRingtonePreferenceDialog;
 import com.alexlabs.trackmovement.utils.RingtoneUtils;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -38,6 +44,8 @@ public class SettingsFragment extends PreferenceFragment {
 				updateAlarmDurationPref();
 			} else if(key.equals(getActivity().getResources().getString(R.string.alarm_ringtone_pref))) {
 				updateRingtonePreferenceSummary();
+			} else if(key.equals(getActivity().getResources().getString(R.string.keep_screen_awake_pref))) {
+				updateKeepScreenAwake();
 			} else {
 				// something is wrong
 			}
@@ -178,6 +186,43 @@ public class SettingsFragment extends PreferenceFragment {
 		Preference alarmRingtonePreference = findPreference(getActivity().getString(R.string.alarm_ringtone_pref));
 		alarmRingtonePreference.setEnabled(p.isSoundOn());
 	}
+	
+	public void updateKeepScreenAwake() {
+		// A new MainActivity activity is created that will clear all existing activities.
+		Intent mStartActivity = new Intent(getActivity(), MainActivity.class);
+		mStartActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		// After the preference has been changed the app needs to be restarted so that
+		// the change can take effect. However, the restart cannot happen immediately
+		// because otherwise the change to the preference will not be reflected. Therefore,
+		// a task is designated to do the restarting of the app and it is started with a
+		// certain delay.
+		Timer timer = new Timer();
+        timer.schedule(new RestartAppTask(getActivity().getBaseContext(), mStartActivity), 100);
+	}
+	
+	/**
+	 * RestartAppTask is responsible for closing the entire application
+	 * and starting a new activity.
+	 * @author Alex
+	 *
+	 */
+	class RestartAppTask extends TimerTask {
+		private Intent _intent;
+		private Context _ctx;
+		
+		public RestartAppTask() {}
+		
+		public RestartAppTask(Context ctx, Intent i) {
+			_intent = i;
+			_ctx = ctx;
+		}
+		
+        public void run() {
+            System.exit(0);
+            _ctx.startActivity(_intent);
+            cancel();
+        }
+    }  
 	
 	@Override
 	public void onDestroy() {

@@ -35,6 +35,7 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {	
 
@@ -159,6 +160,10 @@ public class MainActivity extends ActionBarActivity {
 		
 		// Unlock only non-secure lock key guards.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+		Preferences prefs = new Preferences();
+		if (prefs.getShouldKeepScreenAwake()) {
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
 		
 		setContentView(R.layout.activity_main);
 

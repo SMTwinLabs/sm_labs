@@ -34,6 +34,8 @@
 	<string name="wind_up_lower_pitched_bell_ringing">Wind up bell</string>
 	<string name="choose_ringtone_dialog_title">Choose ringtone</string>
 	<string name="confirm_timer_clear">Are you sure want to clear the timer?</string>
+	<string name="keep_screen_awake_label">Keep screen awake</string>
+	<string name="keep_screen_awake_summary">Keep device screen on while the app is running</string>
 	
 	<string name="test_info_label">test info</string>
 </resources>

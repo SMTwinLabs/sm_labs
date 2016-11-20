@@ -43,6 +43,13 @@
 	        android:icon="@drawable/ic_surround_sound_black_36dp"
 	        android:summary="@string/alarm_beep_summary"
 	        android:layout="@layout/preference"/>
+	    
+	    <CheckBoxPreference android:title="@string/keep_screen_awake_label"
+	        android:key="@string/keep_screen_awake_pref"
+	        android:defaultValue="false"
+	        android:icon="@drawable/ic_phonelink_setup_black_36dp"
+	        android:summary="@string/keep_screen_awake_summary"
+	        android:layout="@layout/preference"/>
     </PreferenceCategory>
     
     <Preference android:title="@string/test_info_label"

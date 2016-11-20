@@ -88,4 +88,8 @@ public class Preferences {
 		
 		_isDirty = true;
 	}
+	
+	public boolean getShouldKeepScreenAwake() {
+		return _preferences.getBoolean(_resources.getString(R.string.keep_screen_awake_pref), false);
+	}
 }
