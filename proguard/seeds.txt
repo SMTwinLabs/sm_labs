@@ -1878,6 +1878,7 @@ com.alexlabs.trackmovement.R$drawable: int ic_mode_edit_white_48dp
 com.alexlabs.trackmovement.R$drawable: int ic_music_note_black_36dp
 com.alexlabs.trackmovement.R$drawable: int ic_notifications_active_black_36dp
 com.alexlabs.trackmovement.R$drawable: int ic_pause_circle_outline_white_48dp
+com.alexlabs.trackmovement.R$drawable: int ic_phonelink_setup_black_36dp
 com.alexlabs.trackmovement.R$drawable: int ic_play_circle_outline_white_48dp
 com.alexlabs.trackmovement.R$drawable: int ic_replay_white_48dp
 com.alexlabs.trackmovement.R$drawable: int ic_settings_white_36dp
@@ -2083,6 +2084,9 @@ com.alexlabs.trackmovement.R$string: int choose_ringtone_dialog_title
 com.alexlabs.trackmovement.R$string: int confirm_timer_clear
 com.alexlabs.trackmovement.R$string: int electronic_chime
 com.alexlabs.trackmovement.R$string: int hello_world
+com.alexlabs.trackmovement.R$string: int keep_screen_awake_label
+com.alexlabs.trackmovement.R$string: int keep_screen_awake_pref
+com.alexlabs.trackmovement.R$string: int keep_screen_awake_summary
 com.alexlabs.trackmovement.R$string: int mechanic_clock_sound_ringing
 com.alexlabs.trackmovement.R$string: int old_clock_ringing_short
 com.alexlabs.trackmovement.R$string: int pick_time_prompt

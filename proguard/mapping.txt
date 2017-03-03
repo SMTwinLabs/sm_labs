@@ -6500,7 +6500,7 @@ com.alexlabs.trackmovement.Preferences -> com.alexlabs.trackmovement.ab:
     boolean _isDirty -> e
     void startEdit() -> a
     void finishEdit() -> b
-    void checkEditMode() -> i
+    void checkEditMode() -> j
     void onSaveVolumePreferences(int) -> a
     boolean isSoundOn() -> c
     boolean isVibrationOn() -> d
@@ -6509,6 +6509,7 @@ com.alexlabs.trackmovement.Preferences -> com.alexlabs.trackmovement.ab:
     int getAlarmNoiseDuration() -> g
     boolean getShouldBeep() -> h
     void onSaveRingtonePreferences(int) -> b
+    boolean getShouldKeepScreenAwake() -> i
 com.alexlabs.trackmovement.ScreenReceiver -> com.alexlabs.trackmovement.ac:
     java.lang.String SYSTEM_DIALOG_REASON_KEY -> a
     boolean _isScreenOn -> b
@@ -6522,13 +6523,14 @@ com.alexlabs.trackmovement.SettingsFragment -> com.alexlabs.trackmovement.ad:
     android.content.SharedPreferences$OnSharedPreferenceChangeListener _preferenceChangeListener -> c
     java.lang.Runnable _stopVibrationDemoRunnable -> d
     void onCreate(android.os.Bundle) -> onCreate
-    void initTestInfoPreference() -> c
-    void initRingtonePreference() -> d
-    void updateRingtonePreferenceSummary() -> e
-    void initVibrationPreferences() -> f
-    void updateVolumePref() -> g
+    void initTestInfoPreference() -> d
+    void initRingtonePreference() -> e
+    void updateRingtonePreferenceSummary() -> f
+    void initVibrationPreferences() -> g
+    void updateVolumePref() -> h
     void updateAlarmDurationPref() -> a
     void updateRingtonePref() -> b
+    void updateKeepScreenAwake() -> c
     void onDestroy() -> onDestroy
     void access$0(com.alexlabs.trackmovement.SettingsFragment) -> a
     void access$1(com.alexlabs.trackmovement.SettingsFragment) -> b
@@ -6550,7 +6552,12 @@ com.alexlabs.trackmovement.SettingsFragment$4 -> com.alexlabs.trackmovement.ah:
 com.alexlabs.trackmovement.SettingsFragment$5 -> com.alexlabs.trackmovement.ai:
     com.alexlabs.trackmovement.SettingsFragment this$0 -> a
     boolean onPreferenceChange(android.preference.Preference,java.lang.Object) -> onPreferenceChange
-com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.aj:
+com.alexlabs.trackmovement.SettingsFragment$RestartAppTask -> com.alexlabs.trackmovement.aj:
+    android.content.Intent _intent -> b
+    android.content.Context _ctx -> c
+    com.alexlabs.trackmovement.SettingsFragment this$0 -> a
+    void run() -> run
+com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.ak:
     android.view.View _content -> a
     android.content.Context _context -> b
     int _alpha -> c
@@ -6559,7 +6566,7 @@ com.alexlabs.trackmovement.TimeCircle -> com.alexlabs.trackmovement.aj:
     float _angle -> f
     void onDraw(android.graphics.Canvas) -> onDraw
     android.graphics.Point calculateCircleCoordinates() -> a
-com.alexlabs.trackmovement.VibrationManager -> com.alexlabs.trackmovement.ak:
+com.alexlabs.trackmovement.VibrationManager -> com.alexlabs.trackmovement.al:
     boolean _isVibrationStarted -> a
     boolean isVibrationStarted() -> a
     void start(android.content.Context) -> a

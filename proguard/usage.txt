@@ -3181,7 +3181,7 @@ com.alexlabs.trackmovement.MainActivity:
     private static final int ARC_SUPPORT_EDIT_TIME_ID_KEY
     private static final int TIME_CIRCLE_ID_KEY
     private static final int LIGHT_BEAM_ID_KEY
-    819:819:public android.os.Messenger getCountDownTimerService()
+    830:830:public android.os.Messenger getCountDownTimerService()
 com.alexlabs.trackmovement.MediaPlayerManager$Volumes:
     private static final double IN_CALL_VOLUME
     165:165:public MediaPlayerManager$Volumes()
@@ -3212,6 +3212,8 @@ com.alexlabs.trackmovement.ScreenReceiver:
     37:37:public boolean getWasScreenOn()
 com.alexlabs.trackmovement.SettingsFragment:
     private static final boolean SHOULD_DISPLAY_TEST_INFO
+com.alexlabs.trackmovement.SettingsFragment$RestartAppTask:
+    213:213:public SettingsFragment$RestartAppTask(com.alexlabs.trackmovement.SettingsFragment)
 com.alexlabs.trackmovement.dialogs.ConfirmScheduledAramDialog:
     public static final java.lang.String TAG
     private static final java.lang.String MESSAGE_KEY
