@@ -23,6 +23,14 @@ public class MediaPlayerManager {
     private MediaPlayer _mediaPlayer;
 	private boolean _isMediaPlayerStarted;
 	
+	/**
+	 * The media volume of the user settings. Since the app supports independent volume adjustment,
+	 * each time a sound is played, the user media volume needs to be saved, so that the volume
+	 * can be readjusted to play a tone from the app. After the tone is played, the media volume
+	 * is returned to the on set formerly by the use.
+	 */
+	private int _userMediaVolume;
+	
 	public boolean isMediaPlayerStarted() {
 		return _isMediaPlayerStarted;
 	}
@@ -39,9 +47,11 @@ public class MediaPlayerManager {
 	public void start(Context context, double level, int ringtoneRes, boolean shouldLoop) {
 		// NOTE: because we are using a single instance of the media player, we need
         // to reset the media player, so that it goes in its uninitialized state. After
-        // initialize the player again.
+        // that initialize the player again.
     	if(level > 0) {
     		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    		/// Saving the current media volume.
+    		_userMediaVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * level), AudioManager.ADJUST_SAME);
     		
     		initMediaPlayer(context, audioManager, ringtoneRes, shouldLoop);
@@ -128,6 +138,8 @@ public class MediaPlayerManager {
 				_mediaPlayer.stop();
 			    AudioManager audioManager = (AudioManager)
 			            context.getSystemService(Context.AUDIO_SERVICE);
+			    // Return the media player volume to its original value.
+			    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, _userMediaVolume, AudioManager.ADJUST_SAME);
 			    audioManager.abandonAudioFocus(null);
 			    _mediaPlayer.release();
 			    _mediaPlayer = null;

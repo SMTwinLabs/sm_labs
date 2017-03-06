@@ -41,12 +41,12 @@ public class AdjustVolumeDialog extends DialogPreference {
 	 * Schedules a short sound when the user finishes selecting a volume level. When simply dragging the slider of
 	 * the seekbar, no volume is produced until the user releases the slider.
 	 */
-	private Handler alaramBellDemoHandler = new Handler();
+	private Handler _alaramBellDemoHandler = new Handler();
 	
 	/**
 	 * Stop the sound of the demo alarm bell.
 	 */
-	private Runnable stopAlarmBellDemoRunnable = new Runnable() {
+	private Runnable _stopAlarmBellDemoRunnable = new Runnable() {
 		
 		@Override
 		public void run() {
@@ -98,14 +98,14 @@ public class AdjustVolumeDialog extends DialogPreference {
 			public void onStopTrackingTouch(SeekBar seekBar) {				
 				_mediaPlayerManager.start(getContext(), (double)_progress / 100, prefs.getRingtoneResId());
 				// Stop the noise after a short delay.
-				alaramBellDemoHandler.postDelayed(stopAlarmBellDemoRunnable, 1000);
+				_alaramBellDemoHandler.postDelayed(_stopAlarmBellDemoRunnable, 1000);
 			}
 			
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
 				// If the user edits the volume level while the sound from the previous change is still playing,
 				// stop the currently playing sound.
-				alaramBellDemoHandler.removeCallbacks(stopAlarmBellDemoRunnable);
+				_alaramBellDemoHandler.removeCallbacks(_stopAlarmBellDemoRunnable);
 			}
 			
 			@Override
