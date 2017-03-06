@@ -6473,6 +6473,7 @@ com.alexlabs.trackmovement.MainActivity$IncomingHandler -> com.alexlabs.trackmov
 com.alexlabs.trackmovement.MediaPlayerManager -> com.alexlabs.trackmovement.x:
     android.media.MediaPlayer _mediaPlayer -> a
     boolean _isMediaPlayerStarted -> b
+    int _userMediaVolume -> c
     boolean isMediaPlayerStarted() -> a
     void start(android.content.Context,double,int) -> a
     void start(android.content.Context,double,int,boolean) -> a
@@ -6576,8 +6577,8 @@ com.alexlabs.trackmovement.dialogs.AdjustVolumeDialog -> com.alexlabs.trackmovem
     int _progress -> b
     android.widget.SeekBar _seekBar -> c
     android.widget.TextView _volumeProgressTextView -> d
-    android.os.Handler alaramBellDemoHandler -> e
-    java.lang.Runnable stopAlarmBellDemoRunnable -> f
+    android.os.Handler _alaramBellDemoHandler -> e
+    java.lang.Runnable _stopAlarmBellDemoRunnable -> f
     void onDialogClosed(boolean) -> onDialogClosed
     void onBindDialogView(android.view.View) -> onBindDialogView
     com.alexlabs.trackmovement.MediaPlayerManager access$0(com.alexlabs.trackmovement.dialogs.AdjustVolumeDialog) -> a

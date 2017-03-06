@@ -3184,7 +3184,7 @@ com.alexlabs.trackmovement.MainActivity:
     830:830:public android.os.Messenger getCountDownTimerService()
 com.alexlabs.trackmovement.MediaPlayerManager$Volumes:
     private static final double IN_CALL_VOLUME
-    165:165:public MediaPlayerManager$Volumes()
+    177:177:public MediaPlayerManager$Volumes()
 com.alexlabs.trackmovement.PartialWakeLocker:
     private static final java.lang.String APP_TAG
 com.alexlabs.trackmovement.Preferences:
