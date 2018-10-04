@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="message_text_margin_x">25dp</dimen>
-    <dimen name="message_text_margin_y">40dp</dimen>
-</resources>

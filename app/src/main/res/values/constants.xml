@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>    
+	<string name="sound_toggle_pref">SoundPref</string>	
+	<string name="vibration_toggle_pref">VibrationPref</string>
+	<string name="volume_pref">VolumePref</string>
+	<string name="alarm_beep_pref">BeepPref</string>
+	<string name="alarm_noise_duration_pref">AlaramNoiseDurationPref</string>
+	<string name="alarm_ringtone_pref">AlarmRingtonePref</string>
+	<string name="keep_screen_awake_pref">KeepScreenAwakePref</string>
+	
+	<string-array name="alarm_noise_durations_labels">
+	    <item>Short (2 seconds)</item>
+	    <item>Long (10 seconds)</item>
+	</string-array>
+	
+	<string-array name="alarm_noise_durations_values">
+	    <item>2</item>
+	    <item>10</item>
+	</string-array>
+	
+	<string name="alarm_noise_duration_value">2</string>
+	<string name="test_info_pref">TestPref</string>
+	<string name="settings_key">SettingsKey</string>
+	<string name="yes">Yes</string>
+</resources>
